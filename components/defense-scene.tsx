@@ -61,7 +61,7 @@ function AmbientParticles({ count = 200 }: { count?: number }) {
   return (
     <points ref={points}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.08} color="#64748B" transparent opacity={0.4} sizeAttenuation />
     </points>

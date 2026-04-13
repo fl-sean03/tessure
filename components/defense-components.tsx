@@ -7,8 +7,46 @@ import { Html } from "@react-three/drei"
 import { useScenarioStore } from "@/lib/scenario-store"
 import * as THREE from "three"
 
+type Vec3 = [number, number, number]
+type DeviceClickHandler = (deviceName: string) => void
+
 type DefenseComponentsProps = {
-  onDeviceClick?: (deviceName: string) => void
+  onDeviceClick?: DeviceClickHandler
+}
+
+type CameraProps = {
+  position: Vec3
+  rotation: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+  isTracking?: boolean
+}
+
+type UAVProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+  type: "rapid-response" | "patrol" | "surveillance"
+  isDispatched?: boolean
+}
+
+type EdgeComputeProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+}
+
+type SensorProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+  isDetecting?: boolean
+}
+
+type RadarProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
 }
 
 export default function DefenseComponents({ onDeviceClick }: DefenseComponentsProps) {
@@ -135,7 +173,7 @@ export default function DefenseComponents({ onDeviceClick }: DefenseComponentsPr
   )
 }
 
-function Camera({ position, rotation, onDeviceClick, id, isTracking }: any) {
+function Camera({ position, rotation, onDeviceClick, id, isTracking }: CameraProps) {
   const groupRef = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
   const intruderPosition = useScenarioStore((state) => state.intruderPosition)
@@ -177,8 +215,8 @@ function Camera({ position, rotation, onDeviceClick, id, isTracking }: any) {
         />
       </mesh>
 
-      <mesh position={[0, 0, 0.25]} castShadow>
-        <cylinderGeometry args={[0.1, 0.1, 0.1, 16]} rotation={[Math.PI / 2, 0, 0]} />
+      <mesh position={[0, 0, 0.25]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.1, 0.1, 16]} />
         <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
       </mesh>
 
@@ -206,7 +244,7 @@ function Camera({ position, rotation, onDeviceClick, id, isTracking }: any) {
   )
 }
 
-function UAV({ position, onDeviceClick, id, type, isDispatched }: any) {
+function UAV({ position, onDeviceClick, id, type, isDispatched }: UAVProps) {
   const groupRef = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
   const intruderPosition = useScenarioStore((state) => state.intruderPosition)
@@ -295,7 +333,7 @@ function UAV({ position, onDeviceClick, id, type, isDispatched }: any) {
   )
 }
 
-function EdgeCompute({ position, onDeviceClick, id }: any) {
+function EdgeCompute({ position, onDeviceClick, id }: EdgeComputeProps) {
   const [hovered, setHovered] = useState(false)
   const isActive = useScenarioStore((state) => state.isActive)
 
@@ -350,7 +388,7 @@ function EdgeCompute({ position, onDeviceClick, id }: any) {
   )
 }
 
-function Sensor({ position, onDeviceClick, id, isDetecting }: any) {
+function Sensor({ position, onDeviceClick, id, isDetecting }: SensorProps) {
   const [hovered, setHovered] = useState(false)
   const lightRef = useRef<Mesh>(null)
   const coneRef = useRef<Mesh>(null)
@@ -358,7 +396,8 @@ function Sensor({ position, onDeviceClick, id, isDetecting }: any) {
 
   useFrame((state) => {
     if (lightRef.current) {
-      lightRef.current.material.emissiveIntensity = isDetecting
+      const mat = lightRef.current.material as THREE.MeshStandardMaterial
+      mat.emissiveIntensity = isDetecting
         ? 1 + Math.sin(state.clock.elapsedTime * 4) * 0.5
         : 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.5
     }
@@ -430,7 +469,7 @@ function Sensor({ position, onDeviceClick, id, isDetecting }: any) {
   )
 }
 
-function Radar({ position, onDeviceClick, id }: any) {
+function Radar({ position, onDeviceClick, id }: RadarProps) {
   const dishRef = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
   const isActive = useScenarioStore((state) => state.isActive)

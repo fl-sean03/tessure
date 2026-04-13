@@ -14,29 +14,25 @@ type CriticalInfrastructureSceneProps = {
 
 // Animated power line with electric arc effect
 function PowerLine({ start, end, phase }: { start: [number, number, number]; end: [number, number, number]; phase: string }) {
-  const lineRef = useRef<Mesh>(null)
+  const line = useMemo(() => {
+    const midY = Math.min(start[1], end[1]) - 2
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(...start),
+      new THREE.Vector3((start[0] + end[0]) / 2, midY, (start[2] + end[2]) / 2),
+      new THREE.Vector3(...end)
+    )
+    const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(20))
+    const material = new THREE.LineBasicMaterial({ color: "#374151", linewidth: 2, transparent: true })
+    return new THREE.Line(geometry, material)
+  }, [start, end])
 
   useFrame((state) => {
-    if (lineRef.current && phase === "responding") {
-      const mat = lineRef.current.material as THREE.MeshBasicMaterial
-      mat.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 10) * 0.2
-    }
+    const mat = line.material as THREE.LineBasicMaterial
+    mat.color.set(phase === "responding" ? "#EF4444" : "#374151")
+    mat.opacity = phase === "responding" ? 0.3 + Math.sin(state.clock.elapsedTime * 10) * 0.2 : 1
   })
 
-  const midY = Math.min(start[1], end[1]) - 2
-  const curve = new THREE.QuadraticBezierCurve3(
-    new THREE.Vector3(...start),
-    new THREE.Vector3((start[0] + end[0]) / 2, midY, (start[2] + end[2]) / 2),
-    new THREE.Vector3(...end)
-  )
-  const points = curve.getPoints(20)
-  const geometry = new THREE.BufferGeometry().setFromPoints(points)
-
-  return (
-    <line ref={lineRef as any} geometry={geometry}>
-      <lineBasicMaterial color={phase === "responding" ? "#EF4444" : "#374151"} linewidth={2} />
-    </line>
-  )
+  return <primitive object={line} />
 }
 
 // Animated cooling tower steam

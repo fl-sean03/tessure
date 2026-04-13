@@ -7,11 +7,36 @@ import { Html } from "@react-three/drei"
 import { useScenarioStore } from "@/lib/scenario-store"
 import * as THREE from "three"
 
+type Vec3 = [number, number, number]
+type DeviceClickHandler = (deviceName: string) => void
+
 type SensorProps = {
-  position: [number, number, number]
-  onDeviceClick?: (deviceName: string) => void
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
   id: string
   isDetecting?: boolean
+}
+
+type CameraProps = {
+  position: Vec3
+  rotation: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+  isTracking?: boolean
+}
+
+type UAVProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
+  type: "rapid-response" | "patrol"
+  isDispatched?: boolean
+}
+
+type RadarProps = {
+  position: Vec3
+  onDeviceClick?: DeviceClickHandler
+  id: string
 }
 
 // Animated detection ring component
@@ -27,7 +52,8 @@ function DetectionRing({ active, color = "#F59E0B" }: { active: boolean; color?:
         return newScale > 3 ? 0.1 : newScale
       })
       ringRef.current.scale.setScalar(scale)
-      ringRef.current.material.opacity = Math.max(0, 1 - scale / 3)
+      const mat = ringRef.current.material as THREE.MeshBasicMaterial
+      mat.opacity = Math.max(0, 1 - scale / 3)
     }
   })
 
@@ -59,7 +85,7 @@ function RadarSweep({ active }: { active: boolean }) {
   )
 }
 
-export function Camera({ position, rotation, onDeviceClick, id, isTracking }: any) {
+export function Camera({ position, rotation, onDeviceClick, id, isTracking }: CameraProps) {
   const groupRef = useRef<Group>(null)
   const beamRef = useRef<Mesh>(null)
   const [hovered, setHovered] = useState(false)
@@ -114,8 +140,8 @@ export function Camera({ position, rotation, onDeviceClick, id, isTracking }: an
       </mesh>
 
       {/* Camera lens housing */}
-      <mesh position={[0, 0, 0.25]} castShadow>
-        <cylinderGeometry args={[0.1, 0.12, 0.15, 16]} rotation={[Math.PI / 2, 0, 0]} />
+      <mesh position={[0, 0, 0.25]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.12, 0.15, 16]} />
         <meshStandardMaterial color="#1a1a1a" metalness={0.95} roughness={0.05} />
       </mesh>
 
@@ -165,7 +191,7 @@ export function Camera({ position, rotation, onDeviceClick, id, isTracking }: an
   )
 }
 
-export function UAV({ position, onDeviceClick, id, type, isDispatched }: any) {
+export function UAV({ position, onDeviceClick, id, type, isDispatched }: UAVProps) {
   const groupRef = useRef<Group>(null)
   const rotorsRef = useRef<Group[]>([])
   const [hovered, setHovered] = useState(false)
@@ -456,7 +482,7 @@ export function Sensor({ position, onDeviceClick, id, isDetecting }: SensorProps
   )
 }
 
-export function Radar({ position, onDeviceClick, id }: any) {
+export function Radar({ position, onDeviceClick, id }: RadarProps) {
   const dishRef = useRef<Group>(null)
   const sweepRef = useRef<Mesh>(null)
   const [hovered, setHovered] = useState(false)
