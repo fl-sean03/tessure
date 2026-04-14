@@ -7,12 +7,12 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="relative mx-auto max-w-3xl px-6 py-20 text-[#0f172a]">
-      <Link href="/" className="text-sm font-medium text-[#1e40af] hover:text-[#1e3a8a]">
+    <main className="relative mx-auto max-w-3xl px-6 py-20 text-[#0b1220] font-sans">
+      <Link href="/" className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#1e40af] hover:text-[#1e3a8a]">
         ← Back to Tessure
       </Link>
-      <h1 className="mt-8 text-4xl font-semibold tracking-tight">Terms of Use</h1>
-      <p className="mt-3 text-sm text-[#64748b]">Last updated: April 14, 2026</p>
+      <h1 className="font-display mt-8 text-5xl font-semibold tracking-tight">Terms of Use</h1>
+      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-[#64748b]">Last updated · April 14 2026</p>
 
       <div className="prose prose-slate mt-10 max-w-none text-[#475569]">
         <p>

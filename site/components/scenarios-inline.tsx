@@ -17,37 +17,37 @@ const scenarios: Scenario[] = [
   {
     id: "critical-infrastructure",
     name: "Critical infrastructure",
-    blurb: "Power substations, pipelines, water. NERC CIP-014 and TSA SD02F aligned.",
+    blurb: "Power, pipelines, water · NERC CIP-014 · TSA SD02F",
     image: "/renders/hero/R1-1-substation-dusk.jpg",
   },
   {
     id: "data-center",
     name: "Data center",
-    blurb: "Hyperscale and colo campuses. Vehicle-ram + tailgating + cyber-physical correlation.",
+    blurb: "Hyperscale + colo · vehicle-ram · cyber-physical",
     image: "/renders/hero/R1-2-data-center-aisle.jpg",
   },
   {
     id: "logistics-yard",
     name: "Logistics yard",
-    blurb: "Prologis-tenant industrial and intermodal. After-hours fence + cargo verification.",
+    blurb: "Prologis-tenant · cargo + insider",
     image: "/renders/hero/R1-3-logistics-yard-dawn.jpg",
   },
   {
     id: "private-estate",
     name: "Private estate",
-    blurb: "High-value residences. Insurance-driven; discreet; privacy-first.",
+    blurb: "Insurance-driven · discreet · privacy-first",
     image: "/renders/editorial/private-estate-night.jpg",
   },
   {
     id: "resort-marina",
     name: "Resort & marina",
-    blurb: "Coastal properties. Waterborne intrusion + UAS surveillance.",
+    blurb: "Waterborne · UAS · guest-privacy",
     image: "/renders/editorial/marina-dusk.jpg",
   },
   {
     id: "event-overlay",
     name: "Event overlay",
-    blurb: "Temporary deploy. Crowd-density management; VIP perimeter; drone detection.",
+    blurb: "Temporary deploy · crowd · perimeter · UAS",
     image: "/renders/editorial/event-venue-evening.jpg",
   },
 ]
@@ -64,29 +64,27 @@ export default function ScenariosInline() {
   }
 
   return (
-    <section id="scenarios" className="bg-white py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex items-end justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">Scenarios</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
-              Six site archetypes. One fusion engine.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-[#475569]">
-              Pick a scenario to load into the live simulation below. Each walks the detect →
-              verify → act loop end-to-end, with realistic sensor placement and the SOP response
-              a verified event triggers.
+    <section id="scenarios" className="border-b border-[#D4D9DE] bg-white">
+      <div className="mx-auto max-w-[1280px] px-6 py-24">
+        <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1e40af]">
+              § 05 · Scenarios
             </p>
+            <h2 className="font-display mt-4 text-4xl font-semibold leading-[1.05] tracking-tight text-[#0b1220] md:text-5xl">
+              Six site archetypes.
+              <br />
+              One fusion engine.
+            </h2>
           </div>
-          <a
-            href="#live-simulation"
-            className="hidden items-center gap-1 text-sm font-medium text-[#1e40af] hover:text-[#1e3a8a] md:inline-flex"
-          >
-            Jump to simulation →
-          </a>
+          <p className="text-[15px] leading-[1.7] text-[#334155]">
+            Pick a scenario to load into the simulation below. Each walks the detect → verify →
+            act loop end-to-end, with realistic sensor placement and the SOP response a verified
+            event triggers. The simulation updates in-page when a card is selected.
+          </p>
         </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-2 gap-px border border-[#D4D9DE] bg-[#D4D9DE] md:grid-cols-3">
           {scenarios.map((s) => {
             const active = currentScenario === s.id
             return (
@@ -94,33 +92,38 @@ export default function ScenariosInline() {
                 key={s.id}
                 onClick={() => handleCardClick(s.id)}
                 aria-pressed={active}
-                className={`group overflow-hidden rounded-xl border text-left transition focus:outline-none focus:ring-2 focus:ring-[#1e40af] focus:ring-offset-2 ${
-                  active
-                    ? "border-[#1e40af] bg-white shadow-md ring-1 ring-[#1e40af]/30"
-                    : "border-[#e2e8f0] bg-[#f8fafc] hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
+                className={`group relative overflow-hidden bg-white text-left transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#1e40af] ${
+                  active ? "ring-2 ring-inset ring-[#1e40af]" : "hover:bg-[#EEF1F5]"
                 }`}
               >
-                <div className="relative aspect-[16/9] overflow-hidden">
+                <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
                     src={s.image}
                     alt={s.name}
                     fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition group-hover:scale-[1.02]"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover transition duration-700 group-hover:scale-[1.03]"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1220]/60 via-transparent to-transparent" />
                   {active && (
-                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#1e40af] px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white shadow">
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 bg-[#B8532B] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-white">
                       <span className="h-1.5 w-1.5 rounded-full bg-white" />
                       Active
                     </span>
                   )}
                 </div>
-                <div className="p-6">
-                  <h3 className="text-base font-semibold text-[#0f172a]">{s.name}</h3>
-                  <p className="mt-1 text-sm text-[#475569]">{s.blurb}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#1e40af] group-hover:text-[#1e3a8a]">
-                    {active ? "Loaded below" : "Load into simulation"} →
-                  </span>
+                <div className="grid grid-cols-[2rem_1fr] gap-3 px-5 py-5">
+                  <div className="font-mono text-[10px] tracking-[0.1em] text-[#94A3B8]">
+                    {String(scenarios.findIndex((x) => x.id === s.id) + 1).padStart(2, "0")}
+                  </div>
+                  <div>
+                    <div className="font-display text-[18px] font-semibold leading-tight tracking-tight text-[#0b1220]">
+                      {s.name}
+                    </div>
+                    <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#64748B]">
+                      {s.blurb}
+                    </div>
+                  </div>
                 </div>
               </button>
             )
@@ -128,7 +131,11 @@ export default function ScenariosInline() {
         </div>
 
         <div id="live-simulation" className="mt-16 scroll-mt-20">
-          <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-4 md:p-6">
+          <div className="border border-[#D4D9DE] bg-[#EEF1F5]">
+            <div className="flex items-center justify-between border-b border-[#D4D9DE] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-[#64748B]">
+              <span>Live simulation · drag · scroll · click sensors</span>
+              <span className="hidden text-[#0b1220] md:inline">Scenario loaded above</span>
+            </div>
             <DefenseDemo />
             <ScenarioExplanation />
           </div>

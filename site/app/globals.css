@@ -3,21 +3,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Updated color tokens for professional light defense tech aesthetic */
+/* v3 palette — cooler, more technical. Paper ground, deep-slate anchors, Trust Blue used sparingly. */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #EEF1F5;
+  --foreground: #0b1220;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #0b1220;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #0b1220;
   --primary: #1e40af;
   --primary-foreground: #ffffff;
-  --secondary: #64748b;
+  --secondary: #475569;
   --secondary-foreground: #ffffff;
-  --muted: #f1f5f9;
+  --muted: #E2E7EC;
   --muted-foreground: #64748b;
-  --accent: #3b82f6;
+  --accent: #B8532B;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
@@ -76,8 +76,9 @@
 }
 
 @theme inline {
-  --font-sans: "Inter", "Geist", "Geist Fallback", ui-sans-serif, system-ui;
-  --font-mono: "IBM Plex Mono", "Geist Mono", "Geist Mono Fallback", monospace;
+  --font-sans: var(--font-plex-sans), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-plex-display), var(--font-plex-sans), "IBM Plex Sans Condensed", sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
