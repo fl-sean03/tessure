@@ -1,74 +1,41 @@
-# Tessure
+# Tessure — Data Room
 
-Marketing and product demo site for **Tessure Systems** — an autonomous security fusion platform that detects threats across video, thermal, and radar, verifies them, and orchestrates human-in-the-loop response.
+Playbook-run project root for **Tessure Systems** — autonomous security fusion platform for high-risk fixed facilities.
 
-Tagline: *Trusted Autonomous Security.*
+This directory follows the `idea-to-site-playbook.md` structure. The deployable site is isolated in `site/`; everything else is strategy, research, brand, and spec work.
 
-## Stack
+## Layout
 
-- Next.js 15 (App Router, React 19)
-- TypeScript 5 (`strict: true`)
-- Tailwind CSS 4 + shadcn/ui + Radix primitives
-- Three.js via `@react-three/fiber` and `@react-three/drei`
-- Zustand for scenario state
+```
+tessure/
+├─ site/         # Next.js 15 + R3F marketing site (deploys to Vercel)
+├─ docs/         # Phase 1 strategic data room (business, GTM, risks, ops)
+├─ research/     # Phase 2 market + Phase 4 design research
+├─ specs/        # Technical / product architecture specs
+├─ brand/        # Brand system, palette, typography, messaging
+├─ SESSION_LOG.md  # Chronological run log (playbook spine)
+├─ SETUP.md        # API keys, budget cap, gotchas
+└─ README.md       # this file
+```
 
-## Local development
+## Run artifacts
 
-This project uses [Bun](https://bun.sh) as the package manager. The lockfile is `bun.lock`.
+- **Concept brief + budget/time caps:** `SESSION_LOG.md`
+- **API key inventory:** `SETUP.md`
+- **Brand system v1.1 (light theme):** `brand/PublicBrandSystem_v1.1.md`
+- **Live site:** https://v0-tessure.vercel.app
+- **Repo:** https://github.com/fl-sean03/tessure
+
+## Site development
 
 ```bash
+cd site
 bun install
-bun dev
+bun dev    # http://localhost:3000
 ```
 
-Dev server runs on http://localhost:3000.
+See `site/README.md` for site-specific instructions.
 
-Other scripts:
+## Status
 
-```bash
-bun run build   # production build (TS errors fail the build)
-bun run start   # serve the production build
-bun run lint    # eslint
-```
-
-## Deployment
-
-Vercel is linked to this repo; pushes to `main` auto-deploy. The `v0-tessure` Vercel project points at `github.com/fl-sean03/tessure`.
-
-v0 can continue to push updates — they'll flow through GitHub → Vercel.
-
-## Project layout
-
-```
-app/            # App Router: layout, page, error boundary, 404
-components/
-  ├─ scenes/           # Per-scenario Three.js scenes (6 scenarios)
-  ├─ shared/           # Reusable sensor models (Camera, UAV, Radar, Sensor)
-  ├─ ui/               # shadcn/ui primitives
-  └─ defense-*.tsx     # Hero demo, HUD, scenario selector, explanation
-lib/            # Zustand store + scenario config
-public/         # Icons, logos, placeholder assets
-PublicBrandSystem_Updated.txt   # Brand guidelines
-```
-
-## Scenarios
-
-Six demo scenarios live under `components/scenes/`:
-
-- Private estate (perimeter intrusion)
-- Data center
-- Resort / marina
-- Event overlay (crowd management)
-- Logistics yard
-- Critical infrastructure (power / water)
-
-Each scene reads from `useScenarioStore()` for phase (idle → detected → verifying → verified → responding), tracked cameras, dispatched drones, and intruder position.
-
-## Brand
-
-See `PublicBrandSystem_Updated.txt` for the full brand system (palette, typography, voice, messaging tiers). Core palette:
-
-- Trust Blue `#1E40AF`
-- Safety Amber `#F59E0B`
-- Background `#0A0F1C`
-- Typography: Inter
+**Archived concept (Mar 2026).** Sean ran this through the idea-to-site playbook, built the demo + brand system, and decided not to pursue. Thesis is public for anyone working in physical security / critical-infrastructure defense. See `seanflorez.com/archive/tessure/`.
