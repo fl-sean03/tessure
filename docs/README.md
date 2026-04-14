@@ -1,0 +1,38 @@
+# docs/ — Strategic Data Room
+
+Phase 1 output from the idea-to-site playbook run. Each doc answers one strategic question; `README.md` is the index.
+
+## Order to read for first-time review
+
+1. **[STARTUP_BRIEF.md](STARTUP_BRIEF.md)** — problem, insight, wedge, why now. The thesis in ~1500 words.
+2. **[CUSTOMER_SEGMENTS.md](CUSTOMER_SEGMENTS.md)** — five buyer profiles with triggers and language.
+3. **[COMPETITIVE_LANDSCAPE.md](COMPETITIVE_LANDSCAPE.md)** — incumbents, AI-video pure-plays, sensor specialists, defense-tech adjacencies. White-space thesis.
+4. **[BUSINESS_MODEL.md](BUSINESS_MODEL.md)** — pricing tiers, unit economics, expansion.
+5. **[GO_TO_MARKET.md](GO_TO_MARKET.md)** — three channels, sales motion, metrics.
+6. **[RISK_ANALYSIS.md](RISK_ANALYSIS.md)** — top 12 risks, scored, with mitigations.
+7. **[OPERATIONS_AND_COSTS.md](OPERATIONS_AND_COSTS.md)** — team plan, Year-1 burn, TAM/SAM/SOM.
+8. **[BRAND_THESIS.md](BRAND_THESIS.md)** — voice, the category's visual traps, brand voice tests.
+9. **[PITCH_DECK_OUTLINE.md](PITCH_DECK_OUTLINE.md)** — 14-slide investor narrative.
+
+Related:
+- `../specs/PRODUCT_ARCHITECTURE.md` — system architecture (hardware, fusion engine, evidence pipeline, integrations).
+- `../brand/PublicBrandSystem_v1.1.md` — complete brand system (palette, typography, voice, hardware labeling).
+- `../research/` — Phase 2 market validation + Phase 4 design research (in progress).
+- `../SESSION_LOG.md` — chronological run log.
+
+## Why this structure
+
+- **Split by question, not by audience.** Each doc answers one question well. An investor reads STARTUP_BRIEF + PITCH_DECK_OUTLINE. A new hire reads STARTUP_BRIEF + CUSTOMER_SEGMENTS + PRODUCT_ARCHITECTURE. A potential partner reads GO_TO_MARKET + COMPETITIVE_LANDSCAPE. The structure serves reading order, not authorship order.
+
+- **Product architecture lives in specs/, not docs/.** `specs/` is for engineering artifacts; `docs/` is for strategic narrative. Different life-cycles.
+
+- **Brand system lives in brand/, brand thesis lives in docs/.** The system is the guardrails; the thesis is why those guardrails exist. Different audiences.
+
+- **No pitch deck itself, just the outline.** Decks are rendered from this content via Gamma or manually in Keynote; the narrative structure is what's version-controlled.
+
+## Gaps / TODOs
+
+- **Phase 2 validation.** Citations and external evidence checks on claims in these docs. Tracked in `../research/`.
+- **Customer interview transcripts.** Playbook Appendix B extension; run 5–10 interviews before Phase 8.
+- **Technical white paper.** Architecture + evidence + privacy posture, publication-quality. Dependency of GTM channel 3 (insurance).
+- **Financial model spreadsheet.** Unit economics + 3-year P&L + scenario sensitivity. Export to investors.
