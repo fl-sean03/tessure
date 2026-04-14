@@ -193,3 +193,41 @@ Files: docs/TOOLING.md, docs/README.md (index updated)
 Cost this phase: $0 (Claude inference only; health checks free)
 
 Next: Phase 5 (Site v1) — current v0-tessure.vercel.app is the v1 placeholder. Phase 5 = critique against Phase 3 blueprint + capture v1 findings that drive Phase 7 rebuild.
+
+## 2026-04-14T02:30Z: Phase 5 (Site v1) complete
+
+What: new scaffold live at v0-tessure.vercel.app matching Phase 3 blueprint. Three.js demo moved to /demo (still 300KB with canvas). Home is 165B inline JS (static scaffold).
+
+Build: clean, 5.0s compile. Deployment dpl_FEjVEooXtHfR4D7ZhYZztTEHkRJc READY.
+HTTP: / = 200, /demo = 200.
+
+**v1 critique (load-bearing — drives Phase 6/7):**
+
+What's right:
+- Hero is declarative text + 2 CTAs + stat strip. No Three.js in the hero. Matches Phase 3 directive.
+- Scenarios moved to /demo route. Brand-thesis directive met.
+- 5-stage evidence pipeline is physically present as a section (Tessure's signature move). Stripe/Linear-pattern compliance.
+- Proof rail exists with real stats (94-99% FP, <5% target, $725M cargo theft, 3,500 E-ISAC incidents) sourced from Pass 2 research.
+- Civilian-enterprise voice throughout ("VP Security, not the warfighter" dark panel makes the positioning explicit).
+- Cert badges placeholder is honest ("SOC 2 pending", "planned") — doesn't claim credentials we don't have.
+- Footer names Tessure Systems, Inc. legal entity from Phase 2.
+
+What's obviously placeholder (Phase 6 fills in):
+1. Hero visual — currently a radar-icon-in-gradient-panel placeholder. Needs FLUX 2 Max infrastructure-editorial render (substation at dusk / data-center aisle / logistics yard in fog).
+2. Pilot logo row — 6 dashed rectangles. Stays placeholder until pilots sign NDAs allowing logo use (Phase 9 or later).
+3. Evidence-pipeline section — 5 boxes with chevrons. Needs hand-built SVG diagram (signature asset).
+4. Scenario thumbnails — 6 gradient rectangles. Option A: Playwright screenshot each Three.js scene in its verified-phase state. Option B: FLUX 2 Max illustrative environment shots.
+5. Full-bleed civilian-enterprise panel — currently dark-navy with grid pattern. Needs editorial infrastructure photo with subtle Trust-Blue overlay.
+6. Cert badges — text chips. Phase 9 swaps in official SVG marks (SOC 2, ISO, UL, FCC, CE) once certs are earned/ordered.
+7. Fusion Node product render — not currently featured in v1 hero. Phase 6 could add as a visual anchor in the platform-module section or as a secondary hero image.
+
+Copy quality: first-pass solid. "Verified response, not false alarms." is tight; "Five modules. One verified event stream. Your existing stack intact." is on-voice. Phase 7 pass can tighten further once assets are in place.
+
+Mobile: breakpoints (md:) set, not physically tested in browser. Phase 7 includes explicit mobile audit.
+
+Kill-switches not fired: no persistent build failures, Vercel deploy is clean (200 on home + /demo).
+
+Files: site/app/page.tsx (full rewrite, scaffold), site/app/demo/page.tsx (new, Three.js demo moved here), site/app/layout.tsx (removed v0 badge + added proper metadata)
+Cost this phase: $0 (no asset generation; Vercel Hobby)
+
+Next: Phase 6 (Asset Iteration). Hero shot + Fusion Node render + evidence-pipeline SVG + infrastructure editorial set + scenario thumbnails. Budget ~$2 for Phase 6 image generation.
