@@ -373,6 +373,29 @@ function EvidencePipelineDiagram() {
         {/* Horizontal flow line */}
         <line x1="100" y1="160" x2="1020" y2="160" stroke="url(#flowLine)" strokeWidth="2" />
 
+        {/* Animated flow dot — respects prefers-reduced-motion via CSS */}
+        <circle r="4" fill="#1e40af" className="motion-reduce:hidden">
+          <animate
+            attributeName="cx"
+            values="100;1020"
+            dur="5s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="cy"
+            values="160"
+            dur="5s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="opacity"
+            values="0;1;1;0"
+            keyTimes="0;0.1;0.9;1"
+            dur="5s"
+            repeatCount="indefinite"
+          />
+        </circle>
+
         {/* Tick markers on flow line */}
         {stages.map((_, i) => {
           const x = 100 + i * 230

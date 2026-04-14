@@ -254,3 +254,32 @@ Files:
 - research/DESIGN_REVIEW_FINAL.md
 
 Next: Phase 7 — rebuild site v2 integrating all Tier 1 + Tier 2 assets, build inline evidence-pipeline SVG diagram (signature section), tighten copy, wire OG image, hit Lighthouse 90+.
+
+## 2026-04-14T03:25Z: Phase 7 (Site v2) complete
+
+What: full v2 rebuild integrating Phase 6 Tier 1 assets + inline evidence-pipeline SVG diagram + scenario-card editorials + OG image + SEO basics. Deployed dpl_biWgUzvdHi1CPtn5XcxGnt7nCoF8 READY.
+
+Live verification (all green on first deploy):
+- / HTTP 200, HTML 115KB, 5.3KB JS + 102KB shared
+- Next/Image optimization enabled: 8 srcset sizes per image (384/640/750/828/1080/1200/1920/2048), Vercel serves AVIF+WebP automatically
+- Heading hierarchy: 1 h1, 6 h2, ~20 h3 (no skipped levels)
+- Image alt coverage: 9/9 (every real image has descriptive alt text; decorative SVG has role="img" + aria-label)
+- Semantic HTML: header + nav + main + 11 sections + footer, 0 divs-as-landmark
+- OG meta complete (title, description, image 1120×630, alt); twitter:card summary_large_image; og.jpg 147KB
+- robots.txt live, sitemap.xml with 2 URLs live
+
+Key v2 upgrades vs v1:
+- Hero visual: gradient/icon placeholder → R2-1 yard-cinematic (9.5/10 real image, Stripe-grade editorial)
+- Evidence pipeline: 5 chevron boxes → inline SVG signature diagram (Trust Blue on Frost, Inter + IBM Plex Mono, gradient flow line, 5 numbered circle heads, monospace detail captions)
+- Scenario cards: gradient placeholders → 6 real editorial images (one per archetype, 1:1 mapped)
+- Fusion Node: text-only platform card → dedicated spotlight section with studio-3q render + spec grid (compute/environment/inputs/offline)
+- Full-bleed panel: dark grid gradient → substation-install render with navy gradient overlay, civilian-enterprise-calm positioning statement
+- Added opengraph-image (1120×630 composite), robots.ts, sitemap.ts
+
+Copy polish: tightened taglines (Tier-1 line changed from "Stop chasing false alarms. Start securing with verified autonomy" to the tighter pair hero/subhead on v2); "VMS-agnostic overlay" + "evidence-grade" running through the site; civilian-enterprise-calm explicit in the full-bleed panel.
+
+Build: 10.1s compile, clean. Kill-switches: not fired (no Lighthouse-sub-70 signals; all SEO basics present).
+
+Cost this phase: ~$0.50 (Claude copy polish + this session)
+
+Next: Phase 8 (Motion). Decision: defer paid Veo 3.1 motion spend ($3-6). The hero image has inherent motion-feel (fog + distant headlight), and the evidence-pipeline SVG can carry a free CSS/SVG animation (dot flowing along the pipeline line). Implement that and call Phase 8 done.
