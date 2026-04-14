@@ -302,3 +302,76 @@ Build: clean (no regression in bundle size; / still 5.3 KB JS)
 Cumulative Phase-0→8 cost estimate: ~$10 of $25 cap (40%)
 
 Next: Phase 9 (Launch Mechanics) — analytics decision, waitlist/email form decision, PP/ToS stubs, social handle status, launch narrative, UTMs if applicable, robots/sitemap verification (already done).
+
+## 2026-04-14T03:55Z: Phase 9 (Launch Mechanics) complete — PLAYBOOK DONE
+
+What: archived-project-scoped launch mechanics. Minimal legal pages + launch narrative + sitemap extension. No analytics, no waitlist, no PH/HN drafts — all three explicitly out-of-scope for an archived concept and documented as such in LAUNCH_NARRATIVE.md.
+
+Deployment dpl_9hxVjoRLTgS5dgjL6Lu856qfePtZ READY. All 7 routes 200:
+- / → 200 (v2 home)
+- /demo → 200 (Three.js scenarios)
+- /privacy → 200 (no-analytics, no-trackers disclosure)
+- /terms → 200 (public thesis, no warranty)
+- /robots.txt → 200 (allow all, sitemap reference)
+- /sitemap.xml → 200 (4 URLs)
+- /og.jpg → 200 (1120×630 composite)
+
+Files:
+- site/app/privacy/page.tsx (new)
+- site/app/terms/page.tsx (new)
+- site/app/sitemap.ts (extended to include privacy + terms)
+- site/app/page.tsx (footer links to privacy/terms)
+- docs/LAUNCH_NARRATIVE.md (new)
+- docs/README.md (index updated)
+
+Launch narrative includes: 30-sec pitch; 3 talking points (civilian-enterprise white space; hardware-is-commodity brand-is-moat; silence-not-dramatics); 5-Q FAQ; ready-to-post LinkedIn (400 char) + X (280 char) copy; UTMs; explicit NOT-doing list.
+
+Kill-switches: none fired (coherent launch copy assembled from Phase 1 docs without strain — positioning IS clear post-Pass-2).
+
+---
+
+## FINAL RECONCILIATION — Playbook run 2026-04-14
+
+Duration: ~4 hours elapsed (Phase 0 start 00:00Z, Phase 9 complete 03:55Z)
+
+**Phases completed**:
+- 0 Provision (repo restructured, Vercel rootDir=site/, keys inventoried)
+- 1 Thesis+Research Loop (Pass 1 draft → Pass 2 deep research → Pass 3 stability check; 4 research agents)
+- 2 Brand/Naming/Domain/Handles (Tessure retained; tessuresystems.com primary; tessure.ai strategic; GitHub org reserved as TODO)
+- 3 Design Research (Stripe/Linear/CrowdStrike references; evidence-pipeline diagram identified as signature)
+- 4 Tooling & Asset Pipeline (FLUX 2 Max + Imagen 4 + hand-built SVG; API keys health-checked)
+- 5 Site v1 (placeholder scaffold matching blueprint; critique captured)
+- 6 Asset Iteration (15 FLUX renders, 2 rounds, Tier 1 + Tier 2 locked; DESIGN_REVIEW_FINAL.md)
+- 7 Site v2 (real assets + inline evidence-pipeline SVG + SEO + image optimization)
+- 8 Motion (free SVG flow dot on pipeline; no paid clips)
+- 9 Launch Mechanics (privacy + terms + narrative; archived-project scope)
+
+**Budget**:
+- Claude (reasoning + authoring + research agents): ~$8
+- FLUX 2 Max (Phase 6, 15 renders): $1.50
+- Imagen 4 / fal.ai / Veo: $0 (deferred / not used)
+- Vercel: $0 (Hobby)
+- Domain + trademark: $0 in-session ($140/yr + $500-1500 TM search flagged as user-side out-of-band)
+- **Total in-session: ~$9.50 of $25 cap (38%)**
+
+**Kill-switches**: NONE fired across all 9 phases. All checkpoints passed.
+
+**Artifacts produced** (full data room):
+- 12 docs/ files (strategy + naming + tooling + launch narrative + README index)
+- 1 specs/ file (PRODUCT_ARCHITECTURE)
+- 1 brand/ file (PublicBrandSystem_v1.1)
+- 4 research/ files (COMPETITIVE_VALIDATION + MARKET_VALIDATION + DESIGN_RESEARCH + PASS_3_STABILITY)
+- 1 DESIGN_REVIEW_FINAL.md
+- Deployed site at v0-tessure.vercel.app (/, /demo, /privacy, /terms, robots, sitemap, og.jpg)
+- 15 FLUX renders (Tier 1 + Tier 2 asset set)
+- SESSION_LOG.md (this file) end-to-end
+
+**User-side action items** carried forward:
+1. Register tessuresystems.com + tessure.ai (and optionally tessure.io / .security) via Spaceship (~$140/yr)
+2. Reserve GitHub org `tessure` (currently free, high priority)
+3. Reserve LinkedIn /company/tessure-systems, Instagram @tessuresystems
+4. Backorder tessure.com for Aug 17 2026 expiry (squatter-held)
+5. Formal USPTO trademark search on TESSURE + TESSURE SYSTEMS ($500-1500)
+6. If project ever revived: analyst briefings with Gartner/Forrester/IPVM (Year-1 GTM addition from Pass 3)
+
+**Playbook run status: COMPLETE.**
