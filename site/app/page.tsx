@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import ScenariosInline from "@/components/scenarios-inline"
 import {
   ShieldCheck,
   Zap,
@@ -24,7 +25,7 @@ export default function Home() {
       <PlatformModules />
       <FusionNodeSpotlight />
       <EvidencePipeline />
-      <ScenariosTeaser />
+      <ScenariosInline />
       <ProofRail />
       <InfrastructurePanel />
       <Resources />
@@ -48,9 +49,9 @@ function SiteNav() {
           <a href="#pipeline" className="text-sm text-[#475569] transition hover:text-[#0f172a]">
             Evidence
           </a>
-          <Link href="/demo" className="text-sm text-[#475569] transition hover:text-[#0f172a]">
+          <a href="#scenarios" className="text-sm text-[#475569] transition hover:text-[#0f172a]">
             Scenarios
-          </Link>
+          </a>
           <a href="#resources" className="text-sm text-[#475569] transition hover:text-[#0f172a]">
             Resources
           </a>
@@ -118,7 +119,11 @@ function Hero() {
                 variant="outline"
                 className="border-[#cbd5e1] bg-white text-[#0f172a] hover:bg-[#f1f5f9]"
               >
-                <a href="#resources">
+                <a
+                  href="/whitepapers/tessure-architecture.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Download className="mr-2 h-4 w-4" />
                   Architecture whitepaper
                 </a>
@@ -494,98 +499,6 @@ function EvidencePipeline() {
   )
 }
 
-function ScenariosTeaser() {
-  const scenarios = [
-    {
-      id: "critical-infrastructure",
-      name: "Critical infrastructure",
-      blurb: "Power substations, pipelines, water. NERC CIP-014 and TSA SD02F aligned.",
-      image: "/renders/hero/R1-1-substation-dusk.jpg",
-    },
-    {
-      id: "data-center",
-      name: "Data center",
-      blurb: "Hyperscale and colo campuses. Vehicle-ram + tailgating + cyber-physical correlation.",
-      image: "/renders/hero/R1-2-data-center-aisle.jpg",
-    },
-    {
-      id: "logistics-yard",
-      name: "Logistics yard",
-      blurb: "Prologis-tenant industrial and intermodal. After-hours fence + cargo verification.",
-      image: "/renders/hero/R1-3-logistics-yard-dawn.jpg",
-    },
-    {
-      id: "private-estate",
-      name: "Private estate",
-      blurb: "High-value residences. Insurance-driven; discreet; privacy-first.",
-      image: "/renders/editorial/private-estate-night.jpg",
-    },
-    {
-      id: "resort-marina",
-      name: "Resort & marina",
-      blurb: "Coastal properties. Waterborne intrusion + UAS surveillance.",
-      image: "/renders/editorial/marina-dusk.jpg",
-    },
-    {
-      id: "event-overlay",
-      name: "Event overlay",
-      blurb: "Temporary deploy. Crowd-density management; VIP perimeter; drone detection.",
-      image: "/renders/editorial/event-venue-evening.jpg",
-    },
-  ]
-  return (
-    <section className="bg-white py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex items-end justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">Scenarios</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
-              Six site archetypes. One fusion engine.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-[#475569]">
-              Each scenario walks the detect → verify → act loop for a specific site type, with
-              realistic sensor placement and the SOP response a verified event triggers.
-            </p>
-          </div>
-          <Link
-            href="/demo"
-            className="hidden items-center gap-1 text-sm font-medium text-[#1e40af] hover:text-[#1e3a8a] md:inline-flex"
-          >
-            Open interactive demo
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {scenarios.map((s) => (
-            <Link
-              key={s.id}
-              href="/demo"
-              className="group overflow-hidden rounded-xl border border-[#e2e8f0] bg-[#f8fafc] transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
-            >
-              <div className="relative aspect-[16/9] overflow-hidden">
-                <Image
-                  src={s.image}
-                  alt={s.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover transition group-hover:scale-[1.02]"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-base font-semibold text-[#0f172a]">{s.name}</h3>
-                <p className="mt-1 text-sm text-[#475569]">{s.blurb}</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#1e40af] group-hover:text-[#1e3a8a]">
-                  Open demo <ArrowRight className="h-3 w-3" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function ProofRail() {
   const stats = [
     { value: "94–99%", label: "Industry-measured FP rate on single-modality perimeter" },
@@ -697,34 +610,40 @@ function Resources() {
           </div>
           <div className="flex flex-col gap-4">
             <a
-              href="#contact"
+              href="/whitepapers/tessure-architecture.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
                 <h3 className="text-base font-semibold text-[#0f172a]">
                   Architecture whitepaper (PDF)
                 </h3>
-                <p className="mt-1 text-sm text-[#475569]">15 pages · technical</p>
+                <p className="mt-1 text-sm text-[#475569]">14 pages · technical</p>
               </div>
               <Download className="h-5 w-5 text-[#1e40af]" />
             </a>
             <a
-              href="#contact"
+              href="/whitepapers/tessure-privacy.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
                 <h3 className="text-base font-semibold text-[#0f172a]">Privacy posture brief</h3>
-                <p className="mt-1 text-sm text-[#475569]">6 pages · legal + ops</p>
+                <p className="mt-1 text-sm text-[#475569]">9 pages · legal + ops</p>
               </div>
               <Download className="h-5 w-5 text-[#1e40af]" />
             </a>
             <a
-              href="#contact"
+              href="/whitepapers/tessure-pilot-readiness.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
                 <h3 className="text-base font-semibold text-[#0f172a]">Pilot-readiness checklist</h3>
-                <p className="mt-1 text-sm text-[#475569]">1 page · operations</p>
+                <p className="mt-1 text-sm text-[#475569]">2 pages · operations</p>
               </div>
               <Download className="h-5 w-5 text-[#1e40af]" />
             </a>
@@ -763,7 +682,7 @@ function ClosingCTA() {
             variant="outline"
             className="border-[#cbd5e1] bg-white text-[#0f172a] hover:bg-[#f1f5f9]"
           >
-            <Link href="/demo">See the scenarios</Link>
+            <a href="#scenarios">See the scenarios</a>
           </Button>
         </div>
       </div>
@@ -808,7 +727,7 @@ function SiteFooter() {
             </p>
             <ul className="mt-4 space-y-2 text-sm text-[#475569]">
               <li>
-                <Link href="/demo" className="hover:text-[#0f172a]">Scenarios</Link>
+                <a href="#scenarios" className="hover:text-[#0f172a]">Scenarios</a>
               </li>
               <li>
                 <a href="#resources" className="hover:text-[#0f172a]">Resources</a>
