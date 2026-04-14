@@ -91,6 +91,18 @@ Modest in Year 1. Purpose: give the direct motion air cover + SEO foundation for
 
 **Not** investing in: paid search, paid social, display. Category is high-consideration; ROI won't appear until brand recognition exists.
 
+### Analyst relations (Pass 3 addition)
+
+Pass 3 research surfaced an analyst-coverage gap: no current (2025–2026) Gartner or Forrester **VMS Market Guide** is publicly indexed. The most recent Gartner VMS guide is 2017; Gartner's 2025 Cool Vendors in Cyber-Physical Systems Security is OT-cyber focused, not physical video/perimeter.
+
+**Implication:** Tessure is selling into a category analysts haven't defined in ~8 years. No incumbent frame to fight against — opportunity to shape category language through early analyst briefings. But also no third-party validation to cite in enterprise sales.
+
+**Year-1 actions:**
+- **Month 4–6:** analyst briefings with Gartner, Forrester, Memoori, IHS Markit, and **IPVM** (the most relevant trade analyst for physical security).
+- **Month 6:** publish architecture whitepaper in analyst-readable form.
+- **Month 9–12:** push for inclusion in the next VMS market guide or CPS security market guide revision.
+- Cost: one fractional analyst-relations consultant at ~$3k–5k/mo from Month 4.
+
 ---
 
 ## Key metrics

@@ -15,6 +15,8 @@ Phase 1 output from the idea-to-site playbook run. Each doc answers one strategi
 7. **[OPERATIONS_AND_COSTS.md](OPERATIONS_AND_COSTS.md)** — team plan, Year-1 burn, TAM/SAM/SOM.
 8. **[BRAND_THESIS.md](BRAND_THESIS.md)** — voice, the category's visual traps, brand voice tests.
 9. **[PITCH_DECK_OUTLINE.md](PITCH_DECK_OUTLINE.md)** — 14-slide investor narrative.
+10. **[NAMING.md](NAMING.md)** — Phase 2 output: Tessure candidate exercise, domain/handle availability, registration TODOs.
+11. **[TOOLING.md](TOOLING.md)** — Phase 4 output: asset inventory, model selection, API health, prompt cheat-sheet, Phase 6–8 budget (~$10 of $25 cap).
 
 Related:
 - `../specs/PRODUCT_ARCHITECTURE.md` — system architecture (hardware, fusion engine, evidence pipeline, integrations).

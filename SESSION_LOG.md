@@ -111,3 +111,85 @@ Files modified:
 Cost so far: ~$6 (3 research agents + Claude revision writing)
 
 Next: Pass 3 stability check — one short sweep to confirm revised thesis holds against any additional findings. If two passes in a row produce no material change, Phase 1 locks.
+
+## 2026-04-14T01:40Z: Phase 1 Pass 3 stability check complete
+
+**Verdict: STABLE. Phase 1 locks.**
+
+Pass 3 agent (research/PASS_3_STABILITY.md, 13 tool calls, ~2.5 min runtime) ran three targeted checks:
+1. Gap competitors — found 3 worth noting (Siemens Siveillance Control Pro as closest incumbent to Tessure's overlay thesis; Bosch IVA Pro Perimeter as camera-side incumbent; Sentitech/Domus Sentinela as European fusion-native startup). None thesis-breaking.
+2. Positioning soundness — no buyer-preference evidence for defense-tech branding found; top physical-security vendors (JCI, Bosch, Honeywell, ADT, Cisco) all wear civilian-enterprise-calm aesthetics; Anduril's commercial footprint is still defense-primary, no named enterprise-data-center Lattice deployments surfaced. Civilian-enterprise thesis strengthened.
+3. 60-day news — Anduril's $20B Army contract (Mar 14 2026) reinforces defense-primary gravity well (strengthens Tessure split); Verkada's $5.8B CapitalG round + AI Deterrence launch track as expected; Securitas×Ambient partnership extends Ambient's channel but not modality; Safer Skies Act Dec 2025 spillover watch-item. No regulation forces revision.
+4. Bonus finding — no recent Gartner/Forrester VMS Market Guide (2017 is latest). Analyst coverage gap = GTM opportunity + action item.
+
+Integrated as light-touch edits:
+- docs/COMPETITIVE_LANDSCAPE.md: elevated Siemens Siveillance to named incumbent; added Bosch IVA Pro; added Sentitech + D3 Embedded; added 60-day news block; added analyst-gap strategic note
+- docs/GO_TO_MARKET.md: added "Analyst relations" sub-section with Year-1 action plan
+
+No Phase 1 rework. Two consecutive passes (Pass 2 revision + Pass 3 stability) produced no thesis-level change. **Phase 1 is locked.**
+
+Phase 1 total duration: ~2h (Pass 1 ~30 min drafting; Pass 2 ~25 min research + 30 min revision; Pass 3 ~3 min research + 15 min integration).
+
+Cost so far: ~$7 (Claude inference for 4 research agents + doc authoring + revisions).
+
+Next: Phase 2 — Brand, Naming, Handles, Domain. Tessure name is pre-existing; exercise will validate against playbook criteria + top-2 domain/handle reservations.
+
+## 2026-04-14T01:55Z: Phase 2 complete
+
+What: Phase 2 (Brand/Naming/Handles/Domain) run against Tessure as incumbent name. Tessure retained as primary per playbook criteria; no viable alternative surfaced that beats existing brand equity + research-validated positioning.
+
+Key findings:
+- tessure.com TAKEN (squatted since 2020-08, parked, expires Aug 2026 — backorder recommended)
+- tessuresystems.com AVAILABLE → **primary domain** (matches brand-doc legal entity convention)
+- tessure.ai AVAILABLE → **strategic AI-category acquisition**
+- tessure.io / .co / .app / .dev / .net / .security AVAILABLE
+- GitHub org `tessure` AVAILABLE → **high priority reserve**
+- LinkedIn /company/tessure TAKEN (unrelated); /company/tessure-systems AVAILABLE
+- Instagram @tessure TAKEN (dormant); @tessuresystems AVAILABLE
+- X/Product Hunt: inconclusive via scraping, TODO manual check
+- USPTO/Trademarkia rate-limited; preliminary scan clean, formal IP counsel search flagged as TODO
+- Corvent is the one viable backup name (corvent.ai available, corvent.com taken) — Tier-1 fallback if TM conflict surfaces
+
+Kill-switch: not fired. tessuresystems.com is a clean alternative to tessure.com; no incumbent TM conflict at preliminary depth.
+
+Files: docs/NAMING.md, docs/README.md (index updated)
+Cost: $0 (all API checks via free RDAP + public HTTP)
+Action items logged (user-actionable): register 4 domains (~$140/yr), reserve 5 social handles, engage IP counsel for formal TM search ($500-1500).
+
+Next: Phase 3 (Design Research) — already complete; research/DESIGN_RESEARCH.md locked during Phase 1 parallel run. Integrate into Phase 4 tooling plan.
+
+## 2026-04-14T02:05Z: Phase 3 (Design Research) — marked complete
+
+Phase 3 was executed in parallel with Phase 1 Pass 2 research. Output at research/DESIGN_RESEARCH.md: 10 reference sites analyzed, Stripe/Linear/CrowdStrike chosen as top-3 to imitate, Ambient.ai's dark-tactical aesthetic explicitly rejected, evidence-pipeline diagram identified as Tessure's signature move (Stripe's wave / Linear's app mockup equivalent). Layout blueprint locked; palette extension to existing brand system documented.
+
+Kill-switch: not fired (design references do NOT share one pattern; the spread is intentional).
+
+## 2026-04-14T02:10Z: Phase 4 (Tooling & Asset Pipeline) complete
+
+What: asset inventory + model selection + API health + prompt cheat-sheet + Phase 6–8 budget estimate.
+
+API health (all green):
+- BFL (FLUX 2 Max / Kontext): ✓ via auth probe
+- Google AI (Gemini 2.5 / Imagen 4 / Veo 3.1 preview): ✓ — 50 models visible including imagen-4.0-{standard,ultra,fast} and veo-3.1-{generate,fast,lite}-preview
+- fal.ai: ✓
+- Vercel: ✓ (rootDir=site/ already set)
+- Spaceship, Runway, Gamma: keys present, not exercised this session
+
+Asset plan (~34 image generations over Phase 6):
+- Hero infrastructure shot (FLUX 2 Max, 10 iterations): ~$0.60
+- Fusion Node product render (FLUX 2 Max, 10 iterations): ~$0.60
+- Secondary infra editorial (FLUX 2 Max + Imagen 4 variety): ~$0.66
+- Evidence-pipeline diagram (hand-built SVG): $0
+- Platform-module icons (hand-built SVG): $0
+- Scenario screenshots (Playwright captures from existing /demo): $0
+
+Phase 6–8 budget estimate: **~$10.00**. In-session total projection: **~$18 / $25 cap (72%)**. Well within.
+
+Tessure-specific prompt cheat-sheet documented (anti-AI-slop + anti-defense-tech-pastiche guardrails, enterprise-infrastructure tonal guidance, FLUX-specific failure modes per scenario type).
+
+Kill-switches: not fired (asset budget under cap; all keys present + working).
+
+Files: docs/TOOLING.md, docs/README.md (index updated)
+Cost this phase: $0 (Claude inference only; health checks free)
+
+Next: Phase 5 (Site v1) — current v0-tessure.vercel.app is the v1 placeholder. Phase 5 = critique against Phase 3 blueprint + capture v1 findings that drive Phase 7 rebuild.

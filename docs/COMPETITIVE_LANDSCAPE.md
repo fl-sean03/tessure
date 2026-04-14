@@ -14,8 +14,10 @@ The category leaders on the workflow layer. Strong channel, deep customer entren
 | **Milestone Systems** | DK / Canon-owned | Subsidiary, ~$290M rev | Same — Tessure overlays. XProtect API is well-documented. |
 | **Axis Communications** | Sweden / Canon-owned | ~$2.3B rev | Camera OEM + ACAP analytics. Single-modality; doesn't fuse radar natively. |
 | **Avigilon** | Motorola Solutions | Acquired 2018 ($1B) | Cloud-leaning; Motorola's mass-notification angle. Overlaps on "verified alarm" but is camera-centric. |
+| **Siemens Siveillance Control Pro** | Siemens Smart Infrastructure | Division of Siemens | **Closest incumbent to Tessure's overlay+fusion story.** Integrates access + video + intrusion + perimeter + fire into one platform with "automated workflows and intelligent dispatch." Targets critical-infra buyers. Deep channel. Real field presence (CVE-2025-1688 / ICSA-25-140-05; ICSA-26-043-07 confirm production use). **Tessure's wedge vs. Siveillance:** Siemens sells it as a bundle through Siemens building-tech channels to Siemens-shop buyers; Tessure is software-first overlay for existing mixed-vendor VMS estates. |
+| **Bosch IVA Pro Perimeter** | Bosch Building Technologies (launched ISC West 2025) | Subsidiary | AI object detectors + motion analytics for long-distance perimeter including crawling/camouflaged persons. Camera-centric; not multi-modal; not overlay. Incumbent answer at the camera-side. |
 
-**Tessure's stance:** partner posture toward VMS. Sell the fusion brain, let the customer keep their VMS. Write adapters, not replacements.
+**Tessure's stance:** partner posture toward VMS where possible; direct competition where incumbents (Siemens especially) try to close the same overlay gap as a bundled feature. Win on overlay-for-mixed-vendor and modality.
 
 ---
 
@@ -32,6 +34,9 @@ The "ambient/autonomous" wave of 2018–2025. Strong narrative, high burn, camer
 | **Turing AI** | $10M+ | Active | Camera-analytics; similar to Verkada for SMB. |
 | **Actuate AI** | $10M+ | Active | Weapon-detection-focused. Narrow. |
 | **Coram AI** | **Series A Q1 2025**, $20M+ | Growing | Cloud VMS + analytics. Will sharpen over 2026–2027. |
+| **Securitas Technology × Ambient.ai** | Distribution partnership, 2026 | Securitas reselling Ambient globally | Notable because it adds a global channel to Ambient's camera-cloud product. Extends reach but does not change modality limitations. Tessure's fusion + overlay differentiation is unchanged. |
+
+**Verkada's Feb 2026 AI-powered Deterrence launch** (active deterrence via speaker/strobe integrated with AI detection) is a notable Verkada move toward "automated response" framing — still camera-only and cloud-only, so Tessure's edge-fusion + overlay differentiation holds.
 
 **Tessure's stance:** multi-modal fusion is the defensible moat. Any single-modality system bottoms out at 80–90% accuracy on outdoor perimeter. Fusion hits 98%+ (design target: FP rate <5% after 30-day tune). Also: Tessure is edge-first and overlay; these are cloud-first and often lock-in.
 
@@ -49,6 +54,8 @@ Strong in their modality, not fusion platforms.
 | **FLIR / Teledyne** | Public (Teledyne $30B cap) | Thermal OEM leader. Integration partner. |
 | **Axis (thermal line)** | see Bucket 1 | Thermal cameras. Integration partner. |
 | **Dedrone / Axon** | Acquired by Axon 2024 (**deal value undisclosed by Axon**; some reports cite $600M+ but unverified) | Counter-UAS (RF + camera). **Adjacency**, could collaborate or overlap on UAS-heavy sites. |
+| **Sentitech / Domus Sentinela** | Spain, founded Apr 2025 | "Nucleus" platform fuses radar + camera + RF + LiDAR; TRL 6 at 40 ha / 2,500 m / 3 km range; "double dome" architecture. Positioned primarily for airport / critical-infra counter-UAS, not pure ground-perimeter enterprise. European fusion-native reference. |
+| **D3 Embedded** | US reference-design vendor | Radar-camera fusion stack on NVIDIA Holoscan + TI mmWave. **Not a competitor** — a reference design. Signals commoditization of fusion hardware layer, which supports "product + brand + channel is the moat, not the fusion math" thesis. |
 
 **Tessure's stance:** treat these as sensor OEMs. Buy, don't build. Partner programs (Echodyne has one) reduce BOM and accelerate cert.
 
@@ -131,5 +138,21 @@ Playbook Phase 1 Pass 2 kill-switch: "dominant well-funded competitor (>$50M fun
 - **Ambient.ai Series B (April 2025, $74M).** Validates verified-response category. Also proves it's undersupplied — one leader can't own the whole market.
 - **Deep Sentinel Series B + SentinelNow commercial launch (2025).** Signals low-end commercial compression; Tessure should not anchor on low-tier pricing.
 - **Flock Safety $275M + Aerodome acquisition.** Category-consolidator pattern. Watch commercial expansion.
-- **Anduril $20B Army contract (Mar 2026) + active Lattice commercial marketing.** Single largest strategic variable for Tessure.
+- **Anduril $20B Army enterprise contract (Mar 14 2026, 10-year, consolidating 120+ procurement pathways around Lattice).** Reinforces Anduril as defense-primary. Commercial dual-use becomes a side product, not the center of gravity. **Strengthens Tessure's "commercial-native vs defense-primary" split** — the white space becomes more defensible, not less.
+- **Verkada $5.8B valuation + CapitalG investment + Dubai hub (Mar 25 2026).** Revenue up ~30%; international expansion accelerating. Main competitive risk vector for Tessure is Verkada adding radar/thermal fusion, not new entrants.
+- **Verkada AI-powered Deterrence launch (Feb 12 2026).** Camera-only, cloud-only — Tessure's edge-fusion + overlay differentiation holds.
+- **Securitas × Ambient.ai distribution partnership (2026).** Extends Ambient's enterprise reach; does not change single-modality limitation.
+- **Safer Skies Act (Dec 2025).** Federal funding for C-UAS detect/track/disrupt tech. Spill-over capital into the adjacent C-UAS category; watch-item, not thesis-breaker.
 - **NERC CIP-014 revision cycle + TSA SD02F effective May 3, 2025.** Direct regulatory tailwind on critical-infrastructure segment.
+
+---
+
+## Pass 3 strategic note — analyst coverage gap
+
+No recent (2025–2026) Gartner or Forrester **VMS Market Guide** was found indexed publicly. The only Gartner VMS guide indexed is 2017. Gartner's 2025 "Cool Vendors in Cyber-Physical Systems Security" exists but is CPS/OT-cyber focused, not physical video/perimeter. Implication: analyst coverage of the exact Tessure category is thin.
+
+**Opportunity:** no incumbent analyst frame to fight against; Tessure can shape category language through early analyst briefings (Gartner, Forrester, Memoori, IHS Markit, IPVM).
+
+**Risk:** no third-party validation to cite in enterprise sales. Mitigation: drive analyst briefings early (Month 4–6 of GTM), publish architecture whitepaper as analyst-readable, push toward inclusion in next VMS or CPS market guide.
+
+This belongs in `GO_TO_MARKET.md` as an owned action, not just a landscape observation.
