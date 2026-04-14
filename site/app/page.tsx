@@ -833,7 +833,15 @@ function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t border-[#e2e8f0] pt-6 text-xs text-[#94a3b8] md:flex-row md:items-center md:justify-between">
           <span>© 2026 Tessure Systems, Inc. All rights reserved.</span>
-          <span>v2 · Phase 7 of the idea-to-site playbook</span>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-[#475569]">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-[#475569]">
+              Terms
+            </Link>
+            <span>v2 · Phase 7 of the idea-to-site playbook</span>
+          </div>
         </div>
       </div>
     </footer>

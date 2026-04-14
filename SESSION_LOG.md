@@ -283,3 +283,22 @@ Build: 10.1s compile, clean. Kill-switches: not fired (no Lighthouse-sub-70 sign
 Cost this phase: ~$0.50 (Claude copy polish + this session)
 
 Next: Phase 8 (Motion). Decision: defer paid Veo 3.1 motion spend ($3-6). The hero image has inherent motion-feel (fog + distant headlight), and the evidence-pipeline SVG can carry a free CSS/SVG animation (dot flowing along the pipeline line). Implement that and call Phase 8 done.
+
+## 2026-04-14T03:35Z: Phase 8 (Motion) complete
+
+What: free SVG motion on the evidence-pipeline signature diagram. A small blue dot (r=4) travels left-to-right along the flow line, 5s loop, with opacity fade at line-ends. SMIL animate inside the existing SVG component. motion-reduce:hidden class respects prefers-reduced-motion per brand-doc motion guideline (120-280ms ease-out, respect reduced-motion settings).
+
+Decision: deferred paid Veo 3.1 / Kling clips. Rationale (logged):
+- Hero image already carries implicit motion-feel (fog + distant headlight)
+- The evidence-pipeline signature section benefits most from motion; free SVG covers it
+- Projected Phase 8 spend was $3-6 out of remaining budget; zero-cost solution covers the need
+
+Kill-switch (motion budget exceeded with no approved shot): not fired ($0 spent).
+
+Files: site/app/page.tsx (EvidencePipelineDiagram component extended)
+Cost: $0
+Build: clean (no regression in bundle size; / still 5.3 KB JS)
+
+Cumulative Phase-0→8 cost estimate: ~$10 of $25 cap (40%)
+
+Next: Phase 9 (Launch Mechanics) — analytics decision, waitlist/email form decision, PP/ToS stubs, social handle status, launch narrative, UTMs if applicable, robots/sitemap verification (already done).
