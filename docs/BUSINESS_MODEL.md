@@ -78,7 +78,7 @@ See `OPERATIONS_AND_COSTS.md` for ops-side detail. High-level:
 - **Series A: $12M** at $3M ARR to push to enterprise segment.
 - **Series B: $30M+** at $10M ARR.
 
-Comparable raises: Ambient.ai raised $52M Series B at ~$4M ARR with camera-only architecture. Tessure's multi-modal claim should support similar or better metrics if execution is tight.
+Comparable raises: Ambient.ai has raised **$146M total including a $74M Series B in April 2025** (Pass 2 verified). Tessure's multi-modal + edge-fusion + evidence-pipeline claim should support similar or better metrics if execution is tight — the architectural differentiation is real and defensible.
 
 ## What this business is not
 

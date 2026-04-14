@@ -8,6 +8,8 @@ Five primary segments, ranked by ACV and wedge strength for Year 1. Each section
 
 **Accounts:** investor-owned utilities (Duke, Southern, Dominion, AEP, PG&E), municipal utilities, T&D operators, water authorities, pipeline operators (Enbridge, Kinder Morgan, Williams), telecom central offices.
 
+**Addressable site counts (verified Pass 2):** NERC CIP-014-4 regulated high-risk transmission substations are ~**1,500** — the narrow compliance-driven wedge. Broader physical-security buyer pool across non-CIP utility substations, pipelines, water, and telecom runs into the tens of thousands but with slower procurement and lower regulatory urgency.
+
 **ACV profile:** $250k–$2M per site-cluster; multi-year. Sites-per-customer: 10–3,000. A single mid-size utility is a **$10M+ ARR account** on full roll-out.
 
 **Buyer titles:** VP Security, Director Physical Security, CSO, Chief Compliance Officer, VP T&D Operations.
@@ -39,6 +41,8 @@ Five primary segments, ranked by ACV and wedge strength for Year 1. Each section
 ## 2. Hyperscale & colocation data centers
 
 **Accounts:** AWS, Azure, Google Cloud, Meta (hyperscale); Equinix, Digital Realty, CyrusOne, QTS, Stack (colo); NTT, Iron Mountain.
+
+**Addressable campus counts (verified Pass 2):** ~**1,500–1,700** colo + hyperscale campuses in the US (1,121 colo sites + ~385 upcoming + ~152 hyperscale per Globe Newswire Aug 2025). Global roughly 2–2.5× US.
 
 **ACV profile:** $150k–$500k per campus. Mid-size colo has 10–40 campuses; hyperscale 100+.
 
@@ -72,7 +76,7 @@ Five primary segments, ranked by ACV and wedge strength for Year 1. Each section
 **Buyer titles:** Director of Security, Loss Prevention Manager, VP Operations, Director of Transportation Security.
 
 **Triggers:**
-- Cargo theft incident ($100k+ loss) on their yard or a peer yard.
+- Cargo theft incident ($100k+ loss) on their yard or a peer yard. **Verisk CargoNet: $725M total cargo theft in 2025, record year (+60% YoY) — strongest trigger event in this segment.**
 - Insider theft investigation.
 - Insurance renewal citing loss frequency.
 - Amazon/Walmart/big-box customer audit of their 3PL's security posture.
@@ -80,7 +84,7 @@ Five primary segments, ranked by ACV and wedge strength for Year 1. Each section
 
 **Language that resonates:**
 - "after-hours perimeter verification"
-- "cargo theft prevention" or "ORCA defense"
+- "cargo theft prevention" (cite Verisk CargoNet $725M figure — *not* the retracted $100B NRF shrink figure)
 - "insider threat detection"
 - "RFID + camera + fence fusion"
 - "loss prevention ROI"

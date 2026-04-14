@@ -2,6 +2,8 @@
 
 Phase 1 output from the idea-to-site playbook run. Each doc answers one strategic question; `README.md` is the index.
 
+**Status:** Pass 2 revision complete. Pass 1 thesis drafted opinionated; Pass 2 research (competitor validation + market/regulatory validation + design research) forced revisions on TAM math, competitor landscape (Deep Sentinel active, Verkada $5.8B, Ambient $146M, Anduril active-commercial not speculative, +Flock Safety), and positioning (explicit rejection of "baby Anduril" framing in favor of civilian-enterprise posture). Pass 3 stability check pending.
+
 ## Order to read for first-time review
 
 1. **[STARTUP_BRIEF.md](STARTUP_BRIEF.md)** — problem, insight, wedge, why now. The thesis in ~1500 words.

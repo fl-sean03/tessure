@@ -42,6 +42,8 @@ Concretely:
 
 **Trap 2: Defense-tech cosplay.** Tessure is not a defense company. Dressing like one tells an enterprise buyer "you're playing a role you don't actually inhabit." Anduril earns the aesthetic. We don't.
 
+**The "baby Anduril" trap specifically.** The original archived Tessure page (seanflorez.com/archive/tessure/, Mar 2026) used "sovereign defense perimeter" language and framed the concept as a baby Anduril. Pass 2 research rejects this framing. Anduril is already actively marketing Lattice to commercial critical infrastructure — oil & gas pipelines, wind farms, utilities — with a $60B rumored valuation and $20B Army contract base. A "baby Anduril" positions Tessure as a smaller version of the incumbent in the exact segment Anduril now occupies. That is a losing fight on capital, brand, and timeline. Tessure's winning position is the inverse: the civilian-enterprise posture Anduril **cannot** credibly wear without diluting its defense identity. Trusted infrastructure, not scaled-down defense.
+
 **Trap 3: AI-slop visual language.** Glowing neural-net nodes, generic "AI brain" renders, gradient-fill shields, chat bubbles. Any asset that could appear on 500 other AI startup sites is a liability.
 
 ## Brand voice tests

@@ -29,3 +29,85 @@ The `~/Workspace/tessure/` directory is not empty. Prior work included:
 What: provisioning. Existing git repo, remote at github.com/fl-sean03/tessure. Keys inventoried.
 
 ---
+
+## 2026-04-14T00:25Z: Phase 0 complete
+
+What: restructured repo into playbook layout (site/, docs/, research/, specs/, brand/). Vercel rootDirectory patched to site/ via API (project prj_old9U7CSBQnQLB1dnxDPuuW8l0GR). Commit 251837f pushed.
+Files: SESSION_LOG.md, SETUP.md, README.md (root), brand/PublicBrandSystem_v1.1.md (renamed), site/* (moved)
+Questions answered:
+  - Working name: Tessure (pre-existing, to be re-exercised in Phase 3)
+  - Keys: all Phase 1-7 keys present (Anthropic, Google AI, BFL, fal, Vercel, Spaceship). Analytics deferred to Phase 10.
+  - Budget: $25 / 12h (defaults)
+Kill-switch: concept brief 90 words, specific users named. Pass.
+Cost so far: $0.00
+Next: Phase 1 Thesis & Strategy
+
+## 2026-04-14T00:25Z: Phase 1 start
+
+What: authoring docs/ data room.
+
+## 2026-04-14T00:55Z: Phase 1 complete
+
+What: 9 strategy docs + 1 specs doc + 1 brand thesis written. Kill-switch: no H×H risk unmitigated, TAM $20B global (well > $50M), "why now" concrete (4 forces). Passed.
+Files: docs/{STARTUP_BRIEF, CUSTOMER_SEGMENTS, COMPETITIVE_LANDSCAPE, BUSINESS_MODEL, GO_TO_MARKET, RISK_ANALYSIS, OPERATIONS_AND_COSTS, BRAND_THESIS, PITCH_DECK_OUTLINE, README}.md, specs/PRODUCT_ARCHITECTURE.md
+Commit: [pending]
+Cost so far: ~$1.50 (Claude inference for authoring)
+
+## 2026-04-14T00:55Z: Phase 2 start — launched 2 parallel research agents
+
+What: background agents researching (1) competitor funding/status/M&A, (2) market stats + regulatory landscape. Also launched Phase 4 design research agent in parallel (independent of strategy).
+
+**Critical note (founder input 2026-04-14T00:55):** Phase 1 docs treated as HYPOTHESIS. If Phase 2 research materially contradicts (dominant competitor, TAM collapse, regulatory block, weak problem evidence), Phase 1 will be rewritten before proceeding. Phase 3 naming brainstorm paused; only domain/handle data calls proceed during wait.
+
+Next: wait for research agents. Evaluate contradictions. Revise Phase 1 if needed. Then Phase 3 with post-research positioning.
+
+## 2026-04-14T01:20Z: Phase 1 Pass 2 delta
+
+Research dossiers completed by three parallel agents:
+- `research/COMPETITIVE_VALIDATION.md` (30 tool calls, ~5 min runtime)
+- `research/MARKET_VALIDATION.md` (33 tool calls, ~5 min runtime)
+- `research/DESIGN_RESEARCH.md` (18 tool calls, ~7 min runtime)
+
+Material contradictions with Pass 1 integrated:
+
+**Competitor landscape (major rewrite):**
+- Deep Sentinel: Pass 1 "residential, not a competitor" → Pass 2 active commercial with $15M Series B June 2025 + SentinelNow launch 2025 targeting warehouses/retail/medical/auto/multi-tenant
+- Verkada: Pass 1 "$3B val, mostly SMB" → Pass 2 $5.8B val (Dec 2025 CapitalG), >$1B ARR, 17K customers, enterprise-scale
+- Ambient.ai: Pass 1 "$110M+" → Pass 2 $146M total (+$74M Series B April 2025)
+- Anduril: Pass 1 "rumored Lattice Civil 2026" → Pass 2 ALREADY ACTIVE marketing to oil/gas/utilities; $20B Army contract Mar 2026; $60B rumored val; $4B rumored raise
+- Flock Safety: missing from Pass 1 entirely → added Pass 2 as category-consolidator to watch ($7.5B val, $275M Mar 2025, +Aerodome $300M+ Oct 2024)
+- Smaller fixes: Echodyne total $195M (not $65M); Milestone rev ~$290M; Axis ~$2.3B; Hakimo/Coram Series A Q1 2025; Dedrone/Axon deal value undisclosed
+
+**Market claims (corrections):**
+- ORCA $100B/yr: DROPPED (NRF retracted; Verisk CargoNet $725M cargo theft 2025 +60% YoY is the correct figure)
+- "+30% guard wages since 2020": DROPPED (BLS shows real wages flat ~20 years; replaced with "61% of operators cite rising pay as top challenge" per Security Magazine 2024)
+- Duke FL 2023 → corrected to Sept 2022 (six incidents at Bay Ridge/Orange Blossom/Zephyrhills/East Clearwater)
+- TAM: Pass 1 $20B global → Pass 2 ~$6–9B global; US ~$4.3B
+- Data-center count: Pass 1 "3,500 campuses" → Pass 2 "~1,500–1,700 US colo + hyperscale"
+- CIP-014 regulated population: clarified as ~1,500 high-risk transmission substations (narrow compliance wedge distinct from broader utility buyer pool)
+
+**Positioning choice (explicit, now documented):**
+Pass 1 drafted enterprise-calm civilian-first positioning without explaining the alternative. Original seanflorez.com archive page framed the concept as "baby Anduril / sovereign defense perimeter." Pass 2 integrates Anduril research and explicitly rejects the baby-Anduril framing. Rationale: Anduril is now an active commercial competitor, so being a smaller Anduril is a losing fight on capital/brand/timeline. Tessure's win is the civilian-enterprise posture Anduril cannot credibly wear. Change documented in STARTUP_BRIEF.md "The positioning choice (explicit)" section, RISK_ANALYSIS.md R1, and BRAND_THESIS.md "baby Anduril trap."
+
+**Risk register updates:**
+- R1 Anduril: P4×I5=20 upgraded to P5×I5=25 (current/active, not speculative)
+- New R12a: Verkada lateral expansion (P3×I4=12)
+- New R12b: Deep Sentinel low-tier pressure (P3×I3=9)
+- New R12c: Flock Safety commercial expansion (P2×I4=8)
+
+**Kill-switch re-evaluation:** No trigger. TAM ~$6–9B (well above $50M). External problem evidence: confirmed (E-ISAC 3,500+ incidents, Verisk $725M cargo theft, named substation attacks, active regulatory cycles). No unmitigated H×H risks. No thesis-contradicting research finding. Core thesis (sensor fusion at edge + overlay + evidence pipeline + civilian-enterprise brand) survives intact; math and competitor claims tightened.
+
+Files modified:
+- docs/COMPETITIVE_LANDSCAPE.md (full rewrite)
+- docs/STARTUP_BRIEF.md (full rewrite, added positioning-choice section)
+- docs/CUSTOMER_SEGMENTS.md (segment-level corrections)
+- docs/OPERATIONS_AND_COSTS.md (full TAM rewrite)
+- docs/RISK_ANALYSIS.md (R1 upgrade, 3 new risks, kill-switch re-eval)
+- docs/PITCH_DECK_OUTLINE.md (slides 2, 3, 11, 12 revised)
+- docs/BUSINESS_MODEL.md (Ambient comparable corrected)
+- docs/BRAND_THESIS.md (baby-Anduril trap added)
+- docs/README.md (Pass 2 status note)
+
+Cost so far: ~$6 (3 research agents + Claude revision writing)
+
+Next: Pass 3 stability check — one short sweep to confirm revised thesis holds against any additional findings. If two passes in a row produce no material change, Phase 1 locks.

@@ -4,19 +4,20 @@ Top 12 risks, each scored on probability (1–5) and impact (1–5). Product is 
 
 ---
 
-## R1 — Anduril Lattice Civil enters commercial (P4 × I5 = 20)
+## R1 — Anduril Lattice in commercial critical infrastructure (P5 × I5 = 25) [PASS 2 UPGRADE]
 
-**What:** Anduril's Lattice OS is the clearest architectural analog. If they extend "Civil" editions to commercial critical infrastructure, they arrive with defense-tier brand, enormous funding, and federal-customer trust halo. They would clobber Tessure on enterprise deals that want "the Anduril of commercial."
+**What:** Anduril's Lattice OS is the clearest architectural analog to Tessure. Pass 1 treated this as a 2026–2027 risk. **Pass 2 research confirms Anduril is already actively marketing Lattice for oil & gas pipelines, wind farms, and utilities — commercial critical infrastructure is not speculative, it's current.** A $20B Army contract (Mar 2026) and a rumored $4B raise at $60B valuation give them capital, brand, and contract-base leverage no startup can match.
 
-**Probability:** 4. Anduril's growth thesis is non-DoD expansion. Rumored Lattice Civil in 2026.
+**Probability:** 5. Current, documented, marketed.
 
-**Impact:** 5. Could cap Tessure's enterprise-tier TAM. Would force Tessure down-market or into specialization (data-center-only) to survive.
+**Impact:** 5. Could cap Tessure's enterprise-tier TAM. Forces either rapid lighthouse-account lock-in or down-market / specialized pivot.
 
 **Mitigations:**
-- **Move fast on design wins.** Anduril's enterprise-land timeline is ~2027. Tessure has a 12–18 month window to lock in 5–10 marquee logos with multi-year contracts.
-- **Civilian-first positioning.** Anduril's DoD heritage is an asset with defense buyers but a liability with estate/resort/colo buyers who actively distrust militarized framing. Lean into the enterprise-infrastructure voice that Anduril cannot credibly adopt.
-- **Integration, not platform wars.** If Anduril launches, propose integration: Tessure Fusion Node inputs into Lattice Civil workflow. Survive as a component, don't pick a platform fight.
-- **Acquisition posture.** If the economics get bad, Anduril is a credible acquirer.
+- **Speed.** Lock 5–10 lighthouse enterprise logos in 12–18 months with 2–3 year multi-year contracts. Switching costs are Tessure's only structural defense against Anduril's capital.
+- **Civilian-first positioning (the explicit brand choice, see `docs/BRAND_THESIS.md` and the "positioning choice" section in `STARTUP_BRIEF.md`).** Anduril's DoD heritage is an asset with defense buyers but a liability with enterprise/commercial/estate buyers who distrust militarized framing for procurement, board review, and PR reasons. Enterprise-infrastructure calm is the one axis Anduril structurally cannot wear without diluting their defense identity.
+- **Overlay posture, not platform-war.** If a customer has both Tessure and Lattice deployed, Tessure works as a fusion input into Lattice's workflow. Survive as a component where we must.
+- **Acquisition posture.** If the economics get bad, Anduril is a credible acquirer. Tessure shouldn't bet on this but shouldn't preclude it.
+- **Reject "baby Anduril" framing.** The original archive copy used "sovereign defense perimeter"; Pass 2 positioning rejects this. Being a smaller Anduril is a losing fight; being the NOT-Anduril for the same buyer is the winning one.
 
 ---
 
@@ -177,6 +178,49 @@ Top 12 risks, each scored on probability (1–5) and impact (1–5). Product is 
 
 ---
 
+## R12a — Verkada lateral expansion to outdoor perimeter (P3 × I4 = 12) [NEW PASS 2]
+
+**What:** Verkada reached $5.8B valuation and >$1B ARR with 17,000 customers by end of 2025. Their current product is cloud-first, camera-first, primarily indoor. Outdoor perimeter + multi-modal is outside their today-scope, but the capital base and customer footprint could fund a lateral expansion into Tessure's wedge.
+
+**Probability:** 3. Verkada's narrative has been indoor-first; pivot cost is nontrivial.
+
+**Impact:** 4. If they reach 1,000 customers deploying outdoor perimeter, they compress Tessure's growth.
+
+**Mitigations:**
+- **Architectural specialization.** Verkada's cloud-first architecture is structurally slow on outdoor-perimeter fusion latency; Tessure's edge-first 24h-offline design is a defensible moat.
+- **Overlay / integration angle.** Many customers will have Verkada interior + Tessure perimeter; design the Tessure side to coexist cleanly.
+
+---
+
+## R12b — Deep Sentinel's commercial pivot peels low-tier logistics (P3 × I3 = 9) [NEW PASS 2]
+
+**What:** Deep Sentinel raised $15M Series B (June 2025) and launched SentinelNow targeting warehouses, office parks, medical, retail, auto, multi-tenant. Their pitch: "cloud guards" — human-in-loop monitored response at sub-Tessure pricing.
+
+**Probability:** 3. Active commercial launch.
+
+**Impact:** 3. Compresses Tessure's Edge Small tier pricing at the low end of logistics.
+
+**Mitigations:**
+- **Don't anchor Year-1 pricing on Deep Sentinel's segment.** Lead with Edge Mid ($40k) targeted at mid-logistics and colo; let Deep Sentinel have sub-$12k tier.
+- **Evidence-pipeline moat.** Deep Sentinel's cloud-guard service does not produce the signed, auditable evidence package that insurance and LE downstream require.
+
+---
+
+## R12c — Flock Safety commercial expansion (P2 × I4 = 8) [NEW PASS 2]
+
+**What:** Flock Safety ($7.5B val, $275M Mar 2025, Aerodome acq Oct 2024) is currently LEO/municipal but has capital and aerial-response assets to enter commercial enterprise. If they do, Tessure faces a category-consolidator with platform + drone + LEO-network advantages.
+
+**Probability:** 2. Flock's current strategy focuses on LEO/municipal; commercial expansion is plausible but not announced.
+
+**Impact:** 4. Would materially compress Tessure's enterprise segment if Flock leans in.
+
+**Mitigations:**
+- **Civilian-enterprise brand posture** (same mitigation as R1 Anduril). Flock's brand is public-safety-LEO — different register from enterprise buyer.
+- **Evidence-grade chain of custody as insurance-driven proof.** Flock's current value-prop is LPR + LEO sharing; Tessure's is multi-modal + evidence-pipeline for commercial compliance. Different wedges.
+- **Watch Flock's 2026 strategy.** Re-score risk in 12 months.
+
+---
+
 ## R12 — Founder capacity / single point of failure (P3 × I4 = 12)
 
 **What:** Sean is the only one holding product thesis + sales narrative + technical architecture. If Sean is out for 6 weeks (health, travel, bandwidth), company stalls.
@@ -193,17 +237,20 @@ Top 12 risks, each scored on probability (1–5) and impact (1–5). Product is 
 
 ---
 
-## Kill-switch evaluation
+## Kill-switch evaluation (Pass 2)
 
-Playbook Phase 1 kill-switch: "3+ high-prob high-impact risks unmitigated."
+Playbook Phase 1 Pass 2 kill-switch: "3+ high-prob high-impact risks unmitigated."
 
-- R1 (20): mitigations credible but speed-dependent. **Flagged but not unmitigated.**
-- R2 (16): mitigations architectural. **Mitigated in thesis.**
-- R3 (15): mitigations are industry-standard. **Mitigated.**
-- R4 (15): E&O + SLA language. **Mitigated.**
+- **R1 Anduril (25 — upgraded from 20):** Pass 2 confirms Anduril's commercial presence is active, not speculative. Mitigations (speed, civilian brand, overlay posture) are credible but **require execution discipline on the 12–18 month lighthouse-logo window.** Flagged as the single largest strategic variable. Not unmitigated — the mitigation path is clear; it's a speed test.
+- R2 Ambient.ai (16): mitigations architectural. **Mitigated in thesis.**
+- R3 Hallucination / false escalation (15): human-in-loop + evidence pipeline. **Mitigated.**
+- R4 Insurance liability (15): E&O + SLA language. **Mitigated.**
+- R12a Verkada expansion (12): architectural moat + overlay posture. **Mitigated.**
 
-Zero unmitigated H×H risks. Kill-switch does not fire.
+No unmitigated H×H risks. Kill-switch does not fire.
 
-TAM check: `OPERATIONS_AND_COSTS.md` estimates serviceable Year-1 TAM at **$1.2B+** across the 5 segments. Well above $50M bar.
+**TAM check (Pass 2):** `OPERATIONS_AND_COSTS.md` revises TAM to **$6B–$9B global** (down from Pass 1's $20B). Still comfortably above $50M bar. SAM ~$1B–$1.5B; SOM Year-3 $12M–$20M ARR.
 
-**Phase 1 kill-switch summary: clear to proceed to Phase 2.**
+**External evidence of problem (Pass 2):** confirmed — E-ISAC 3,500+ physical incidents 2024; Verisk CargoNet $725M cargo theft 2025 (+60% YoY); multiple named substation attacks; active NERC CIP-014-4 + TSA SD02F regulatory cycles; *Security Magazine* Annual Guarding Report operator-pressure findings. Not a manufactured problem.
+
+**Phase 1 Pass 2 kill-switch summary: clear to proceed to Phase 2.**

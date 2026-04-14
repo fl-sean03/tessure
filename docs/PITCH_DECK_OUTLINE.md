@@ -14,11 +14,11 @@ No taglines beyond this. The hero line is the category promise.
 
 ## Slide 2 — The problem in one number
 
-**97% of perimeter security alarms are false.**
+**94–99% of perimeter security alarms are false** (standalone motion/analytics, verified across industry studies).
 
 A typical enterprise site logs 400+ alerts/week. Operators are desensitized. When real threats arrive, they hide in the noise.
 
-Proof: industry studies (SIA, IFSEC), false-dispatch cost data ($150–$400/event × 1000s/year).
+Proof: industry studies (SIA, IFSEC), false-dispatch cost data ($150–$500/event under graduated municipal fine schedules).
 
 ---
 
@@ -26,10 +26,10 @@ Proof: industry studies (SIA, IFSEC), false-dispatch cost data ($150–$400/even
 
 Four forces converging:
 
-1. **Guard labor broken.** +30% wages since 2020. <50% retention.
-2. **Substation attacks rising.** NC (2022), WA (2023), FL (2023). NERC CIP-014 tightening.
-3. **Insurance demanding verified response.** FM Global, Chubb, AIG rewriting loss-control advisories.
-4. **Cargo theft at $100B/yr** (ORCA). Prologis tenants getting insurance-flagged.
+1. **Guard labor economics broken.** Real wages flat ~20 years (BLS); **61% of operators cite rising pay as top challenge** (*Security Magazine* 2024); sub-50% retention industry-wide. Automation is the only lever.
+2. **Substation attacks on record.** Metcalf (2013), Moore County NC (Dec 2022), Tacoma WA (Dec 2022), Duke FL (Sept 2022 — six incidents). **E-ISAC: 3,500+ physical incidents in 2024.**
+3. **Regulatory tailwind.** NERC CIP-014-4 revision active; **TSA SD02F effective May 3, 2025**; EU AI Act high-risk rules live Aug 2, 2026; CISA/DHS publishing increasingly prescriptive physical-security guidance.
+4. **Cargo theft record.** **Verisk CargoNet: $725M in 2025, +60% YoY** (do NOT cite the retracted $100B NRF shrink figure). Prologis tenants getting insurance-flagged.
 
 This problem is getting **worse, not better**, in the next 18 months.
 
@@ -106,22 +106,26 @@ Month-by-month milestone grid. First pilot (M2), first paid (M6), 15 logos by M1
 
 ---
 
-## Slide 11 — Market
+## Slide 11 — Market (Pass 2 revised)
 
-TAM $20B global, SAM $3B, SOM $20M by Year 3 (0.7% of SAM). Math on slide.
+**TAM ~$6–9B global** (US ~$4.3B: $1.5B critical infra + $340M data centers + $120M logistics + $2B estates + $300M resorts). **SAM ~$1–1.5B. SOM $12–20M ARR by Year 3** (~1% of SAM).
 
-Framing: "We don't need to own this market. We need to be the multi-modal option that gets bought when single-modality fails."
+Framing: "We don't need to own this market. We need to be the edge-fusion option that gets bought when single-modality, cloud-only, or defense-tech framings don't fit the buyer."
 
 ---
 
-## Slide 12 — Competition
+## Slide 12 — Competition (Pass 2 revised)
 
-Three buckets in one chart:
-- **Incumbents** (Genetec, Milestone, Axis) — VMS layer; partners.
-- **AI-video** (Ambient, Verkada, Hakimo) — single-modality; compete on accuracy.
-- **Defense-tech** (Anduril, Shield AI) — different buyer; watch the boundary.
+Five buckets in one chart:
+- **VMS incumbents** (Genetec, Milestone, Axis) — workflow layer; partners, not competitors.
+- **AI-video pure-plays** (Ambient.ai $146M, Verkada $5.8B/$1B ARR/17K customers, Deep Sentinel active commercial via SentinelNow, Hakimo) — single-modality, cloud-leaning; compete on accuracy and architecture.
+- **Sensor specialists** (Echodyne, Fortem, FLIR, Dedrone/Axon) — OEM partners.
+- **Category consolidators** (Flock Safety $7.5B, +Aerodome) — different buyer today (LEO/municipal); watch commercial expansion.
+- **Defense-tech adjacencies** — **Anduril actively markets Lattice to commercial critical infrastructure (oil/gas, wind, utilities) today**, $60B rumored val, $20B Army contract Mar 2026. Not speculative. The #1 strategic variable for Tessure.
 
-**White space: edge fusion + overlay + commercial-civilian brand.** No credible competitor there.
+**White space: edge-fusion + VMS-overlay + evidence-grade + civilian-enterprise brand.** Narrower than it was a year ago; speed to 5–10 lighthouse enterprise logos in 12–18 months is the real moat.
+
+**Why we're not "baby Anduril":** Anduril already serves the commercial critical-infra buyer. Being a smaller Anduril is a losing fight on capital and brand. Tessure's win is civilian-enterprise posture Anduril cannot credibly wear without diluting their defense identity.
 
 ---
 

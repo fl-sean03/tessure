@@ -1,5 +1,7 @@
 # Operations & Costs — Year 1
 
+**Revision:** Pass 2. TAM/SAM/SOM revised down from Pass 1 (see `../research/MARKET_VALIDATION.md`). Still well above the $50M kill-switch. Team plan unchanged.
+
 ## Team
 
 Target **6 FTE + 3 contractors** by end of Year 1.
@@ -27,7 +29,7 @@ Target **6 FTE + 3 contractors** by end of Year 1.
 | Test bench (indoor + outdoor lab) | $40,000 | Office lab with sensor array. |
 | Colo rack for Tessure Command cloud (AWS + 1 Equinix colo for redundancy) | $30,000/yr | Low; edge-heavy architecture. |
 | Dev tools, CI, storage, model-training (fal.ai, Modal, GCP A100 bursts) | $50,000/yr | |
-| Office / shop space | $60,000/yr | Shared space year 1. |
+| Office / shop space | $60,000/yr | Shared space Year 1. |
 | **Hardware + infra total** | **~$216,000/yr** | |
 
 ## Go-to-market spend
@@ -55,9 +57,7 @@ Target **6 FTE + 3 contractors** by end of Year 1.
 
 ## Total Year-1 burn
 
-**~$2.1M–$2.4M** for year 1.
-
-Offset by ~$500k–$800k revenue, net **~$1.5M cash burn**. Pre-seed/seed of **$3M** funds ~18 months with buffer.
+**~$2.1M–$2.4M.** Offset by ~$500k–$800k revenue, net **~$1.5M cash burn**. Pre-seed/seed of **$3M** funds ~18 months with buffer.
 
 ---
 
@@ -77,23 +77,31 @@ Offset by ~$500k–$800k revenue, net **~$1.5M cash burn**. Pre-seed/seed of **$
 
 ---
 
-## TAM / SAM / SOM
+## TAM / SAM / SOM (Pass 2 revised)
 
-**TAM** (total addressable market):
-- US critical infrastructure: ~55,000 sites (NERC-registered electric + water + telecom + pipeline). At $120k avg = **~$6.6B annual**.
-- US colo + hyperscale campuses: ~3,500 sites. At $200k avg = **~$700M**.
-- US logistics yards (class I + II): ~8,000 sites. At $60k avg = **~$480M**.
-- US luxury estates + marinas + venues: ~50,000 addressable. At $40k avg = **~$2B**.
-- **Global 2× US approx.**
-- **TAM: ~$20B global, ~$10B US.**
+**TAM** — total addressable market, US-centric with global extrapolation:
 
-**SAM** (segments we can credibly serve in 3 years):
-- Top 2,000 colo/hyperscale, top 10,000 critical infra sites, top 2,000 logistics yards, top 5,000 estates. **~$3B.**
+| Segment | US universe | Avg ACV | US TAM |
+|---|---|---|---|
+| Critical infrastructure — **CIP-014 regulated** (narrow wedge) | 1,500 high-risk transmission substations | $250k | **$375M** |
+| Critical infrastructure — **broader non-CIP** (utility, telecom, pipeline, water) | Tens of thousands of sites; conservative 10,000 addressable | $120k | **~$1.2B** (longer cycles, lower urgency) |
+| Hyperscale + colocation data centers | 1,500–1,700 campuses | $200k | **~$340M** |
+| Logistics yards + industrial (Prologis-scale tenants, intermodal, ports) | Conservative 2,000 addressable from a larger Prologis-tenant pool | $60k | **~$120M** |
+| Private estates + family offices | ~50,000 UHNW-residence addressable | $40k | **~$2.0B** |
+| Resorts + marinas + event venues | ~5,000 addressable | $60k | **~$300M** |
+| **US TAM total** | | | **~$4.3B** |
+| **Global TAM (2× US)** | | | **~$8.6B** |
 
-**SOM** (Year 1–3 realistic):
-- Year 1: 15 logos → ~$0.7M ARR.
-- Year 2: 50 logos → $5M ARR.
-- Year 3: 150 logos → $20M ARR.
+**Pass 1 claimed $20B.** That figure overstated by ~2–3× across data-center count and logistics yard count. Pass 2 revision: **~$6B–$9B global TAM**, depending on how aggressively non-CIP utility and consumer-adjacent segments are counted. Still comfortably above the $50M kill-switch bar; still a large market; but not $20B.
+
+**SAM — segments Tessure can credibly serve in 3 years:**
+- Top 20% of each segment where pilot infrastructure and integrator coverage exist.
+- ~$1B–$1.5B.
+
+**SOM — Year 1–3 realistic:**
+- Year 1: 15 logos → ~$0.5–0.8M ARR.
+- Year 2: 50 logos → $3–5M ARR.
+- Year 3: 150 logos → $12–20M ARR.
 
 ---
 
@@ -101,7 +109,7 @@ Offset by ~$500k–$800k revenue, net **~$1.5M cash burn**. Pre-seed/seed of **$
 
 - **Edge-first architecture** means low cloud spend vs. competitors. Tessure's COGS scales with hardware deployed, not events monitored.
 - **Hardware as reclaimed asset.** Pilot units roll forward into paying customers or refurbish; write down over 4 years not 1.
-- **Integrator channel** reduces direct sales headcount in Years 2+. We should be cash-flow positive at $5M ARR if the integrator motion works.
+- **Integrator channel** reduces direct sales headcount in Years 2+. Target cash-flow positive at $5M ARR if the integrator motion works.
 
 ---
 
@@ -110,4 +118,4 @@ Offset by ~$500k–$800k revenue, net **~$1.5M cash burn**. Pre-seed/seed of **$
 - **Deployment is harder than modeled.** Plausible. Each install is a half-day to 2-day affair. Mitigation: standardize install kit, train integrators, target <4 hour installs by Month 9.
 - **Hardware revisions required** after field deployments reveal thermal/dust/moisture issues. Build in M6–M7 for v2 hardened unit.
 - **Cloud SaaS cost creep** if we over-stream to cloud instead of keeping edge. Discipline: edge-first or reject the feature.
-- **Sales cycles longer than 90 days on average.** Plan for 120-day average; model doesn't break if cycles slip 30 days.
+- **Sales cycles longer than 90 days.** Plan for 120-day average; model doesn't break if cycles slip 30 days.
