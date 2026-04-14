@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,10 +10,8 @@ import {
   FileCheck,
   Workflow,
   Cloud,
-  Radar,
   ArrowRight,
   Download,
-  ChevronRight,
 } from "lucide-react"
 
 export default function Home() {
@@ -23,6 +22,7 @@ export default function Home() {
       <PilotLogoRow />
       <TriPillar />
       <PlatformModules />
+      <FusionNodeSpotlight />
       <EvidencePipeline />
       <ScenariosTeaser />
       <ProofRail />
@@ -62,10 +62,7 @@ function SiteNav() {
           >
             Contact
           </a>
-          <Button
-            asChild
-            className="bg-[#1e40af] text-white shadow-sm hover:bg-[#1e3a8a]"
-          >
+          <Button asChild className="bg-[#1e40af] text-white shadow-sm hover:bg-[#1e3a8a]">
             <a href="#contact">Request pilot</a>
           </Button>
         </div>
@@ -88,7 +85,7 @@ function Hero() {
         }}
       />
       <div className="relative mx-auto max-w-7xl px-6 pt-20 pb-24 md:pt-28 md:pb-32">
-        <div className="grid items-center gap-12 md:grid-cols-2">
+        <div className="grid items-center gap-12 md:grid-cols-[5fr_6fr]">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-3 py-1 text-xs font-medium uppercase tracking-wider text-[#1e40af]">
               <ShieldCheck className="h-3.5 w-3.5" />
@@ -101,8 +98,8 @@ function Hero() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#475569]">
               Tessure fuses video, thermal, and radar at the edge to confirm real threats in
-              seconds — and overlays the VMS your sites already run. No rip-and-replace.
-              Evidence-grade audit trail by default.
+              seconds. Overlays the VMS your sites already run. Evidence-grade audit trail by
+              default. No rip-and-replace.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button
@@ -143,31 +140,29 @@ function Hero() {
             </dl>
           </div>
 
-          {/* Hero visual — Phase 5 placeholder; Phase 6 swaps in real infrastructure render */}
           <div className="relative">
-            <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#e0e7ff] via-[#eef2ff] to-[#f1f5f9] shadow-xl">
-              <div className="flex h-full items-center justify-center">
-                <div className="max-w-[280px] px-6 text-center">
-                  <Radar className="mx-auto h-12 w-12 text-[#1e40af]" strokeWidth={1.5} />
-                  <p className="mt-4 text-sm uppercase tracking-wider text-[#1e40af]">
-                    Hero visual placeholder
-                  </p>
-                  <p className="mt-3 text-sm text-[#475569]">
-                    Phase 6 will swap in a FLUX 2 Max render: calm infrastructure editorial —
-                    substation at dusk, colocation aisle, or port logistics yard in fog.
-                  </p>
-                </div>
-              </div>
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-[#e2e8f0] shadow-xl">
+              <Image
+                src="/hero-yard.jpg"
+                alt="A large intermodal logistics yard at dawn, fog drifting between rows of stacked containers, a gantry crane silhouette in the distance"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 58vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
             </div>
             <div className="absolute -bottom-4 -left-4 hidden rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-xl md:block">
               <div className="flex items-center gap-3">
-                <div className="flex h-2 w-2 items-center justify-center">
-                  <span className="absolute h-2 w-2 animate-ping rounded-full bg-[#10b981] opacity-75" />
-                  <span className="relative h-2 w-2 rounded-full bg-[#10b981]" />
-                </div>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#10b981] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#10b981]" />
+                </span>
                 <span className="text-xs font-medium text-[#0f172a]">Sector 3 · Verified</span>
               </div>
-              <p className="mt-1 text-[11px] text-[#64748b]">Radar + thermal + video · 94% confidence</p>
+              <p className="mt-1 font-mono text-[11px] text-[#64748b]">
+                radar + thermal + video · 94% confidence
+              </p>
             </div>
           </div>
         </div>
@@ -193,9 +188,6 @@ function PilotLogoRow() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center text-[11px] text-[#94a3b8]">
-          Placeholder · real customer logos replace once NDAs permit use · Phase 7
-        </p>
       </div>
     </section>
   )
@@ -207,19 +199,19 @@ function TriPillar() {
       icon: ShieldCheck,
       title: "Verified",
       body:
-        "Multi-modal fusion — video, thermal, radar, acoustic — corroborates every event before it reaches an operator. False positives drop to &lt;5% after 30-day tune.",
+        "Multi-modal fusion — video, thermal, radar, acoustic — corroborates every event before it reaches an operator. False-positive rate drops below 5% after a 30-day tune.",
     },
     {
       icon: Zap,
       title: "Fast",
       body:
-        "Detection to verification in ~30 seconds at the edge. Verified event to operator in &lt;2 seconds from fusion decision. No cloud round-trip.",
+        "Detect to verify in ~30 seconds at the edge. Verified event to operator in under 2 seconds from fusion decision. No cloud round-trip; 24 hours of autonomy during WAN loss.",
     },
     {
       icon: Lock,
       title: "Private",
       body:
-        "Data processed on-site. Identities masked until events verify. Evidence packages cryptographically hashed. Redaction by default.",
+        "Data processed on-site. Identities masked until events verify. Evidence packages cryptographically hashed and site-signed. Redaction by default.",
     },
   ]
   return (
@@ -229,10 +221,7 @@ function TriPillar() {
           <div key={title} className="rounded-xl border border-[#e2e8f0] bg-white p-8 shadow-sm">
             <Icon className="h-6 w-6 text-[#1e40af]" strokeWidth={1.75} />
             <h3 className="mt-5 text-xl font-semibold tracking-tight text-[#0f172a]">{title}</h3>
-            <p
-              className="mt-3 text-sm leading-relaxed text-[#475569]"
-              dangerouslySetInnerHTML={{ __html: body }}
-            />
+            <p className="mt-3 text-sm leading-relaxed text-[#475569]">{body}</p>
           </div>
         ))}
       </div>
@@ -255,7 +244,7 @@ function PlatformModules() {
     {
       icon: FileCheck,
       name: "Evidence",
-      blurb: "Cryptographically signed event packages. Hashed. Exportable for insurance + LE.",
+      blurb: "Cryptographically signed event packages. Hashed. Exportable for insurance and LE.",
     },
     {
       icon: Workflow,
@@ -274,7 +263,7 @@ function PlatformModules() {
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">The platform</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
-            Five modules. One verified event stream. Your existing stack intact.
+            Five modules. One verified event stream. Your stack intact.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-[#475569]">
             Tessure is a fusion brain, not a rip-and-replace. It reads from your cameras, adds the
@@ -299,58 +288,184 @@ function PlatformModules() {
   )
 }
 
-function EvidencePipeline() {
-  const steps = [
-    { step: "01", label: "Event", body: "Sensor detection: video + radar + thermal + acoustic." },
-    { step: "02", label: "Fuse", body: "Edge fusion engine corroborates across modalities." },
-    { step: "03", label: "Verify", body: "Confidence score + policy playbook lookup." },
-    { step: "04", label: "Sign", body: "Evidence package hashed, Merkle-rooted, site-signed." },
-    { step: "05", label: "Deliver", body: "VMS, SIEM, dispatch, insurance, LE — where you need it." },
+function FusionNodeSpotlight() {
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-24">
+      <div className="grid items-center gap-12 md:grid-cols-2">
+        <div className="order-2 md:order-1">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">Fusion Node</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
+            The edge appliance that does the fusion work on-site.
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-[#475569]">
+            NVIDIA Jetson Orin NX · 100 TOPS · passive-cooled IP67 enclosure. Ingests up to 16
+            video streams, 4 radar feeds, thermal, and acoustic inputs. Hashes and signs evidence
+            locally. Continues to operate for 24 hours without a WAN connection.
+          </p>
+          <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[#e2e8f0] pt-6">
+            <div>
+              <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#64748b]">
+                compute
+              </dt>
+              <dd className="mt-1 text-sm text-[#0f172a]">Jetson Orin NX · 100 TOPS</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#64748b]">
+                environment
+              </dt>
+              <dd className="mt-1 text-sm text-[#0f172a]">IP67, −20 to 60 °C</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#64748b]">
+                inputs
+              </dt>
+              <dd className="mt-1 text-sm text-[#0f172a]">16 video · 4 radar · thermal · acoustic</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#64748b]">
+                offline
+              </dt>
+              <dd className="mt-1 text-sm text-[#0f172a]">24 h edge autonomy</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="order-1 md:order-2">
+          <div className="relative aspect-square overflow-hidden rounded-2xl border border-[#e2e8f0] bg-[#f1f5f9] shadow-sm">
+            <Image
+              src="/fusion-node.jpg"
+              alt="Matte anthracite Tessure Fusion Node edge appliance on a neutral grey studio backdrop, showing the heatsink fins and a single front-mounted RJ45 port"
+              fill
+              sizes="(max-width: 768px) 100vw, 46vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function EvidencePipelineDiagram() {
+  const stages = [
+    { num: "01", label: "Event", detail: "sensor.detect()" },
+    { num: "02", label: "Fuse", detail: "cross-modality corroboration" },
+    { num: "03", label: "Verify", detail: "confidence score · policy" },
+    { num: "04", label: "Sign", detail: "sha256 · merkle · site-key" },
+    { num: "05", label: "Deliver", detail: "vms · siem · dispatch · le" },
   ]
   return (
-    <section id="pipeline" className="mx-auto max-w-7xl px-6 py-24">
-      <div className="max-w-3xl">
-        <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">The pipeline</p>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
-          Every verified event ships with an auditable chain of custody.
-        </h2>
-        <p className="mt-4 text-base leading-relaxed text-[#475569]">
-          The Tessure signature: a five-stage pipeline from raw sensor event to cryptographically
-          signed evidence package. Designed for the insurer, the regulator, and the investigator —
-          not just the operator on shift.
-        </p>
-      </div>
-      {/* Evidence diagram — Phase 5 placeholder. Phase 6 ships the hand-built SVG (signature asset). */}
-      <div className="mt-12 overflow-x-auto">
-        <div className="flex min-w-[720px] items-stretch gap-3">
-          {steps.map((s, i) => (
-            <div
-              key={s.step}
-              className="flex flex-1 items-stretch"
-            >
-              <div className="flex flex-1 flex-col justify-between rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#1e40af]">
-                    {s.step}
-                  </div>
-                  <div className="mt-2 font-mono text-sm font-semibold text-[#0f172a]">
-                    {s.label}
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-[#475569]">{s.body}</p>
-                </div>
-              </div>
-              {i < steps.length - 1 && (
-                <div className="flex w-6 items-center justify-center">
-                  <ChevronRight className="h-4 w-4 text-[#cbd5e1]" strokeWidth={2} />
-                </div>
-              )}
-            </div>
-          ))}
+    <div className="overflow-x-auto">
+      <svg
+        viewBox="0 0 1120 340"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-auto w-full min-w-[960px]"
+        role="img"
+        aria-label="Tessure evidence pipeline: event, fuse, verify, sign, deliver"
+      >
+        <defs>
+          <linearGradient id="flowLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
+            <stop offset="50%" stopColor="#1e40af" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#1e40af" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+
+        {/* Horizontal flow line */}
+        <line x1="100" y1="160" x2="1020" y2="160" stroke="url(#flowLine)" strokeWidth="2" />
+
+        {/* Tick markers on flow line */}
+        {stages.map((_, i) => {
+          const x = 100 + i * 230
+          return <circle key={i} cx={x} cy="160" r="5" fill="#1e40af" />
+        })}
+
+        {/* Stage cards */}
+        {stages.map((s, i) => {
+          const x = 100 + i * 230
+          return (
+            <g key={s.num}>
+              {/* Number circle above line */}
+              <circle cx={x} cy="80" r="28" fill="#ffffff" stroke="#1e40af" strokeWidth="1.5" />
+              <text
+                x={x}
+                y="88"
+                textAnchor="middle"
+                fontFamily="ui-monospace, 'IBM Plex Mono', monospace"
+                fontSize="14"
+                fill="#1e40af"
+              >
+                {s.num}
+              </text>
+
+              {/* Connector from circle to line */}
+              <line x1={x} y1="108" x2={x} y2="155" stroke="#cbd5e1" strokeWidth="1" />
+
+              {/* Stage label below line */}
+              <text
+                x={x}
+                y="210"
+                textAnchor="middle"
+                fontFamily="Inter, system-ui, sans-serif"
+                fontWeight="600"
+                fontSize="22"
+                fill="#0f172a"
+              >
+                {s.label}
+              </text>
+
+              {/* Detail monospace caption */}
+              <text
+                x={x}
+                y="240"
+                textAnchor="middle"
+                fontFamily="ui-monospace, 'IBM Plex Mono', monospace"
+                fontSize="12"
+                fill="#64748b"
+              >
+                {s.detail}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Arrowhead at end */}
+        <polygon points="1020,153 1038,160 1020,167" fill="#1e40af" />
+
+        {/* Frame rule at bottom */}
+        <line x1="100" y1="290" x2="1020" y2="290" stroke="#e2e8f0" strokeWidth="1" />
+        <text
+          x="100"
+          y="312"
+          fontFamily="ui-monospace, 'IBM Plex Mono', monospace"
+          fontSize="11"
+          fill="#94a3b8"
+        >
+          // Evidence Pipeline · every verified event packaged, hashed, signed, delivered
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+function EvidencePipeline() {
+  return (
+    <section id="pipeline" className="border-y border-[#e2e8f0] bg-[#f8fafc]">
+      <div className="mx-auto max-w-7xl px-6 py-24">
+        <div className="max-w-3xl">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#1e40af]">The pipeline</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#0f172a] md:text-4xl">
+            Every verified event ships with an auditable chain of custody.
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-[#475569]">
+            Five stages from raw sensor event to cryptographically signed evidence package.
+            Designed for the insurer, the regulator, and the investigator — not just the operator
+            on shift.
+          </p>
         </div>
-        <p className="mt-6 text-xs text-[#94a3b8]">
-          Placeholder. Phase 6 ships the hand-built SVG diagram — Tessure's signature section, Trust
-          Blue on Frost with IBM Plex Mono labels.
-        </p>
+
+        <div className="mt-14">
+          <EvidencePipelineDiagram />
+        </div>
       </div>
     </section>
   )
@@ -358,12 +473,42 @@ function EvidencePipeline() {
 
 function ScenariosTeaser() {
   const scenarios = [
-    { id: "critical-infrastructure", name: "Critical infrastructure", blurb: "Power, water, pipeline. Drone swarm + SCADA fused." },
-    { id: "data-center", name: "Data center", blurb: "Vehicle ram + cyber-physical correlation." },
-    { id: "logistics-yard", name: "Logistics yard", blurb: "After-hours cargo theft with insider assist." },
-    { id: "private-estate", name: "Private estate", blurb: "Wooded perimeter, quiet verified response." },
-    { id: "resort-marina", name: "Resort & marina", blurb: "Waterborne intrusion + UAS surveillance." },
-    { id: "event-overlay", name: "Event overlay", blurb: "Crowd surge at a 15,000-person venue." },
+    {
+      id: "critical-infrastructure",
+      name: "Critical infrastructure",
+      blurb: "Power substations, pipelines, water. NERC CIP-014 and TSA SD02F aligned.",
+      image: "/renders/hero/R1-1-substation-dusk.jpg",
+    },
+    {
+      id: "data-center",
+      name: "Data center",
+      blurb: "Hyperscale and colo campuses. Vehicle-ram + tailgating + cyber-physical correlation.",
+      image: "/renders/hero/R1-2-data-center-aisle.jpg",
+    },
+    {
+      id: "logistics-yard",
+      name: "Logistics yard",
+      blurb: "Prologis-tenant industrial and intermodal. After-hours fence + cargo verification.",
+      image: "/renders/hero/R1-3-logistics-yard-dawn.jpg",
+    },
+    {
+      id: "private-estate",
+      name: "Private estate",
+      blurb: "High-value residences. Insurance-driven; discreet; privacy-first.",
+      image: "/renders/editorial/private-estate-night.jpg",
+    },
+    {
+      id: "resort-marina",
+      name: "Resort & marina",
+      blurb: "Coastal properties. Waterborne intrusion + UAS surveillance.",
+      image: "/renders/editorial/marina-dusk.jpg",
+    },
+    {
+      id: "event-overlay",
+      name: "Event overlay",
+      blurb: "Temporary deploy. Crowd-density management; VIP perimeter; drone detection.",
+      image: "/renders/editorial/event-venue-evening.jpg",
+    },
   ]
   return (
     <section className="bg-white py-24">
@@ -392,16 +537,24 @@ function ScenariosTeaser() {
             <Link
               key={s.id}
               href="/demo"
-              className="group rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
+              className="group overflow-hidden rounded-xl border border-[#e2e8f0] bg-[#f8fafc] transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
-              <div className="aspect-[16/9] overflow-hidden rounded-lg bg-gradient-to-br from-[#e0e7ff] to-[#f1f5f9] text-xs uppercase tracking-wider text-[#94a3b8]">
-                <div className="flex h-full items-center justify-center">Scenario thumbnail placeholder</div>
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <Image
+                  src={s.image}
+                  alt={s.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition group-hover:scale-[1.02]"
+                />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-[#0f172a]">{s.name}</h3>
-              <p className="mt-1 text-sm text-[#475569]">{s.blurb}</p>
-              <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#1e40af] group-hover:text-[#1e3a8a]">
-                Open demo <ArrowRight className="h-3 w-3" />
-              </span>
+              <div className="p-6">
+                <h3 className="text-base font-semibold text-[#0f172a]">{s.name}</h3>
+                <p className="mt-1 text-sm text-[#475569]">{s.blurb}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#1e40af] group-hover:text-[#1e3a8a]">
+                  Open demo <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
             </Link>
           ))}
         </div>
@@ -412,9 +565,9 @@ function ScenariosTeaser() {
 
 function ProofRail() {
   const stats = [
-    { value: "94–99%", label: "Industry-measured FP rate on single-modality" },
+    { value: "94–99%", label: "Industry-measured FP rate on single-modality perimeter" },
     { value: "<5%", label: "Tessure design target after 30-day tune" },
-    { value: "$725M", label: "US cargo theft 2025 (Verisk CargoNet, +60% YoY)" },
+    { value: "$725M", label: "US cargo theft 2025 (Verisk CargoNet) · +60% YoY" },
     { value: "3,500+", label: "Physical incidents at critical infra 2024 (E-ISAC)" },
   ]
   return (
@@ -428,9 +581,9 @@ function ProofRail() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[#475569]">
               Physical security has been paying for noise for a decade. Multi-modal edge fusion
-              turns "someone or something moved" into "adult human, 1.8 m, 20 m from the fence,
-              moving toward protected asset at 0.8 m/s." Operators stop being classifiers and
-              start being decision-makers.
+              turns "something moved" into "adult human, 1.8 m, 20 m from the fence, moving toward
+              protected asset at 0.8 m/s." Operators stop being classifiers and start being
+              decision-makers.
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-6">
@@ -448,8 +601,8 @@ function ProofRail() {
           <p className="text-xs uppercase tracking-[0.2em] text-[#64748b]">Compliance posture</p>
           <div className="mt-4 flex flex-wrap gap-3">
             {[
-              "SOC 2 Type 1 (pending)",
-              "ISO 27001 (planned)",
+              "SOC 2 Type 1 · pending",
+              "ISO 27001 · planned",
               "UL",
               "FCC Part 15",
               "CE",
@@ -464,9 +617,6 @@ function ProofRail() {
               </span>
             ))}
           </div>
-          <p className="mt-6 text-xs text-[#94a3b8]">
-            Placeholder badges. Phase 6 / launch swaps in official cert marks.
-          </p>
         </div>
       </div>
     </section>
@@ -475,32 +625,33 @@ function ProofRail() {
 
 function InfrastructurePanel() {
   return (
-    <section className="relative overflow-hidden border-y border-[#1e293b] bg-[#0f172a]">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-10"
-        style={{
-          backgroundImage:
-            "linear-gradient(#60a5fa 1px, transparent 1px), linear-gradient(90deg, #60a5fa 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0">
+        <Image
+          src="/panel-install.jpg"
+          alt="A dark anthracite Tessure Fusion Node mounted on a pole at a transmission substation in light rain at blue hour"
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0b1220]/90 via-[#0b1220]/75 to-[#0b1220]/55" />
+      </div>
       <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#93c5fd]">Civilian-enterprise, not defense-tech</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[#93c5fd]">
+            Civilian-enterprise, not defense-tech
+          </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
             Built for the VP Security, not the warfighter.
           </h2>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#cbd5e1]">
             Tessure is engineered for risk officers, facilities VPs, GSOC operators, and insurance
-            loss-control teams — the actual people holding liability for critical commercial
-            infrastructure. Not DoD-inherited aesthetics. Not militarized workflows. Not tactical
-            pastiche. Trusted infrastructure, quietly.
+            loss-control teams — the people who hold liability for critical commercial
+            infrastructure. Not DoD-inherited aesthetics. Not militarized workflows. Trusted
+            infrastructure, quietly.
           </p>
         </div>
       </div>
-      <p className="relative mx-auto max-w-7xl px-6 pb-6 text-xs text-[#64748b]">
-        Phase 6 swaps in a full-bleed editorial photo (substation at dusk / data-center aisle).
-      </p>
     </section>
   )
 }
@@ -523,7 +674,7 @@ function Resources() {
           </div>
           <div className="flex flex-col gap-4">
             <a
-              href="#"
+              href="#contact"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
@@ -535,7 +686,7 @@ function Resources() {
               <Download className="h-5 w-5 text-[#1e40af]" />
             </a>
             <a
-              href="#"
+              href="#contact"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
@@ -545,7 +696,7 @@ function Resources() {
               <Download className="h-5 w-5 text-[#1e40af]" />
             </a>
             <a
-              href="#"
+              href="#contact"
               className="group flex items-center justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-6 transition hover:border-[#1e40af]/30 hover:bg-white hover:shadow-sm"
             >
               <div>
@@ -556,9 +707,6 @@ function Resources() {
             </a>
           </div>
         </div>
-        <p className="mt-8 text-xs text-[#94a3b8]">
-          Links placeholder. Phase 9 (launch) wires the actual downloads.
-        </p>
       </div>
     </section>
   )
@@ -624,7 +772,7 @@ function SiteFooter() {
                 <a href="#platform" className="hover:text-[#0f172a]">Command</a>
               </li>
               <li>
-                <a href="#platform" className="hover:text-[#0f172a]">Evidence</a>
+                <a href="#pipeline" className="hover:text-[#0f172a]">Evidence</a>
               </li>
               <li>
                 <a href="#platform" className="hover:text-[#0f172a]">Integrations</a>
@@ -653,10 +801,7 @@ function SiteFooter() {
                 </a>
               </li>
               <li>
-                <a
-                  href="mailto:sean.florez@colorado.edu"
-                  className="hover:text-[#0f172a]"
-                >
+                <a href="mailto:sean.florez@colorado.edu" className="hover:text-[#0f172a]">
                   Contact
                 </a>
               </li>
@@ -665,7 +810,7 @@ function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-col gap-3 border-t border-[#e2e8f0] pt-6 text-xs text-[#94a3b8] md:flex-row md:items-center md:justify-between">
           <span>© 2026 Tessure Systems, Inc. All rights reserved.</span>
-          <span>v1 scaffold · Phase 5 of the idea-to-site playbook</span>
+          <span>v2 · Phase 7 of the idea-to-site playbook</span>
         </div>
       </div>
     </footer>

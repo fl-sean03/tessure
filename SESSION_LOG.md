@@ -231,3 +231,26 @@ Files: site/app/page.tsx (full rewrite, scaffold), site/app/demo/page.tsx (new, 
 Cost this phase: $0 (no asset generation; Vercel Hobby)
 
 Next: Phase 6 (Asset Iteration). Hero shot + Fusion Node render + evidence-pipeline SVG + infrastructure editorial set + scenario thumbnails. Budget ~$2 for Phase 6 image generation.
+
+## 2026-04-14T03:10Z: Phase 6 (Asset Iteration) complete
+
+What: 15 FLUX 2 Max renders across 2 rounds. Tier 1 set locked (hero + product + installed). Tier 2 set locked (6 scenario editorials). DESIGN_REVIEW_FINAL.md captures rubric + scores + section assignments.
+
+Cost: $1.50 (15 × $0.10). Under budget (25% below $2 estimate).
+
+Hero winner: `R2-1-yard-cinematic.jpg` (9.5/10). Stripe-level editorial — vanishing-point corridor between container stacks, fog, crane silhouette, single distant headlight. Plenty of overlay room for text if needed.
+Product primary: `R2-1-studio-3q.jpg` (9/10). Matte dark anthracite, proper heatsink, single RJ45 + LED, mounting flanges. Clean documentary style.
+Installed-story: `R2-2-substation-install.jpg` (9/10). Pole-mounted appliance at substation in rain.
+Scenario editorials: 6 × 8-9/10. One per archetype — exact 1:1 mapping to the six Three.js demo scenarios.
+
+No Round 3 needed. Actual reject rate ~10% (not the 30-50% Wayhaven saw for vehicle renders) — infrastructure photography is a strong FLUX zone + prompt cheat-sheet was well-tuned.
+
+Kill-switches: not fired.
+
+Files:
+- site/public/renders/hero/R1-{1,2,3,4}, R2-{1,2}
+- site/public/renders/fusion-node/R1-{1,2,3,4}, R2-{1,2}
+- site/public/renders/editorial/{marina-dusk, private-estate-night, event-venue-evening}
+- research/DESIGN_REVIEW_FINAL.md
+
+Next: Phase 7 — rebuild site v2 integrating all Tier 1 + Tier 2 assets, build inline evidence-pipeline SVG diagram (signature section), tighten copy, wire OG image, hit Lighthouse 90+.

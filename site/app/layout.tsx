@@ -19,12 +19,14 @@ export const metadata: Metadata = {
       "Edge multi-sensor fusion for critical infrastructure. Verified response in seconds.",
     type: "website",
     siteName: "Tessure",
+    images: [{ url: "/og.jpg", width: 1120, height: 630, alt: "Tessure — Trusted Autonomous Security" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Tessure — Trusted Autonomous Security",
     description:
       "Edge multi-sensor fusion for critical infrastructure. Verified response in seconds.",
+    images: ["/og.jpg"],
   },
   robots: {
     index: true,
