@@ -375,3 +375,18 @@ Duration: ~4 hours elapsed (Phase 0 start 00:00Z, Phase 9 complete 03:55Z)
 6. If project ever revived: analyst briefings with Gartner/Forrester/IPVM (Year-1 GTM addition from Pass 3)
 
 **Playbook run status: COMPLETE.**
+
+## 2026-04-14T04:15Z: Post-launch polish
+
+User feedback (1): Resources PDFs were stubs linking to #contact. (2): scenarios on a separate /demo route should be inlined.
+
+Actions:
+- Wrote 3 HTML whitepapers with Tessure-branded CSS (Inter + IBM Plex Mono, Trust Blue, proper page headers/footers, print margins) — rendered to PDF via Chrome headless:
+  - tessure-architecture.pdf — 14 pages · technical (exec summary, system overview, hardware, fusion engine, evidence pipeline, integrations, privacy, resilience, security, deployment, what-we-don't-do)
+  - tessure-privacy.pdf — 9 pages · legal + ops (position, collection map, redaction by default, opt-in biometrics, evidence-as-privacy-feature, regulatory table, access control + audit, cloud-assist exposure)
+  - tessure-pilot-readiness.pdf — 2 pages · operations (10-section checklist covering site/scope, baseline, success criteria, sensors, network, privacy, playbooks, evidence, operators, commercial)
+- Saved to site/public/whitepapers/, linked from Resources (target=_blank) and Hero Architecture-whitepaper button
+- Built components/scenarios-inline.tsx client component — scenario cards become the primary picker (set currentScenario via zustand + smooth-scroll to #live-simulation where DefenseDemo + ScenarioExplanation render)
+- Removed app/demo/ route, dropped /demo from sitemap, repointed nav + footer + CTAs to #scenarios anchor
+- Build clean (6 routes, / = 305 KB JS including Three.js)
+- Deploy dpl_DApY74UUnzKFUtFHkGMM7TAvuTjx READY; PDFs serve with application/pdf; /demo cleanly 404s
