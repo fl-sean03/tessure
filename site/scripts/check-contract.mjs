@@ -22,6 +22,7 @@ for (const slug of slugs) {
   assert(s.palette.exposure > 0 && s.palette.hemisphereIntensity >= 0)
   assert(s.palette.shadowBounds.right > s.palette.shadowBounds.left)
   assert(s.beats[3].action)
+  assert(s.cameras.every((key, i) => (i === 0 || key.at > s.cameras[i - 1].at) && (key.fov === undefined || (key.fov >= 15 && key.fov <= 90))), 'ordered camera keys and usable field of view')
   assert.equal(s.cameras[0].at, 0)
   assert(s.cameras.at(-1).at >= s.duration)
   for (const t of [0, ...s.beats.map(b => b.at), s.duration]) {
