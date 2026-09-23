@@ -1,66 +1,16 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { IBM_Plex_Sans, IBM_Plex_Sans_Condensed, IBM_Plex_Mono } from "next/font/google"
-import "./globals.css"
-
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-plex-sans",
-  display: "swap",
-})
-
-const plexDisplay = IBM_Plex_Sans_Condensed({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-plex-display",
-  display: "swap",
-})
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-mono",
-  display: "swap",
-})
-
+import type { Metadata, Viewport } from 'next'
+import localFont from 'next/font/local'
+import './globals.css'
+const sans = localFont({ src: [{ path: '../public/fonts/ibm-plex-sans-latin-400-normal.woff2', weight: '400' }, { path: '../public/fonts/ibm-plex-sans-latin-500-normal.woff2', weight: '500' }, { path: '../public/fonts/ibm-plex-sans-latin-600-normal.woff2', weight: '600' }], variable: '--font-sans', display: 'swap' })
+const mono = localFont({ src: '../public/fonts/ibm-plex-mono-latin-400-normal.woff2', variable: '--font-mono', display: 'swap', preload: false })
 export const metadata: Metadata = {
-  metadataBase: new URL("https://v0-tessure.vercel.app"),
-  title: {
-    default: "Tessure — Trusted Autonomous Security",
-    template: "%s — Tessure",
-  },
-  description:
-    "Edge multi-sensor fusion for critical infrastructure. Verified response in seconds. Overlays existing VMS. Privacy by default.",
-  openGraph: {
-    title: "Tessure — Trusted Autonomous Security",
-    description:
-      "Edge multi-sensor fusion for critical infrastructure. Verified response in seconds.",
-    type: "website",
-    siteName: "Tessure",
-    images: [{ url: "/og.jpg", width: 1120, height: 630, alt: "Tessure — Trusted Autonomous Security" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Tessure — Trusted Autonomous Security",
-    description:
-      "Edge multi-sensor fusion for critical infrastructure. Verified response in seconds.",
-    images: ["/og.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  metadataBase: new URL('https://v0-tessure.vercel.app'),
+  title: { default: 'Tessure — More context. A considered response.', template: '%s — Tessure' },
+  description: 'A physical security concept that brings cameras and other site sensors together, so people can understand an event before they respond. Explore six illustrative worlds.',
+  alternates: { canonical: '/' },
+  openGraph: { title: 'Tessure — Many signals. One clear picture.', description: 'Explore a concept for physical security built around context, evidence and human decisions.', type: 'website', locale: 'en_US', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Tessure: Many signals. One clear picture. A physical security concept.' }] },
+  twitter: { card: 'summary_large_image' },
+  icons: { icon: '/icon.svg' },
 }
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html lang="en" className={`${plexSans.variable} ${plexDisplay.variable} ${plexMono.variable}`}>
-      <body className="font-sans">{children}</body>
-    </html>
-  )
-}
+export const viewport: Viewport = { themeColor: '#f3f2ed', width: 'device-width', initialScale: 1 }
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body className={`${sans.variable} ${mono.variable}`}><a className="skip-link" href="#main">Skip to content</a>{children}</body></html> }
