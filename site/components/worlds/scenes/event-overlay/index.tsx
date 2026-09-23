@@ -1,5 +1,41 @@
-import type { SceneModule } from '../../contract'
-import { ReferenceWorld } from '../../reference'
+'use client'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { BufferGeometry, CapsuleGeometry, Color, DataTexture, DoubleSide, Float32BufferAttribute, Group, InstancedMesh, LinearFilter, Object3D, RGBAFormat, SphereGeometry } from 'three'
+import type { SceneModule, Vec3, WorldProps } from '../../contract'
+import { mix, progress, seeded, smooth } from '../../math'
+import { assembly, makeSign, makeSite, materials, type Part } from './geometry'
 import { definition } from './content'
-const scene: SceneModule = { definition, World: ReferenceWorld }
+import { SegmentPath } from '../../primitives'
+import { actorAt, COUNT } from './choreography'
+function Parts({parts}:{parts:Part[]}){return <>{parts.map((p,i)=><mesh key={i} geometry={p.geometry} material={p.material} castShadow={!p.material.userData.noShadow} receiveShadow/>)}</>}
+function contactTexture(){const data=new Uint8Array(32*32*4);for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=(y*32+x)*4,r=((x-15.5)/15.5)**2+((y-15.5)/15.5)**2;data[i]=data[i+1]=data[i+2]=255;data[i+3]=Math.round(Math.max(0,1-r)**2*190)}const tx=new DataTexture(data,32,32,RGBAFormat);tx.magFilter=tx.minFilter=LinearFilter;tx.needsUpdate=true;return tx}
+function Crowd({clock,quality}:{clock:WorldProps['clock'];quality:WorldProps['quality']}){
+ const refs=useRef<(InstancedMesh|null)[]>([]),shadow=useRef<InstancedMesh>(null),geometries=useMemo(()=>[new SphereGeometry(1,quality==='high'?10:8,quality==='high'?8:6),new CapsuleGeometry(1,1,2,8)],[quality]),contact=useMemo(contactTexture,[])
+ useLayoutEffect(()=>{const skin=['#bf987d','#88614e','#d6b394','#ad795e'],clothes=['#d1b392','#bd8067','#78918e','#8b81a2','#d7cbbc','#9b5363','#667c9c','#ceb57b'];refs.current.forEach((mesh,part)=>{if(!mesh)return;for(let i=0;i<COUNT;i++)mesh.setColorAt(i,new Color(part===0?skin[i%4]:part===1?'#37313b':part<5?(i>=COUNT-2?'#d9c267':clothes[Math.floor(seeded(i+14)*clothes.length)]):'#393945'));if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true})},[quality])
+ useEffect(()=>()=>geometries.forEach(g=>g.dispose()),[geometries]);useEffect(()=>()=>contact.dispose(),[contact])
+ useFrame(()=>{const t=clock.current.time,d=new Object3D(),root=new Object3D();for(let i=0;i<COUNT;i++){const p=actorAt(i,t),scale=.87+seeded(i+77)*.2,phase=t*(3.7+seeded(i)*.8)+seeded(i+9)*6.28,gait=p.moving?Math.sin(phase)*.32:0;root.position.set(p.x,p.y,p.z);root.rotation.set(0,p.heading,0);root.scale.setScalar(scale);root.updateMatrix();const parts:[Vec3,Vec3,Vec3][]=[[[0,1.58,0],[.145,.18,.145],[0,0,0]],[[0,1.67,-.015],[.151,.105,.146],[0,0,0]],[[0,1.12,0],[.205,.205,.135],[0,0,0]],[[-.265,1.11,-gait*.19],[.065,.15,.065],[gait,0,-.08]],[[.265,1.11,gait*.19],[.065,.15,.065],[-gait,0,p.steward&&t>=31.5?-.95:.08]],[[-.105,.43,gait*.19],[.078,.23,.08],[-gait,0,0]],[[.105,.43,-gait*.19],[.078,.23,.08],[gait,0,0]],[[-.105,.075,gait*.32+.045],[.092,.06,.16],[0,0,0]],[[.105,.075,-gait*.32+.045],[.092,.06,.16],[0,0,0]]];parts.forEach(([pos,sz,rot],k)=>{d.position.set(...pos);d.scale.set(...sz);d.rotation.set(...rot);d.updateMatrix();d.matrix.premultiply(root.matrix);refs.current[k]?.setMatrixAt(i,d.matrix)});d.position.set(p.x,p.y+.015,p.z);d.rotation.set(-Math.PI/2,0,0);d.scale.set(.9,.67,1);d.updateMatrix();shadow.current?.setMatrixAt(i,d.matrix)}refs.current.forEach(m=>{if(m){m.instanceMatrix.needsUpdate=true;m.computeBoundingSphere()}});if(shadow.current){shadow.current.instanceMatrix.needsUpdate=true;shadow.current.computeBoundingSphere()}})
+ return <>{Array.from({length:9},(_,k)=><instancedMesh key={k} ref={m=>{refs.current[k]=m}} args={[geometries[k<2||k>6?0:1],undefined,COUNT]} castShadow receiveShadow><meshStandardMaterial roughness={.87}/></instancedMesh>)}<instancedMesh ref={shadow} args={[undefined,undefined,COUNT]}><planeGeometry args={[1,1]}/><meshBasicMaterial color="#292335" map={contact} transparent opacity={.47} depthWrite={false}/></instancedMesh></>
+}
+function Flow({clock,layers}:{clock:WorldProps['clock'];layers:WorldProps['layers']}){
+ const initial=useRef<Group>(null),alternate=useRef<Group>(null),sensors=useRef<Group>(null),adjacent=useRef<Group>(null),closed=useRef<Group>(null)
+ const arrow=useMemo(()=>{const g=new BufferGeometry();g.setAttribute('position',new Float32BufferAttribute([-.4,0,-.075,.1,0,-.075,.1,0,.075,-.4,0,-.075,.1,0,.075,-.4,0,.075,.05,0,-.23,.5,0,0,.05,0,.23],3));g.computeVertexNormals();return g},[]);useEffect(()=>()=>arrow.dispose(),[arrow])
+ useFrame(()=>{const t=clock.current.time;if(initial.current)initial.current.visible=layers.tracks&&t>=4&&t<32;if(alternate.current)alternate.current.visible=layers.tracks&&t>=32;if(sensors.current)sensors.current.visible=layers.sensors&&t>=4;if(adjacent.current)adjacent.current.visible=layers.sensors&&t>=11;if(closed.current)closed.current.visible=layers.sensors&&t>=18})
+ return <><group ref={initial} visible={false}>{[-13,-9,-5,-1,3,7,11,15].map(x=><group key={x}>{[11.9,10.15].map((z,j)=><mesh key={j} position={[x,.16,z]} rotation={[0,j?Math.PI:0,0]} geometry={arrow}><meshBasicMaterial color={j?'#d2b5a0':'#b7d4cb'} side={DoubleSide} transparent opacity={.65}/></mesh>)}</group>)}</group><group ref={alternate} visible={false}>{[-5,-1,3,7,11].map(x=><mesh key={x} geometry={arrow} position={[x,.17,15.9]}><meshBasicMaterial color="#b7d4cb" side={DoubleSide} transparent opacity={.7}/></mesh>)}</group><group ref={sensors} visible={false}><mesh position={[-10,5.85,13.8]}><sphereGeometry args={[.14,10,8]}/><meshBasicMaterial color="#aacbd0"/></mesh><SegmentPath points={[[-15,.18,12.65],[-15,.18,9.2],[1,.18,9.2]]} color="#aacbd0" opacity={.65}/></group><group ref={adjacent} visible={false}><mesh position={[10,5.85,7.9]}><sphereGeometry args={[.14,10,8]}/><meshBasicMaterial color="#e4c19d"/></mesh><SegmentPath points={[[15,.18,9.2],[15,.18,12.65],[-1,.18,12.65]]} color="#e4c19d" opacity={.65}/></group><group ref={closed} visible={false}><mesh position={[7,1.2,7.8]}><sphereGeometry args={[.105,10,8]}/><meshBasicMaterial color="#e4c19d"/></mesh></group></>
+}
+function Grounding(){
+ const texture=useMemo(contactTexture,[]),ref=useRef<InstancedMesh>(null)
+ useEffect(()=>()=>texture.dispose(),[texture])
+ const items=[[-20,-11,4,3.4],[-17,-15,4,3.4],[-4,-15,4,3.4],[10,-11,5.3,4.4],[20,-11,4.4,3.8],[22,13,3,2.7],[15,4.5,6.8,4.8],[19,-2,6.2,4.8],[-19,3,6,4.8]]
+ useLayoutEffect(()=>{const o=new Object3D();items.forEach(([x,z,w,d],i)=>{o.position.set(x,.075,z);o.rotation.set(-Math.PI/2,0,0);o.scale.set(w,d,1);o.updateMatrix();ref.current!.setMatrixAt(i,o.matrix)});ref.current!.instanceMatrix.needsUpdate=true;ref.current!.computeBoundingSphere()},[])
+ return <instancedMesh ref={ref} args={[undefined,undefined,9]}><planeGeometry/><meshBasicMaterial color="#292535" map={texture} transparent opacity={.34} depthWrite={false}/></instancedMesh>
+}
+function World({clock,quality,layers}:WorldProps){
+ const high=quality==='high',m=useMemo(materials,[]),site=useMemo(()=>makeSite(m,high),[m,high]),sign=useMemo(()=>makeSign(m,high),[m,high]),board=useRef<Group>(null)
+ const contacts=useMemo(()=>{const a=assembly(m,high);for(const [x,z,w,d] of [[-7,-9,15.7,9.4],[15,4.5,5.5,3.6],[19,-2,5,3.6],[-19,3,4.8,3.6]])a.box([x,.012,z],[w,.009,d],'earth',0);return a.finish()},[m,high])
+ useEffect(()=>()=>[...site,...sign,...contacts].forEach(p=>p.geometry.dispose()),[site,sign,contacts]);useEffect(()=>()=>Object.values(m).forEach(mat=>{mat.map?.dispose();mat.dispose()}),[m])
+ useFrame(()=>{if(board.current)board.current.rotation.y=mix(0,-Math.PI/2,smooth(progress(clock.current.time,28,31.5)))})
+ return <group><Parts parts={site}/><Parts parts={contacts}/><Grounding/><Crowd clock={clock} quality={quality}/><group ref={board} position={[-8.7,.13,11.2]}><Parts parts={sign}/></group><group position={[12,.13,16.9]} rotation={[0,Math.PI/2,0]}><Parts parts={sign}/></group><Flow clock={clock} layers={layers}/><pointLight position={[-6,4.5,-7]} color="#ffd09a" intensity={85} distance={17} decay={2}/>{high&&<><pointLight position={[15,3,6.1]} color="#ffcc91" intensity={19} distance={9} decay={2}/><pointLight position={[-17,3.2,5]} color="#ffcc91" intensity={16} distance={8} decay={2}/></>}</group>
+}
+const scene:SceneModule={definition,World}
 export default scene
