@@ -1,222 +1,37 @@
 import type { SceneDefinition } from '../../contract'
 export const definition: SceneDefinition = {
-  "id": "event-overlay",
-  "number": "04",
-  "name": "Event overlay",
-  "subtitle": "Understand the flow",
-  "description": "A shared concourse. Opposing movement. A decision made with the whole site in view.",
-  "lesson": "See a changing flow without naming the people in it.",
-  "setting": "Outdoor amphitheatre \u00b7 evening",
-  "establishing": {"title": "A site in motion", "body": "Arrivals, staff and service traffic share a temporary event site."},
-  "duration": 46,
-  "poster": "/worlds/event-overlay/poster.svg",
-  "posterAlt": "Illustrative architectural site model for the event overlay sequence.",
-  "palette": {
-    "background": "#d8dcd3",
-    "fog": "#d8dcd3",
-    "fogNear": 90,
-    "fogFar": 210,
-    "ambient": 1.5,
-    "sun": "#fff2d6",
-    "sunIntensity": 3,
-    "sunPosition": [
-      -35,
-      55,
-      25
-    ],
-    "hemisphereSky": "#d4e6ed",
-    "hemisphereGround": "#6c6955",
-    "hemisphereIntensity": 0.7,
-    "exposure": 1.0,
-    "toneMapping": "aces",
-    "shadowBounds": {
-      "left": -65,
-      "right": 65,
-      "top": 65,
-      "bottom": -65,
-      "near": 1,
-      "far": 210,
-      "bias": -0.0004,
-      "normalBias": 0.06,
-      "mapSize": 1024
-    }
+  id: 'event-overlay', number: '04', name: 'Event overlay',
+  subtitle: 'Understand a crowd without naming anyone',
+  description: 'An evening performance. Two directions sharing a narrow concourse. Local context for the event lead.',
+  lesson: 'A closed passage can explain a changing flow. The proposed concept links anonymous observations to a human decision and its record.',
+  setting: 'Lawn amphitheatre · violet evening', duration: 46,
+  establishing: { title: 'An evening on the lawn', body: 'People arrive for the performance while others return to the stalls. Both use the temporary concourse beside the terraced lawn.' },
+  poster: '/worlds/event-overlay/poster.webp',
+  posterAlt: 'An original evening amphitheatre model: ivory tensile stage roof, curved lawn terraces, warm-lit stalls and people using a temporary concourse and its frontage bypass.',
+  palette: {
+    background: '#56516b', fog: '#69627a', fogNear: 75, fogFar: 165,
+    ambient: 0.34, sun: '#d9c3e6', sunIntensity: 1.65, sunPosition: [-24, 30, 18],
+    hemisphereSky: '#b7afeb', hemisphereGround: '#4b364b', hemisphereIntensity: 1.2,
+    exposure: 1.14, toneMapping: 'aces',
+    shadowBounds: { left: -33, right: 33, top: 30, bottom: -28, near: 1, far: 100, bias: -0.00025, normalBias: 0.035, mapSize: 2048 },
   },
-  "cameras": [
-    {
-      "at": 0,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smoother",
-      "interpolation": "spline"
-    },
-    {
-      "at": 4,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 18,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 33,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 46,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    }
+  practicalLightLimit: 3,
+  cameras: [
+    { at: 0, position: [37, 34, 46], target: [-1, 1, 1], mobilePosition: [32, 36, 49], mobileTarget: [0, 1, 3], fov: 40, easing: 'smoother', interpolation: 'spline' },
+    { at: 4, position: [29, 24, 38], target: [-1, 1, 6], mobilePosition: [20, 27, 39], mobileTarget: [-1, 1, 8], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 11, position: [20, 16, 29], target: [-1, 1, 9], mobilePosition: [13, 20, 28], mobileTarget: [-1, 0.8, 10], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 18, position: [16, 15, 25], target: [1, 1, 8], mobilePosition: [12, 18, 27], mobileTarget: [1, 1, 9], fov: 40, cut: true, easing: 'smoother', interpolation: 'spline' },
+    { at: 25, position: [13, 13, 26], target: [-1, 1, 10], mobilePosition: [10, 16, 28], mobileTarget: [-1, 1, 10], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 33, position: [24, 25, 39], target: [0, 1, 8], mobilePosition: [18, 27, 38], mobileTarget: [0, 1, 11], fov: 40, easing: 'smoother', interpolation: 'spline' },
+    { at: 40, position: [34, 34, 45], target: [-1, 1, 3], mobilePosition: [15, 26, 34], mobileTarget: [0, 1, 11], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 46, position: [35, 35, 47], target: [-1, 1, 3], mobilePosition: [15, 26, 34], mobileTarget: [0, 1, 11], fov: 40 },
   ],
-  "beats": [
-    {
-      "id": "detect",
-      "at": 4,
-      "title": "A flow begins to slow",
-      "body": "Movement slows where two pedestrian paths meet.",
-      "evidence": [
-        {
-          "source": "Wide camera",
-          "detail": "Movement slows where two pedestrian paths meet."
-        }
-      ]
-    },
-    {
-      "id": "verify",
-      "at": 11,
-      "title": "Opposing movement is visible",
-      "body": "Adjacent camera views illustrate people moving in opposing directions.",
-      "evidence": [
-        {
-          "source": "Adjacent view",
-          "detail": "Adjacent camera views illustrate people moving in opposing directions."
-        }
-      ]
-    },
-    {
-      "id": "correlate",
-      "at": 18,
-      "title": "A passage is closed",
-      "body": "A closed-passage event adds context to the illustrated bottleneck.",
-      "evidence": [
-        {
-          "source": "Passage status",
-          "detail": "A closed-passage event adds context to the illustrated bottleneck."
-        }
-      ]
-    },
-    {
-      "id": "decide",
-      "at": 25,
-      "title": "Bring in the event lead",
-      "body": "The event lead chooses to direct arrivals along an approved alternate route.",
-      "evidence": [
-        {
-          "source": "Event lead",
-          "detail": "The event lead chooses to direct arrivals along an approved alternate route."
-        }
-      ],
-      "action": "Direct arrivals to the alternate route"
-    },
-    {
-      "id": "respond",
-      "at": 33,
-      "title": "Stewards open the other route",
-      "body": "Stewards and wayfinding redirect movement in the authored sequence.",
-      "evidence": [
-        {
-          "source": "Stewards",
-          "detail": "Stewards and wayfinding redirect movement in the authored sequence."
-        }
-      ]
-    },
-    {
-      "id": "resolve",
-      "at": 40,
-      "title": "A change with a recorded reason",
-      "body": "The intervention and its supporting observations remain linked. This is not a crowd-safety prediction.",
-      "evidence": [
-        {
-          "source": "Event record",
-          "detail": "The intervention and its supporting observations remain linked. This is not a crowd-safety prediction."
-        }
-      ]
-    }
+  beats: [
+    { id: 'detect', at: 4, title: 'A flow begins to slow', body: 'Arrivals and returning visitors slow at the same narrow concourse. For this temporary site, a change here affects access between the lawn and the stalls.', evidence: [{ source: 'Concourse wide camera', detail: 'Two streams shorten their forward movement near the pinch point.' }] },
+    { id: 'verify', at: 11, title: 'Two directions, one constraint', body: 'The proposed on-site concept checks the adjacent wide views together. They show opposing directions sharing the constrained route, without identifying anyone.', evidence: [{ source: 'Lawn-side camera', detail: 'Arrivals approach from the left.' }, { source: 'Stall-side camera', detail: 'Returning visitors approach from the right.' }] },
+    { id: 'correlate', at: 18, title: 'The closed passage explains the detour', body: 'A passage-status event is linked to the camera observations. The shortcut remains closed, so both directions have been using the concourse.', evidence: [{ source: 'Passage status', detail: 'The cross-lawn opening is marked closed.' }, { source: 'Site route plan', detail: 'A frontage bypass is available for steward-led arrivals.' }] },
+    { id: 'decide', at: 25, title: 'The event lead chooses the route', body: 'The linked views and passage state give the event lead one picture to review. The authored decision is to guide arrivals around the frontage while returning visitors keep the concourse.', evidence: [{ source: 'Review record', detail: 'Camera observations and the closed-passage event are attached.' }], action: 'Send stewards to the alternate route' },
+    { id: 'respond', at: 33, title: 'Stewards make the alternative visible', body: 'Following the event lead’s decision, stewards take their positions and turn the wayfinding toward the frontage bypass. Arrivals begin to follow it.', evidence: [{ source: 'Steward response', detail: 'A steward indicates the turn at the bypass entrance.' }, { source: 'Directional wayfinding', detail: 'The arrival arrow now points along the frontage.' }] },
+    { id: 'resolve', at: 40, title: 'A route change with its reason retained', body: 'Arrivals use the alternate route in this authored illustration. The original passage stays closed; observations, the event lead’s choice and the intervention remain linked in the record.', evidence: [{ source: 'Adjacent wide views', detail: 'Arrivals use the frontage; returning visitors continue along the concourse.' }, { source: 'Event record', detail: 'The route decision and steward response are recorded together.' }] },
   ],
-  "practicalLightLimit": 2
 }
