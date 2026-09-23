@@ -1,222 +1,43 @@
 import type { SceneDefinition } from '../../contract'
+
 export const definition: SceneDefinition = {
-  "id": "private-estate",
-  "number": "01",
-  "name": "Private estate",
-  "subtitle": "The value of a quiet decision",
-  "description": "A wooded hillside. An ambiguous movement. Enough context to leave the morning undisturbed.",
-  "lesson": "Evidence can justify doing less.",
-  "setting": "Woodland residence \u00b7 misty dawn",
-  "establishing": {"title": "An ordinary evening", "body": "A resident returns while the garden and service path settle into evening."},
-  "duration": 46,
-  "poster": "/worlds/private-estate/poster.svg",
-  "posterAlt": "Illustrative architectural site model for the private estate sequence.",
-  "palette": {
-    "background": "#d8dcd3",
-    "fog": "#d8dcd3",
-    "fogNear": 90,
-    "fogFar": 210,
-    "ambient": 1.5,
-    "sun": "#fff2d6",
-    "sunIntensity": 3,
-    "sunPosition": [
-      -35,
-      55,
-      25
-    ],
-    "hemisphereSky": "#d4e6ed",
-    "hemisphereGround": "#6c6955",
-    "hemisphereIntensity": 0.7,
-    "exposure": 1.0,
-    "toneMapping": "aces",
-    "shadowBounds": {
-      "left": -65,
-      "right": 65,
-      "top": 65,
-      "bottom": -65,
-      "near": 1,
-      "far": 210,
-      "bias": -0.0004,
-      "normalBias": 0.06,
-      "mapSize": 1024
-    }
+  id: 'private-estate', number: '01', name: 'Private estate',
+  subtitle: 'The value of a quiet decision',
+  description: 'A home at the woodland edge. One uncertain movement. A reason to leave the morning undisturbed.',
+  lesson: 'Evidence can justify doing less. Here, an operator can dismiss a wildlife notification and preserve the reason for that decision.',
+  establishing: {
+    title: 'Before the house wakes',
+    body: 'Warm rooms overlook the damp garden. At this occupied home, a useful response protects residents’ quiet and privacy as well as their security.',
   },
-  "cameras": [
-    {
-      "at": 0,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smoother",
-      "interpolation": "spline"
-    },
-    {
-      "at": 4,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 18,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 33,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 46,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    }
+  setting: 'Woodland residence · misty dawn', duration: 46,
+  poster: '/worlds/private-estate/poster.webp',
+  posterAlt: 'A russet fox passes a stepped limestone and timber home at dawn, with warm recessed windows and mist between the woodland trees. Original concept illustration.',
+  practicalLightLimit: 2,
+  palette: {
+    background: '#bdcecf', fog: '#bdcecf', fogNear: 21, fogFar: 58,
+    ambient: 0.36, sun: '#fff0d6', sunIntensity: 1.4, sunPosition: [-12, 22, 14],
+    hemisphereSky: '#d6e8f0', hemisphereGround: '#52604b', hemisphereIntensity: 1.5,
+    exposure: 1.05, toneMapping: 'aces',
+    shadowBounds: { left: -24, right: 24, top: 22, bottom: -20, near: 1, far: 70, bias: -0.00018, normalBias: 0.025, mapSize: 2048 },
+  },
+  cameras: [
+    { at: 0, position: [-17, 7, 22], target: [-0.9, 2.0, -0.2], mobilePosition: [-11, 6.2, 23], mobileTarget: [-2, 2.0, 0.8], fov: 42, easing: 'smoother', interpolation: 'spline' },
+    { at: 4, position: [-13.5, 5.4, 18], target: [-2, 1.7, 0.4], mobilePosition: [-9, 5.5, 20], mobileTarget: [-2.7, 1.7, 1.4], fov: 42, easing: 'smooth', interpolation: 'spline' },
+    { at: 10.9, position: [-9.5, 4.5, 15], target: [-1, 1.5, 0.8], mobilePosition: [-6.5, 4.5, 17], mobileTarget: [-1.6, 1.5, 1.7], fov: 42 },
+    { at: 11, position: [0.5, 2.7, 11.2], target: [-2.7, 0.85, 4.2], mobilePosition: [-1.5, 3.2, 12.5], mobileTarget: [-2.7, 1.55, 3.1], fov: 44, cut: true, easing: 'linear', interpolation: 'spline' },
+    { at: 18, position: [3.6, 4.5, 15], target: [0.5, 1.8, 1.8], mobilePosition: [1, 3.8, 13.4], mobileTarget: [0.5, 1.65, 2.6], fov: 44, easing: 'smoother', interpolation: 'spline' },
+    { at: 24.9, position: [5, 4.2, 13], target: [2.2, 1.5, 2.8], mobilePosition: [3, 4.2, 13.8], mobileTarget: [2.1, 1.65, 2.7], fov: 44 },
+    { at: 25, position: [4.1, 3.5, 9.6], target: [1.65, 1.7, 2.5], mobilePosition: [3.5, 3.5, 9.9], mobileTarget: [1.65, 1.35, 2.65], fov: 46, cut: true, easing: 'smooth', interpolation: 'spline' },
+    { at: 33, position: [5.2, 3.8, 11.3], target: [2.8, 1.6, 2.5], mobilePosition: [5.2, 3.9, 12.4], mobileTarget: [3.6, 1.35, 2.7], fov: 46, easing: 'smoother', interpolation: 'spline' },
+    { at: 40, position: [15, 7.3, 22], target: [2.8, 2, 0.2], mobilePosition: [10, 6.5, 21], mobileTarget: [3.3, 1.9, 1.7], fov: 43, easing: 'smoother', interpolation: 'spline' },
+    { at: 46, position: [16, 7.6, 23], target: [3, 2, 0.3], mobilePosition: [13, 6.3, 22], mobileTarget: [6, 1.8, 1.7], fov: 43 },
   ],
-  "beats": [
-    {
-      "id": "detect",
-      "at": 4,
-      "title": "Movement at the garden edge",
-      "body": "A camera marks movement near the garden. Its cause is still unknown.",
-      "evidence": [
-        {
-          "source": "Camera",
-          "detail": "A camera marks movement near the garden. Its cause is still unknown."
-        }
-      ]
-    },
-    {
-      "id": "verify",
-      "at": 11,
-      "title": "A warm, low silhouette",
-      "body": "A thermal view adds a low moving silhouette to the camera observation.",
-      "evidence": [
-        {
-          "source": "Thermal",
-          "detail": "A thermal view adds a low moving silhouette to the camera observation."
-        }
-      ]
-    },
-    {
-      "id": "correlate",
-      "at": 18,
-      "title": "The path tells a quieter story",
-      "body": "The illustrated shape and continuous path are consistent with an animal. No entrance event is shown.",
-      "evidence": [
-        {
-          "source": "Site context",
-          "detail": "The illustrated shape and continuous path are consistent with an animal. No entrance event is shown."
-        }
-      ]
-    },
-    {
-      "id": "decide",
-      "at": 25,
-      "title": "Review before responding",
-      "body": "The operator reviews the paired observations and chooses to record the movement as wildlife.",
-      "evidence": [
-        {
-          "source": "Operator",
-          "detail": "The operator reviews the paired observations and chooses to record the movement as wildlife."
-        }
-      ],
-      "action": "Record as wildlife"
-    },
-    {
-      "id": "respond",
-      "at": 33,
-      "title": "Record as wildlife",
-      "body": "The notification is dismissed in this illustration. No guard is dispatched.",
-      "evidence": [
-        {
-          "source": "Site response",
-          "detail": "The notification is dismissed in this illustration. No guard is dispatched."
-        }
-      ]
-    },
-    {
-      "id": "resolve",
-      "at": 40,
-      "title": "The reason stays with the record",
-      "body": "The observation and the reason for dismissal remain linked in the event record.",
-      "evidence": [
-        {
-          "source": "Event record",
-          "detail": "The observation and the reason for dismissal remain linked in the event record."
-        }
-      ]
-    }
+  beats: [
+    { id: 'detect', at: 4, title: 'Something along the garden edge', body: 'The outbuilding camera picks up movement beside the planting. One partial view is not yet a reason to disturb the household.', evidence: [{ source: 'Garden camera', detail: 'Movement crosses the gravel path; planting interrupts the first view.' }] },
+    { id: 'verify', at: 11, title: 'Low to the ground. Still moving.', body: 'In this concept, on-site verification pairs the motion view with a warm, low silhouette from the terrace thermal sensor. Heat alone does not explain the event.', evidence: [{ source: 'Terrace thermal', detail: 'A low warm outline follows the outside of the terrace.' }, { source: 'Garden camera', detail: 'Four legs, pointed ears and a long tail come into view.' }] },
+    { id: 'correlate', at: 18, title: 'A path past the home', body: 'The proposed local correlation links the animal shape and continuous garden path. The movement passes the terrace; no entrance event is shown.', evidence: [{ source: 'Linked observations', detail: 'Camera and thermal observations follow the same garden passage.' }, { source: 'Entrance context', detail: 'No entrance event appears in this authored sequence.' }] },
+    { id: 'decide', at: 25, title: 'A person makes the quiet call', body: 'The operator reviews the linked observations and chooses “Record as wildlife.” The reason is this animal’s passage, not a claim about the rest of the property.', evidence: [{ source: 'Review picture', detail: 'Animal outline, continuous path and entrance context stay together.' }, { source: 'Operator', detail: 'Proposed action: dismiss this notification without dispatch.' }], action: 'Record as wildlife' },
+    { id: 'respond', at: 33, title: 'Notification dismissed. Morning continues.', body: 'Following the authored human decision, the amber notification closes into the record. No guard is dispatched; the fox continues towards the trees.', evidence: [{ source: 'Operator decision', detail: 'Recorded as wildlife; notification dismissed.' }, { source: 'Site response', detail: 'No dispatch is initiated in this illustration.' }] },
+    { id: 'resolve', at: 40, title: 'Keep the reason, not the alarm', body: 'The supporting observations remain attached to the dismissal record. This resolves one illustrated event; it does not establish that the whole property is safe.', evidence: [{ source: 'Event record', detail: 'Garden camera + terrace thermal + path + human decision.' }, { source: 'Recorded outcome', detail: 'Wildlife notification closed without dispatch.' }] },
   ],
-  "practicalLightLimit": 2
 }
