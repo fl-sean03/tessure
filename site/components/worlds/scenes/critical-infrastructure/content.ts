@@ -1,222 +1,61 @@
 import type { SceneDefinition } from '../../contract'
+
 export const definition: SceneDefinition = {
-  "id": "critical-infrastructure",
-  "number": "06",
-  "name": "Critical infrastructure",
-  "subtitle": "Context when the link goes quiet",
-  "description": "A remote site. An unavailable connection. The local picture still matters.",
-  "lesson": "Make connection loss a visible state with clear limitations.",
-  "setting": "Remote substation \u00b7 blue hour",
-  "establishing": {"title": "A normal maintenance window", "body": "A crew works at a remote utility site while observations are processed locally."},
-  "duration": 52,
-  "poster": "/worlds/critical-infrastructure/poster.svg",
-  "posterAlt": "Illustrative architectural site model for the critical infrastructure sequence.",
-  "palette": {
-    "background": "#d8dcd3",
-    "fog": "#d8dcd3",
-    "fogNear": 90,
-    "fogFar": 210,
-    "ambient": 1.5,
-    "sun": "#fff2d6",
-    "sunIntensity": 3,
-    "sunPosition": [
-      -35,
-      55,
-      25
-    ],
-    "hemisphereSky": "#d4e6ed",
-    "hemisphereGround": "#6c6955",
-    "hemisphereIntensity": 0.7,
-    "exposure": 1.0,
-    "toneMapping": "aces",
-    "shadowBounds": {
-      "left": -65,
-      "right": 65,
-      "top": 65,
-      "bottom": -65,
-      "near": 1,
-      "far": 210,
-      "bias": -0.0004,
-      "normalBias": 0.06,
-      "mapSize": 1024
-    }
+  id: 'critical-infrastructure', number: '06', name: 'Critical infrastructure',
+  subtitle: 'Local context when the link goes quiet',
+  description: 'At a remote substation, perimeter observations and the state of the connection belong in the same picture.',
+  lesson: 'An unavailable remote link is a visible limitation. Local observations can support a human handoff without implying that the site is safe.',
+  setting: 'Remote substation · blue hour',
+  establishing: { title: 'The last maintenance round', body: 'A technician checks the yard as evening settles over the foothills. The local station and remote link are available in this fictional site study.' },
+  duration: 52,
+  poster: '/worlds/critical-infrastructure/poster.webp',
+  posterAlt: 'A blue-hour substation in ochre foothills: ribbed transformers, ceramic insulators and silver gantries beside a warmly lit local control shelter.',
+  palette: {
+    background: '#627b9a', fog: '#627b9a', fogNear: 72, fogFar: 195,
+    ambient: 0.36, sun: '#abcaf1', sunIntensity: 1.85, sunPosition: [-28, 38, 22],
+    hemisphereSky: '#bbd7f8', hemisphereGround: '#8e6846', hemisphereIntensity: 0.95,
+    exposure: 1.06, toneMapping: 'aces',
+    shadowBounds: { left: -35, right: 35, top: 29, bottom: -29, near: 1, far: 115, bias: -0.00015, normalBias: 0.045, mapSize: 2048 },
   },
-  "cameras": [
-    {
-      "at": 0,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smoother",
-      "interpolation": "spline"
-    },
-    {
-      "at": 4,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 20,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 38,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    },
-    {
-      "at": 52,
-      "position": [
-        62,
-        45,
-        62
-      ],
-      "target": [
-        0,
-        0,
-        0
-      ],
-      "mobilePosition": [
-        80,
-        75,
-        96
-      ],
-      "easing": "smooth",
-      "interpolation": "spline"
-    }
+  practicalLightLimit: 2,
+  cameras: [
+    { at: 0, position: [37, 25, 46], target: [0, 2, 0], mobilePosition: [31, 27, 53], mobileTarget: [1, 2.6, 1], fov: 40, easing: 'smoother', interpolation: 'spline' },
+    { at: 4, position: [29, 18, 39], target: [-5, 2.5, 3], mobilePosition: [13, 18, 42], mobileTarget: [-8, 2.2, 5], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 10, position: [13, 11, 30], target: [-4, 2.1, 8], mobilePosition: [7, 12, 33], mobileTarget: [-5, 2, 8], fov: 40, easing: 'smooth' },
+    { at: 12, cut: true, position: [3, 5.4, 25], target: [-3.7, 1.5, 12], mobilePosition: [-0.5, 5.2, 26], mobileTarget: [-3.7, 1.6, 12.3], fov: 40, easing: 'linear', interpolation: 'spline' },
+    { at: 19, position: [10, 5.8, 26], target: [3, 1.7, 12], mobilePosition: [6, 5.8, 26], mobileTarget: [3, 1.6, 12], fov: 40, easing: 'smooth' },
+    { at: 20, cut: true, position: [26, 13, 29], target: [8, 2.5, 6], mobilePosition: [19, 14, 30], mobileTarget: [9, 2.5, 6], fov: 40, easing: 'smoother', interpolation: 'spline' },
+    { at: 29, position: [23, 7.8, 23], target: [11, 1.9, 6.9], mobilePosition: [18.5, 9, 28], mobileTarget: [11.1, 2, 8.8], fov: 38, easing: 'smooth', interpolation: 'spline' },
+    { at: 34, position: [22, 7, 25], target: [12, 1.7, 9.5], mobilePosition: [18, 7.5, 25], mobileTarget: [12, 1.7, 9.5], fov: 38, easing: 'smooth', interpolation: 'spline' },
+    { at: 38, position: [20, 6.4, 26], target: [11.6, 1.7, 11], mobilePosition: [15.7, 6.5, 25], mobileTarget: [11.2, 1.7, 11.4], fov: 38, easing: 'smoother', interpolation: 'spline' },
+    { at: 43, position: [24, 10, 31], target: [9, 2, 8], mobilePosition: [19, 13, 34], mobileTarget: [10, 2, 7], fov: 40, easing: 'smoother', interpolation: 'spline' },
+    { at: 46, position: [36, 23, 44], target: [2, 2, 1], mobilePosition: [30, 26, 52], mobileTarget: [3, 2.5, 2], fov: 40, easing: 'smooth', interpolation: 'spline' },
+    { at: 52, position: [37, 25, 46], target: [0, 2, 0], mobilePosition: [31, 27, 53], mobileTarget: [1, 2.6, 1], fov: 40 },
   ],
-  "beats": [
-    {
-      "id": "detect",
-      "at": 4,
-      "title": "Movement during a link interruption",
-      "body": "Perimeter movement appears as the illustrated remote connection becomes unavailable.",
-      "evidence": [
-        {
-          "source": "Perimeter sensor",
-          "detail": "Perimeter movement appears as the illustrated remote connection becomes unavailable."
-        }
-      ]
-    },
-    {
-      "id": "verify",
-      "at": 12,
-      "title": "Local observations continue",
-      "body": "A local thermal view and camera observation add context to the movement.",
-      "evidence": [
-        {
-          "source": "Thermal + camera",
-          "detail": "A local thermal view and camera observation add context to the movement."
-        }
-      ]
-    },
-    {
-      "id": "correlate",
-      "at": 20,
-      "title": "The missing connection is explicit",
-      "body": "The proposed local node correlates observations while the remote link remains unavailable. Intent is unknown.",
-      "evidence": [
-        {
-          "source": "Local node",
-          "detail": "The proposed local node correlates observations while the remote link remains unavailable. Intent is unknown."
-        }
-      ]
-    },
-    {
-      "id": "decide",
-      "at": 29,
-      "title": "Review locally",
-      "body": "An on-site operator asks the local guard team to verify the event.",
-      "evidence": [
-        {
-          "source": "On-site operator",
-          "detail": "An on-site operator asks the local guard team to verify the event."
-        }
-      ],
-      "action": "Request local guard verification"
-    },
-    {
-      "id": "respond",
-      "at": 38,
-      "title": "A local handoff; a queued record",
-      "body": "The authored illustration shows the local handoff and a queued event record.",
-      "evidence": [
-        {
-          "source": "Local guard team",
-          "detail": "The authored illustration shows the local handoff and a queued event record."
-        }
-      ]
-    },
-    {
-      "id": "resolve",
-      "at": 46,
-      "title": "Ready to synchronize",
-      "body": "Connectivity returns in the sequence and the record is ready to synchronize. No real offline performance is demonstrated.",
-      "evidence": [
-        {
-          "source": "Queued record",
-          "detail": "Connectivity returns in the sequence and the record is ready to synchronize. No real offline performance is demonstrated."
-        }
-      ]
-    }
+  beats: [
+    { id: 'detect', at: 4, title: 'Movement beyond the fence', body: 'A person moves along the outer perimeter as the illustrated backhaul becomes unavailable. These are two observations; the interruption does not establish an attack.', evidence: [
+      { source: 'Ground radar', detail: 'Movement follows the outside of the southern fence.' },
+      { source: 'Remote link', detail: 'Unavailable in this simulation; local inputs remain visible.' },
+    ] },
+    { id: 'verify', at: 12, title: 'Two local views, one crossing', body: 'The proposed on-site system checks the radar observation against thermal and camera views. A person is visible outside the fence; purpose and permission are unknown.', evidence: [
+      { source: 'Thermal view', detail: 'A warm silhouette continues along the perimeter path.' },
+      { source: 'Perimeter camera', detail: 'The person remains on the outer side of the fence.' },
+    ] },
+    { id: 'correlate', at: 20, title: 'Keep the local picture together', body: 'The proposed node automatically links the local observations. At this remote equipment yard, a perimeter check needs site context even when remote review is unavailable.', evidence: [
+      { source: 'Local node', detail: 'Radar, thermal and camera observations refer to the same perimeter movement.' },
+      { source: 'Connection state', detail: 'Remote review unavailable. The local event is retained here.' },
+    ] },
+    { id: 'decide', at: 29, title: 'A decision at the site', body: 'The on-site operator reviews the local evidence and requests a guard check. Unknown intent remains unknown; the connection state alone cannot settle the event.', evidence: [
+      { source: 'On-site operator', detail: 'Local guard verification selected in the authored sequence.' },
+      { source: 'Review boundary', detail: 'The guard has not approached the perimeter before this decision.' },
+    ], action: 'Request local guard verification' },
+    { id: 'respond', at: 38, title: 'A local handoff, a queued record', body: 'Following the illustrated operator decision, a guard walks to the inside of the perimeter to verify locally. The observations and request stay queued at the node.', evidence: [
+      { source: 'Local guard', detail: 'The requested perimeter check is in progress.' },
+      { source: 'Event record', detail: 'Observations and operator request queued; remote link still unavailable.' },
+    ] },
+    { id: 'resolve', at: 46, title: 'Ready to sync; verification still open', body: 'The illustrated connection returns and the local record is ready to synchronize. The guard check remains open. This sequence demonstrates no actual offline endurance or equipment protection.', evidence: [
+      { source: 'Remote link', detail: 'Connection available again in the authored illustration.' },
+      { source: 'Local record', detail: 'Ready to sync. Guard verification pending; no all-clear claimed.' },
+    ] },
   ],
-  "practicalLightLimit": 2
 }
