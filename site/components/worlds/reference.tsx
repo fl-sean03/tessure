@@ -278,6 +278,8 @@ function Grass({ high }: { high: boolean }) {
   const geo = useMemo(() => {
     const g = new BufferGeometry(); g.setAttribute('position', new Float32BufferAttribute([-0.025, 0, 0, 0.025, 0, 0, 0.15, 0.48, 0, 0, 0, -0.025, 0, 0, 0.025, -0.12, 0.36, 0.12], 3)); g.computeVertexNormals(); return g
   }, [])
+  // Constructor arguments are external resources; R3F does not own this geometry.
+  useEffect(() => () => geo.dispose(), [geo])
   useLayoutEffect(() => {
     const d = new Object3D()
     for (let i = 0; i < count; i++) {
