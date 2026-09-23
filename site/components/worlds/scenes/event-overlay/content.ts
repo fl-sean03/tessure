@@ -7,7 +7,8 @@ export const definition: SceneDefinition = {
   "description": "A shared concourse. Opposing movement. A decision made with the whole site in view.",
   "lesson": "See a changing flow without naming the people in it.",
   "setting": "Outdoor amphitheatre \u00b7 evening",
-  "duration": 42,
+  "establishing": {"title": "A site in motion", "body": "Arrivals, staff and service traffic share a temporary event site."},
+  "duration": 46,
   "poster": "/worlds/event-overlay/poster.svg",
   "posterAlt": "Illustrative architectural site model for the event overlay sequence.",
   "palette": {
@@ -22,7 +23,23 @@ export const definition: SceneDefinition = {
       -35,
       55,
       25
-    ]
+    ],
+    "hemisphereSky": "#d4e6ed",
+    "hemisphereGround": "#6c6955",
+    "hemisphereIntensity": 0.7,
+    "exposure": 1.0,
+    "toneMapping": "aces",
+    "shadowBounds": {
+      "left": -65,
+      "right": 65,
+      "top": 65,
+      "bottom": -65,
+      "near": 1,
+      "far": 210,
+      "bias": -0.0004,
+      "normalBias": 0.06,
+      "mapSize": 1024
+    }
   },
   "cameras": [
     {
@@ -41,46 +58,12 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smoother",
+      "interpolation": "spline"
     },
     {
-      "at": 14,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ]
-    },
-    {
-      "at": 29,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ]
-    },
-    {
-      "at": 42,
+      "at": 4,
       "position": [
         62,
         45,
@@ -95,13 +78,75 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 18,
+      "position": [
+        40,
+        30,
+        45
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        72,
+        65,
+        85
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 33,
+      "position": [
+        50,
+        38,
+        52
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        75,
+        70,
+        90
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 46,
+      "position": [
+        62,
+        45,
+        62
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "mobilePosition": [
+        80,
+        75,
+        96
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
     }
   ],
   "beats": [
     {
       "id": "detect",
-      "at": 0,
+      "at": 4,
       "title": "A flow begins to slow",
       "body": "Movement slows where two pedestrian paths meet.",
       "evidence": [
@@ -113,7 +158,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "verify",
-      "at": 7,
+      "at": 11,
       "title": "Opposing movement is visible",
       "body": "Adjacent camera views illustrate people moving in opposing directions.",
       "evidence": [
@@ -125,7 +170,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "correlate",
-      "at": 14,
+      "at": 18,
       "title": "A passage is closed",
       "body": "A closed-passage event adds context to the illustrated bottleneck.",
       "evidence": [
@@ -137,7 +182,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "decide",
-      "at": 21,
+      "at": 25,
       "title": "Bring in the event lead",
       "body": "The event lead chooses to direct arrivals along an approved alternate route.",
       "evidence": [
@@ -150,7 +195,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "respond",
-      "at": 29,
+      "at": 33,
       "title": "Stewards open the other route",
       "body": "Stewards and wayfinding redirect movement in the authored sequence.",
       "evidence": [
@@ -162,7 +207,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "resolve",
-      "at": 36,
+      "at": 40,
       "title": "A change with a recorded reason",
       "body": "The intervention and its supporting observations remain linked. This is not a crowd-safety prediction.",
       "evidence": [
@@ -172,5 +217,6 @@ export const definition: SceneDefinition = {
         }
       ]
     }
-  ]
+  ],
+  "practicalLightLimit": 2
 }

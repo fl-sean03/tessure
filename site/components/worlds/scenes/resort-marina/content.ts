@@ -7,7 +7,8 @@ export const definition: SceneDefinition = {
   "description": "A craft on the water. A service berth ahead. A response that fits the place.",
   "lesson": "Understand the boundary and the welcome beyond it.",
   "setting": "Sheltered inlet \u00b7 golden hour",
-  "duration": 46,
+  "establishing": {"title": "Life along the water", "body": "Boats move through the marina while guests use the waterfront paths."},
+  "duration": 50,
   "poster": "/worlds/resort-marina/poster.svg",
   "posterAlt": "Illustrative architectural site model for the resort & marina sequence.",
   "palette": {
@@ -22,7 +23,23 @@ export const definition: SceneDefinition = {
       -35,
       55,
       25
-    ]
+    ],
+    "hemisphereSky": "#d4e6ed",
+    "hemisphereGround": "#6c6955",
+    "hemisphereIntensity": 0.7,
+    "exposure": 1.0,
+    "toneMapping": "aces",
+    "shadowBounds": {
+      "left": -65,
+      "right": 65,
+      "top": 65,
+      "bottom": -65,
+      "near": 1,
+      "far": 210,
+      "bias": -0.0004,
+      "normalBias": 0.06,
+      "mapSize": 1024
+    }
   },
   "cameras": [
     {
@@ -41,46 +58,12 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smoother",
+      "interpolation": "spline"
     },
     {
-      "at": 16,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ]
-    },
-    {
-      "at": 32,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ]
-    },
-    {
-      "at": 46,
+      "at": 4,
       "position": [
         62,
         45,
@@ -95,13 +78,75 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 20,
+      "position": [
+        40,
+        30,
+        45
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        72,
+        65,
+        85
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 36,
+      "position": [
+        50,
+        38,
+        52
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        75,
+        70,
+        90
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 50,
+      "position": [
+        62,
+        45,
+        62
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "mobilePosition": [
+        80,
+        75,
+        96
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
     }
   ],
   "beats": [
     {
       "id": "detect",
-      "at": 0,
+      "at": 4,
       "title": "A craft enters the picture",
       "body": "Shore radar illustrates a small craft approaching the marina.",
       "evidence": [
@@ -113,7 +158,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "verify",
-      "at": 8,
+      "at": 12,
       "title": "A persistent vessel track",
       "body": "Thermal and camera observations corroborate the vessel track. Its purpose is unknown.",
       "evidence": [
@@ -125,7 +170,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "correlate",
-      "at": 16,
+      "at": 20,
       "title": "A service area ahead",
       "body": "The track approaches a service berth beside the public arrival route.",
       "evidence": [
@@ -137,7 +182,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "decide",
-      "at": 24,
+      "at": 28,
       "title": "Choose a hospitable response",
       "body": "The operator asks harbor staff to guide the arrival to visitor access.",
       "evidence": [
@@ -150,7 +195,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "respond",
-      "at": 32,
+      "at": 36,
       "title": "Guide toward visitor access",
       "body": "In the illustration, the vessel follows a new course toward the visitor berth.",
       "evidence": [
@@ -162,7 +207,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "resolve",
-      "at": 40,
+      "at": 44,
       "title": "Record the handoff",
       "body": "The observations and staff handoff are linked without assigning intent.",
       "evidence": [
@@ -172,5 +217,6 @@ export const definition: SceneDefinition = {
         }
       ]
     }
-  ]
+  ],
+  "practicalLightLimit": 2
 }

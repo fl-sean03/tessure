@@ -6,7 +6,7 @@ const mono = localFont({ src: '../public/fonts/ibm-plex-mono-latin-400-normal.wo
 export const metadata: Metadata = {
   metadataBase: new URL('https://v0-tessure.vercel.app'),
   title: { default: 'Tessure — More context. A considered response.', template: '%s — Tessure' },
-  description: 'A physical security concept that brings cameras and other site sensors together, so people can understand an event before they respond. Explore six illustrative worlds.',
+  description: 'A physical security concept designed to correlate and verify sensor observations on site, supporting security teams with evidence before consequential decisions. Explore six illustrative worlds.',
   alternates: { canonical: '/' },
   openGraph: { title: 'Tessure — Many signals. One clear picture.', description: 'Explore a concept for physical security built around context, evidence and human decisions.', type: 'website', locale: 'en_US', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Tessure: Many signals. One clear picture. A physical security concept.' }] },
   twitter: { card: 'summary_large_image' },

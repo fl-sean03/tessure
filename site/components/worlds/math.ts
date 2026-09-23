@@ -1,4 +1,4 @@
-import type { CameraKey, TimedPoint, Vec3 } from './contract'
+import type { CameraKey, CameraEasing, TimedPoint, Vec3 } from './contract'
 export const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v))
 export const smooth = (v: number) => { const t = clamp(v); return t * t * (3 - 2 * t) }
 export const progress = (time: number, from: number, to: number) => clamp((time - from) / Math.max(0.001, to - from))
@@ -12,14 +12,33 @@ export function samplePath(points: TimedPoint[], time: number): Vec3 {
   }
   return [...points[points.length - 1].position]
 }
+export function ease(t: number, mode: CameraEasing = 'smooth') {
+  const x = clamp(t)
+  if (mode === 'linear') return x
+  if (mode === 'smoother') return x * x * x * (x * (x * 6 - 15) + 10)
+  if (mode === 'easeIn') return x * x
+  if (mode === 'easeOut') return 1 - (1 - x) * (1 - x)
+  return smooth(x)
+}
+function spline3(p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, t: number): Vec3 {
+  return p1.map((_, i) => {
+    const v0 = (p2[i] - p0[i]) * .5, v1 = (p3[i] - p1[i]) * .5
+    return (2 * p1[i] - 2 * p2[i] + v0 + v1) * t ** 3 + (-3 * p1[i] + 3 * p2[i] - 2 * v0 - v1) * t ** 2 + v0 * t + p1[i]
+  }) as Vec3
+}
 export function sampleCamera(keys: CameraKey[], time: number, mobile: boolean) {
-  let a = keys[0], b = keys[keys.length - 1]
-  if (time <= a.at) b = a
-  else { for (let i = 1; i < keys.length; i++) { if (time <= keys[i].at) { a = keys[i - 1]; b = keys[i]; break } a = keys[i]; } }
-  const t = smooth(progress(time, a.at, b.at))
+  const position = (k: CameraKey) => mobile && k.mobilePosition || k.position
+  const target = (k: CameraKey) => mobile && k.mobileTarget || k.target
+  let index = 0
+  for (let i = 1; i < keys.length && keys[i].at <= time; i++) index = i
+  const a = keys[index], b = keys[index + 1]
+  if (!b || time <= keys[0].at || b.cut) return { position: [...position(a)] as Vec3, target: [...target(a)] as Vec3, fov: a.fov ?? 38 }
+  const t = ease(progress(time, a.at, b.at), a.easing)
+  const before = a.cut ? a : keys[Math.max(0, index - 1)]
+  const after = keys[index + 2]?.cut ? b : keys[Math.min(keys.length - 1, index + 2)]
   return {
-    position: mix3(mobile && a.mobilePosition || a.position, mobile && b.mobilePosition || b.position, t),
-    target: mix3(mobile && a.mobileTarget || a.target, mobile && b.mobileTarget || b.target, t),
+    position: a.interpolation === 'spline' ? spline3(position(before), position(a), position(b), position(after), t) : mix3(position(a), position(b), t),
+    target: a.interpolation === 'spline' ? spline3(target(before), target(a), target(b), target(after), t) : mix3(target(a), target(b), t),
     fov: mix(a.fov ?? 38, b.fov ?? 38, t),
   }
 }

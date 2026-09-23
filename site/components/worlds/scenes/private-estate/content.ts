@@ -7,7 +7,8 @@ export const definition: SceneDefinition = {
   "description": "A wooded hillside. An ambiguous movement. Enough context to leave the morning undisturbed.",
   "lesson": "Evidence can justify doing less.",
   "setting": "Woodland residence \u00b7 misty dawn",
-  "duration": 42,
+  "establishing": {"title": "An ordinary evening", "body": "A resident returns while the garden and service path settle into evening."},
+  "duration": 46,
   "poster": "/worlds/private-estate/poster.svg",
   "posterAlt": "Illustrative architectural site model for the private estate sequence.",
   "palette": {
@@ -22,7 +23,23 @@ export const definition: SceneDefinition = {
       -35,
       55,
       25
-    ]
+    ],
+    "hemisphereSky": "#d4e6ed",
+    "hemisphereGround": "#6c6955",
+    "hemisphereIntensity": 0.7,
+    "exposure": 1.0,
+    "toneMapping": "aces",
+    "shadowBounds": {
+      "left": -65,
+      "right": 65,
+      "top": 65,
+      "bottom": -65,
+      "near": 1,
+      "far": 210,
+      "bias": -0.0004,
+      "normalBias": 0.06,
+      "mapSize": 1024
+    }
   },
   "cameras": [
     {
@@ -41,46 +58,12 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smoother",
+      "interpolation": "spline"
     },
     {
-      "at": 14,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ]
-    },
-    {
-      "at": 29,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ]
-    },
-    {
-      "at": 42,
+      "at": 4,
       "position": [
         62,
         45,
@@ -95,13 +78,75 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 18,
+      "position": [
+        40,
+        30,
+        45
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        72,
+        65,
+        85
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 33,
+      "position": [
+        50,
+        38,
+        52
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        75,
+        70,
+        90
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 46,
+      "position": [
+        62,
+        45,
+        62
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "mobilePosition": [
+        80,
+        75,
+        96
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
     }
   ],
   "beats": [
     {
       "id": "detect",
-      "at": 0,
+      "at": 4,
       "title": "Movement at the garden edge",
       "body": "A camera marks movement near the garden. Its cause is still unknown.",
       "evidence": [
@@ -113,7 +158,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "verify",
-      "at": 7,
+      "at": 11,
       "title": "A warm, low silhouette",
       "body": "A thermal view adds a low moving silhouette to the camera observation.",
       "evidence": [
@@ -125,7 +170,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "correlate",
-      "at": 14,
+      "at": 18,
       "title": "The path tells a quieter story",
       "body": "The illustrated shape and continuous path are consistent with an animal. No entrance event is shown.",
       "evidence": [
@@ -137,7 +182,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "decide",
-      "at": 21,
+      "at": 25,
       "title": "Review before responding",
       "body": "The operator reviews the paired observations and chooses to record the movement as wildlife.",
       "evidence": [
@@ -150,7 +195,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "respond",
-      "at": 29,
+      "at": 33,
       "title": "Record as wildlife",
       "body": "The notification is dismissed in this illustration. No guard is dispatched.",
       "evidence": [
@@ -162,7 +207,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "resolve",
-      "at": 36,
+      "at": 40,
       "title": "The reason stays with the record",
       "body": "The observation and the reason for dismissal remain linked in the event record.",
       "evidence": [
@@ -172,5 +217,6 @@ export const definition: SceneDefinition = {
         }
       ]
     }
-  ]
+  ],
+  "practicalLightLimit": 2
 }

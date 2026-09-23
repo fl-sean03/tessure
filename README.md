@@ -1,10 +1,10 @@
 # Tessure
 
-A public concept for a physical-security system that brings site sensors together to support human decisions. The website explains the proposed approach through six illustrative worlds. It is not a deployed security product.
+A public concept for a physical-security system designed to correlate and verify site sensor observations automatically, with evidence supporting a human decision. The website explains the proposed approach through six illustrative worlds. It is not a deployed security product.
 
 ## Website
 
-The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and self-made posters; visitors choose when to enter an interactive world. The same narrative remains available as text.
+The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text.
 
 ```sh
 cd site
@@ -21,7 +21,7 @@ npm run build
 npm start
 ```
 
-Use Node.js 22 or later and npm. `site/package-lock.json` is the sole package lockfile. Vercel's Git integration builds the `site/` directory; `main` serves https://v0-tessure.vercel.app.
+Use Node.js 24.x and npm 11.13.0, as pinned in `site/package.json`. `site/package-lock.json` is the sole package lockfile. Vercel's Git integration builds the `site/` directory; `main` serves https://v0-tessure.vercel.app.
 
 ## Layout
 

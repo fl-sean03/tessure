@@ -2,7 +2,7 @@
 import { createRoot, extend, useFrame, useThree, type Catalogue } from '@react-three/fiber'
 import { Component, useCallback, useEffect, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
-import { ACESFilmicToneMapping, PerspectiveCamera, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three'
+import { ACESFilmicToneMapping, NeutralToneMapping, PerspectiveCamera, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three'
 extend(THREE as unknown as Catalogue)
 import type { MutableRefObject } from 'react'
 import type { Layers, Quality, RenderStats, SceneClock, SceneModule } from './contract'
@@ -55,7 +55,14 @@ function Director({ scene, clock, quality, revision, decisionPassed, onTime, onP
 function FrameEnd({ definitionId, clock, quality, timing }: { definitionId: string; clock: MutableRefObject<SceneClock>; quality: Quality; timing: Timing }) {
   useFrame(({ gl, scene, camera }, delta) => {
     gl.render(scene, camera)
-    const stats: RenderStats = { scene: definitionId, time: clock.current.time, quality, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
+    let practicalLights = 0, practicalShadows = 0
+    scene.traverse(object => {
+      if (object instanceof THREE.PointLight || object instanceof THREE.SpotLight) {
+        practicalLights += 1
+        if (object.castShadow) practicalShadows += 1
+      }
+    })
+    const stats: RenderStats = { scene: definitionId, time: clock.current.time, quality, practicalLights, practicalShadows, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
     window.__TESSURE_STATS__ = stats
     const frames = window.__TESSURE_FRAMES__ ||= []
     frames.push(stats); if (frames.length > 300) frames.shift()
@@ -77,8 +84,8 @@ function Contents(props: Props) {
     <color attach="background" args={[palette.background]} />
     <fog attach="fog" args={[palette.fog, palette.fogNear, palette.fogFar]} />
     <ambientLight intensity={palette.ambient} />
-    <hemisphereLight color="#f2f3e8" groundColor="#778272" intensity={0.8} />
-    <directionalLight color={palette.sun} position={palette.sunPosition} intensity={palette.sunIntensity} castShadow={quality === 'high'} shadow-mapSize={[1024, 1024]} shadow-camera-left={-70} shadow-camera-right={70} shadow-camera-top={70} shadow-camera-bottom={-70} shadow-camera-near={1} shadow-camera-far={220} shadow-bias={-0.0008} shadow-normalBias={0.08} />
+    <hemisphereLight color={palette.hemisphereSky} groundColor={palette.hemisphereGround} intensity={palette.hemisphereIntensity} />
+    <directionalLight key={`${scene.definition.id}-${quality}`} color={palette.sun} position={palette.sunPosition} intensity={palette.sunIntensity} castShadow={quality === 'high'} shadow-mapSize={[quality === 'high' ? palette.shadowBounds.mapSize : 512, quality === 'high' ? palette.shadowBounds.mapSize : 512]} shadow-camera-left={palette.shadowBounds.left} shadow-camera-right={palette.shadowBounds.right} shadow-camera-top={palette.shadowBounds.top} shadow-camera-bottom={palette.shadowBounds.bottom} shadow-camera-near={palette.shadowBounds.near} shadow-camera-far={palette.shadowBounds.far} shadow-bias={palette.shadowBounds.bias} shadow-normalBias={palette.shadowBounds.normalBias} />
     <group key={scene.definition.id}><World clock={clock} quality={quality} layers={layers} /></group>
     <Director {...props} timing={timing} />
     <FrameEnd definitionId={scene.definition.id} clock={clock} quality={quality} timing={timing} />
@@ -104,6 +111,8 @@ export default function WorldRuntime(props: Props) {
       camera: { near: 0.5, far: 600, fov: 38 },
       onCreated: () => { if (root.current === r) latest.current.onReady() },
     }).then(() => {
+      gl.toneMapping = latest.current.scene.definition.palette.toneMapping === 'neutral' ? NeutralToneMapping : ACESFilmicToneMapping
+      gl.toneMappingExposure = latest.current.scene.definition.palette.exposure
       if (root.current === r) r.render(<WorldBoundary onError={latest.current.onFailure}><Contents {...latest.current} /></WorldBoundary>)
     }).catch(() => { if (root.current === r) latest.current.onFailure() })
   }, [])
@@ -115,7 +124,7 @@ export default function WorldRuntime(props: Props) {
     host.appendChild(c); canvas.current = c
     let gl: WebGLRenderer
     try {
-      gl = new WebGLRenderer({ canvas: c, antialias: latest.current.quality === 'high', alpha: false, powerPreference: 'low-power' })
+      gl = new WebGLRenderer({ canvas: c, antialias: true, alpha: false, powerPreference: 'low-power' })
     } catch { c.remove(); canvas.current = null; latest.current.onFailure(); return }
     const loseContext = gl.forceContextLoss.bind(gl)
     let released = false

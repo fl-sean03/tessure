@@ -7,7 +7,8 @@ export const definition: SceneDefinition = {
   "description": "A service entrance. Two approaching vehicles. One matched arrival.",
   "lesson": "A location and an authorization are different facts.",
   "setting": "Campus service gate \u00b7 after rain",
-  "duration": 44,
+  "establishing": {"title": "An expected delivery", "body": "A service vehicle approaches the campus gate during a normal delivery window."},
+  "duration": 48,
   "poster": "/worlds/data-center/poster.svg",
   "posterAlt": "Illustrative architectural site model for the data center sequence.",
   "palette": {
@@ -22,7 +23,23 @@ export const definition: SceneDefinition = {
       -35,
       55,
       25
-    ]
+    ],
+    "hemisphereSky": "#d4e6ed",
+    "hemisphereGround": "#6c6955",
+    "hemisphereIntensity": 0.7,
+    "exposure": 1.0,
+    "toneMapping": "aces",
+    "shadowBounds": {
+      "left": -65,
+      "right": 65,
+      "top": 65,
+      "bottom": -65,
+      "near": 1,
+      "far": 210,
+      "bias": -0.0004,
+      "normalBias": 0.06,
+      "mapSize": 1024
+    }
   },
   "cameras": [
     {
@@ -41,46 +58,12 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smoother",
+      "interpolation": "spline"
     },
     {
-      "at": 14,
-      "position": [
-        40,
-        30,
-        45
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        72,
-        65,
-        85
-      ]
-    },
-    {
-      "at": 30,
-      "position": [
-        50,
-        38,
-        52
-      ],
-      "target": [
-        0,
-        1,
-        0
-      ],
-      "mobilePosition": [
-        75,
-        70,
-        90
-      ]
-    },
-    {
-      "at": 44,
+      "at": 4,
       "position": [
         62,
         45,
@@ -95,13 +78,75 @@ export const definition: SceneDefinition = {
         80,
         75,
         96
-      ]
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 18,
+      "position": [
+        40,
+        30,
+        45
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        72,
+        65,
+        85
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 34,
+      "position": [
+        50,
+        38,
+        52
+      ],
+      "target": [
+        0,
+        1,
+        0
+      ],
+      "mobilePosition": [
+        75,
+        70,
+        90
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
+    },
+    {
+      "at": 48,
+      "position": [
+        62,
+        45,
+        62
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "mobilePosition": [
+        80,
+        75,
+        96
+      ],
+      "easing": "smooth",
+      "interpolation": "spline"
     }
   ],
   "beats": [
     {
       "id": "detect",
-      "at": 0,
+      "at": 4,
       "title": "Another vehicle approaches",
       "body": "A second vehicle approaches behind an expected delivery.",
       "evidence": [
@@ -113,7 +158,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "verify",
-      "at": 7,
+      "at": 11,
       "title": "Two separate tracks",
       "body": "Radar and camera observations separate the vehicles into two tracks.",
       "evidence": [
@@ -125,7 +170,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "correlate",
-      "at": 14,
+      "at": 18,
       "title": "Only one matched arrival",
       "body": "The illustrated gate record matches the scheduled arrival. The second vehicle remains unmatched.",
       "evidence": [
@@ -137,7 +182,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "decide",
-      "at": 22,
+      "at": 26,
       "title": "Request a separate check",
       "body": "The operator asks the gate team to verify the second arrival separately.",
       "evidence": [
@@ -150,7 +195,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "respond",
-      "at": 30,
+      "at": 34,
       "title": "The gate remains controlled",
       "body": "A guard approaches the normal stopping point while entry stays controlled.",
       "evidence": [
@@ -162,7 +207,7 @@ export const definition: SceneDefinition = {
     },
     {
       "id": "resolve",
-      "at": 38,
+      "at": 42,
       "title": "A documented handoff",
       "body": "The observations and requested verification are recorded. Intent has not been determined.",
       "evidence": [
@@ -172,5 +217,6 @@ export const definition: SceneDefinition = {
         }
       ]
     }
-  ]
+  ],
+  "practicalLightLimit": 2
 }

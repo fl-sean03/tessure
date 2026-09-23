@@ -6,7 +6,7 @@ import type { Layers, Quality, SceneClock, SceneModule } from './contract'
 import { catalogue, findScene } from './catalogue'
 import { loaders } from './loaders'
 const Runtime = dynamic(() => import('./runtime'), { ssr: false })
-const labels = { detect: 'Detect', verify: 'Verify', correlate: 'Correlate', decide: 'Human review', respond: 'Respond', resolve: 'Record' }
+const labels = { establish: 'Normal site activity', detect: 'Detect', verify: 'Verify', correlate: 'Correlate', decide: 'Human review', respond: 'Respond', resolve: 'Record' }
 class StageBoundary extends Component<{ children: ReactNode; onError: () => void }, { error: boolean }> {
   state = { error: false }
   static getDerivedStateFromError() { return { error: true } }
@@ -33,7 +33,7 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
   const clock = useRef<SceneClock>({ time: 0, playing: false })
   const stage = useRef<HTMLDivElement>(null)
   const intendedPlay = useRef(false)
-  const beat = [...definition.beats].reverse().find(b => time >= b.at) || definition.beats[0]
+  const beat = [...definition.beats].reverse().find(b => time >= b.at) || { id: 'establish' as const, ...definition.establishing, evidence: [] }
   const decision = definition.beats.find(b => b.id === 'decide')!
   const atDecision = time >= decision.at && time < definition.beats.find(b => b.id === 'respond')!.at && !decisionPassed
   const pause = useCallback(() => { intendedPlay.current = false; clock.current.playing = false; setPlaying(false) }, [])
@@ -89,9 +89,9 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
     if (reducedMotion) return
     if (time >= definition.duration) { clock.current.time = 0; setTime(0); setDecisionPassed(false) }
     if (atDecision) return
+    stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
     if (!active) { intendedPlay.current = true; setActive(true); setLoading(true); return }
     if (module?.definition.id !== selected || loading) { intendedPlay.current = true; return }
-    stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
     clock.current.playing = true; setPlaying(true); setRevision(v => v + 1)
   }
   function continueDecision() {
@@ -121,7 +121,7 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
         <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={atDecision || loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{quality === 'low' ? 'Light detail' : 'Full detail'}<span aria-hidden="true"> · </span>{active ? '3D illustration' : 'Scene study'}</span><Link href={`/worlds/${selected}`}>Open this world <span aria-hidden="true">↗</span></Link></div>
       </div>
       <aside className="evidence-panel" aria-label="Illustrated event evidence">
-        <div className="evidence-kicker"><span>From signal to decision</span><span>{String(definition.beats.indexOf(beat) + 1).padStart(2, '0')} / 06</span></div>
+        <div className="evidence-kicker"><span>From signal to decision</span><span>{String(definition.beats.findIndex(b => b.id === beat.id) + 1).padStart(2, '0')} / 06</span></div>
         <div className="evidence-current" aria-live="polite" aria-atomic="true"><p className={`beat-label ${beat.id}`}>{labels[beat.id]}</p><h4>{beat.title}</h4><p>{beat.body}</p></div>
         <div className="evidence-sources">{beat.evidence.map((e, i) => <div key={`${beat.id}-${i}`}><span className="source-marker" aria-hidden="true" /><div><strong>{e.source}</strong><p>{e.detail}</p></div></div>)}</div>
         {atDecision && <div className="decision-panel"><p>Illustrative operator decision</p><strong>{decision.action}</strong><button className="button primary" onClick={continueDecision} disabled={loading || (active && !currentModule)}>Continue illustrative response <span aria-hidden="true">→</span></button><span>Or stay here and review the evidence.</span></div>}
