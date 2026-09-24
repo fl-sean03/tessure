@@ -1,19 +1,19 @@
 import { Vector3 } from 'three'
 import type { Vec3 } from '../../contract'
 import { assembly, type Materials } from './geometry'
-export const sensorTarget: Vec3 = [14, 1, 12]
+export const sensorTarget: Vec3 = [16, 1, 16]
 export const optics = [
   { id: 'shore-camera', position: [21.55, 3.65, .8] as Vec3, thermal: false },
-  { id: 'shore-thermal', position: [22.2, 3.65, .8] as Vec3, thermal: true },
+  { id: 'sky-camera', position: [22.2, 3.65, .8] as Vec3, thermal: true },
 ].map(s => {
-  const d = new Vector3(...sensorTarget).sub(new Vector3(...s.position))
+  const d = new Vector3(...(s.thermal ? [18, 10, 12] : sensorTarget)).sub(new Vector3(...s.position))
   const yaw = Math.atan2(d.x, d.z), pitch = Math.atan2(-d.y, Math.hypot(d.x, d.z))
   const lens = new Vector3(0, 0, s.thermal ? .35 : .48).applyAxisAngle(new Vector3(1, 0, 0), pitch).applyAxisAngle(new Vector3(0, 1, 0), yaw).add(new Vector3(...s.position)).toArray() as Vec3
   // An authored direction wedge, not calibrated field of view or detection range.
   const sector = [-.35, .35].map(angle => [lens[0] + Math.sin(yaw + angle) * 28, .05, lens[2] + Math.cos(yaw + angle) * 28] as Vec3)
   return { ...s, yaw, pitch, lens, sector }
 })
-export function makeOptic(m: Materials, high: boolean, thermal: boolean) {
+export function makeOptic(m: Materials, high: boolean, thermal: boolean, mount = true) {
   const a = assembly(m, high)
   a.box([0, 0, 0], thermal ? [.48, .4, .57] : [.4, .32, .83], thermal ? 'dark' : 'ivory', .055)
   if (thermal) {
@@ -29,7 +29,7 @@ export function makeOptic(m: Materials, high: boolean, thermal: boolean) {
   // Counter-rotate the support so the aimed head stays connected to its level crossarm.
   const pitch = optics.find(o => o.thermal === thermal)!.pitch
   const support = new Vector3(0, -.23, 0).applyAxisAngle(new Vector3(1, 0, 0), -pitch).toArray() as Vec3
-  a.cylinder(support, .065, .26, 'steel', [-pitch, 0, 0])
+  if (mount) a.cylinder(support, .065, .26, 'steel', [-pitch, 0, 0])
   return a.finish()
 }
 export function makeRadarArray(m: Materials, high: boolean) {
