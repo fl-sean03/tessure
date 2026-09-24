@@ -8,9 +8,11 @@ import {
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { seeded } from '../../math'
 import { definition } from './content'
-import { supervisorPose, supervisorRig } from './supervisor'
-import { crane, dock, dronePose, droneTimes, gimbalMount, inSector, rotorCenters, sensorFrame, sensors, sensorSubject, trolleyPose, vehicleX } from './motion'
-import { cargo, makeContainer, makeGantry, makeMaterials, makePerson, makeSite, makeSpreader, makeSupervisorShoe, makeTractor, makeTrailer, makeTrolley, makeWheel, makeTrolleyWheel, makeDockCover, makeDrone, makeDroneRotor, makeDroneGimbal, type Finish, type Part } from './geometry'
+import { T, carrierStart, load, transferPose } from './incident'
+import { People } from './people'
+import { Labels } from './labels'
+import { crane, dock, dronePose, droneTimes, gimbalMount, inSector, rotorCenters, sensorFrame, sensors, sensorSubject, transferSubject, trolleyPose, vehicleX } from './motion'
+import { cargo, makeContainer, makeGantry, makeMaterials, makeSite, makeSpreader, makeTractor, makeTrailer, makeTrolley, makeWheel, makeTrolleyWheel, makeDockCover, makeDrone, makeDroneRotor, makeDroneGimbal, type Finish, type Part, type Materials } from './geometry'
 
 function Parts({ parts }: { parts: Part[] }) {
   return <>{parts.map((p, i) => <mesh key={i} geometry={p.geometry} material={p.material} castShadow receiveShadow dispose={null} />)}</>
@@ -62,9 +64,9 @@ function Grasses({ high }: { high: boolean }) {
   return <instancedMesh ref={ref} args={[geometry, undefined, count]} receiveShadow><meshStandardMaterial color="#909574" side={DoubleSide} roughness={1} /></instancedMesh>
 }
 /** Small moving instance batches retain real blade/wheel/cover transforms without extra per-item calls. */
-function MovingParts({ parts, clock, kind }: { parts: Part[]; clock: WorldProps['clock']; kind: 'rotors' | 'trolley' | 'covers' }) {
+function MovingParts({ parts, clock, kind }: { parts: Part[]; clock: WorldProps['clock']; kind: 'rotors' | 'trolley' | 'covers' | 'carrier' }) {
   const refs = useRef<(InstancedMesh | null)[]>([]), object = useMemo(() => new Object3D(), [])
-  const positions: Vec3[] = kind === 'rotors' ? rotorCenters : kind === 'trolley' ? [-22.3, -17.7].flatMap(x => [-.98, .98].map(z => [x, crane.wheelY, z] as Vec3)) : [[-.725, dock.coverY, 0], [.725, dock.coverY, 0]]
+  const positions: Vec3[] = kind === 'carrier' ? wheelPositions : kind === 'rotors' ? rotorCenters : kind === 'trolley' ? [-22.3, -17.7].flatMap(x => [-.98, .98].map(z => [x, crane.wheelY, z] as Vec3)) : [[-.725, dock.coverY, 0], [.725, dock.coverY, 0]]
   useLayoutEffect(() => { const mounted = refs.current.filter((v): v is InstancedMesh => v !== null); return () => mounted.forEach(mesh => mesh.dispose()) }, [parts])
   useFrame(() => {
     const t = clock.current.time, drone = kind === 'trolley' ? null : dronePose(t), trolley = kind === 'trolley' ? trolleyPose(t) : null
@@ -72,6 +74,7 @@ function MovingParts({ parts, clock, kind }: { parts: Part[]; clock: WorldProps[
       object.position.set(...p); object.rotation.set(0, 0, 0)
       if (kind === 'rotors') object.rotation.y = drone!.rotor * (i === 0 || i === 3 ? 1 : -1)
       if (kind === 'trolley') object.rotation.x = trolley!.wheelAngle
+      if (kind === 'carrier') object.rotation.z = -(vehicleX(t)-carrierStart)/.59
       if (kind === 'covers') object.position.x += Math.sign(p[0]) * dock.coverTravel * drone!.cover
       object.updateMatrix(); refs.current.forEach(mesh => mesh?.setMatrixAt(i, object.matrix))
     })
@@ -93,7 +96,7 @@ function Observations({ clock, gantry }: { clock: WorldProps['clock']; gantry: P
     const line = (a: Vec3, b: Vec3, c: Color) => { for (const p of [a, b]) { position.setXYZ(count, ...p); color.setXYZ(count++, c.r, c.g, c.b) } }
     for (const sensor of sensors) {
       if (t < sensor.from || t > sensor.to) continue
-      const subject = sensorSubject(t, sensor.kind)
+      const subject = sensor.id === 'aisle-camera' ? transferSubject(t) : sensorSubject(t, sensor.kind)
       const c = data.colors[sensor.kind === 'camera' ? 0 : sensor.kind === 'radar' ? 1 : 2], frame = sensorFrame(sensor)
       data.object.position.set(...sensor.origin); data.object.rotation.set(frame.pitch, frame.yaw, 0, 'YXZ'); data.object.updateMatrix()
       // Short frustum corners introduce direction, not a claimed operating range.
@@ -109,7 +112,7 @@ function Observations({ clock, gantry }: { clock: WorldProps['clock']; gantry: P
       }
       line(sensor.origin, end, c)
     }
-    if (t >= 18) line([24, 2, -5.5], [17.8, 1.96, -3.23], data.colors[2])
+    if (t >= T.correlate) line([24, 2, -5.5], [17.8, 1.96, -3.23], data.colors[2])
     const drone = dronePose(t)
     if (drone.observing) {
       data.object.position.set(...drone.position); data.object.rotation.set(drone.pitch, drone.yaw, drone.roll, 'YXZ'); data.object.updateMatrix()
@@ -118,6 +121,12 @@ function Observations({ clock, gantry }: { clock: WorldProps['clock']; gantry: P
     data.geometry.setDrawRange(0, count); position.needsUpdate = true; color.needsUpdate = true; data.geometry.computeBoundingSphere()
   })
   return <lineSegments name="illustrated-observations" geometry={data.geometry} frustumCulled={false}><lineBasicMaterial vertexColors transparent opacity={.48} depthWrite={false} /></lineSegments>
+}
+function LoadLocks({clock,m}:{clock:WorldProps['clock'];m:Materials}){
+ const ref=useRef<InstancedMesh>(null),o=useMemo(()=>new Object3D(),[])
+ useLayoutEffect(()=>{const mesh=ref.current;return()=>{mesh?.dispose()}},[])
+ useFrame(()=>{const t=clock.current.time,p=transferPose(t);let i=0;for(const side of[0,1])for(const x of[-load.halfCornerX,load.halfCornerX])for(const z of[-load.halfCornerZ,load.halfCornerZ]){o.position.set((side?vehicleX(t)-5.3:load.x)+x,side?load.carrierBottom+.055:p.tool[1]-.09,(side?0:p.trolleyZ)+z);o.rotation.set(0,(side?p.carrierLocked:p.lock)*Math.PI/2,0);o.scale.set(1,1,1);o.updateMatrix();ref.current!.setMatrixAt(i++,o.matrix)}ref.current!.instanceMatrix.needsUpdate=true;ref.current!.computeBoundingSphere()})
+ return<instancedMesh name="load-twistlocks" ref={ref} args={[undefined,m.steel,8]} castShadow><boxGeometry args={[.13,.1,.045]}/></instancedMesh>
 }
 const wheelPositions: Vec3[] = [-1.38, 1.22, -7.65, -6.35].flatMap(x => [[x, .64, -1.19], [x, .64, 1.19]] as Vec3[])
 const cargoColors: Finish[] = ['blue', 'rust', 'orange', 'teal', 'sand']
@@ -136,73 +145,54 @@ function World({ clock, quality, layers }: WorldProps) {
   const contact = useMemo(makeContactTexture, [])
   const built = useMemo(() => ({
     site: makeSite(m, high), gantry: makeGantry(m, high), trolley: makeTrolley(m, high), spreader: makeSpreader(m, high),
-    tractor: makeTractor(m, high), trailer: makeTrailer(m, high), wheel: makeWheel(m, high), person: makePerson(m, high), shoe: makeSupervisorShoe(m, high),
+    tractor: makeTractor(m, high), trailer: makeTrailer(m, high), wheel: makeWheel(m, high),
     trolleyWheel: makeTrolleyWheel(m, high), cover: makeDockCover(m, high), drone: makeDrone(m, high), rotor: makeDroneRotor(m, high), gimbal: makeDroneGimbal(m, high),
     load: makeContainer(m, high, 'orange', 6.1), containers: cargoColors.map(c => makeContainer(m, high, c)),
   }), [m, high])
   useEffect(() => () => {
-    const parts = [...built.site, ...built.gantry, ...built.trolley, ...built.spreader, ...built.tractor, ...built.trailer, ...built.wheel, ...built.person, ...built.shoe, ...built.load, ...built.trolleyWheel, ...built.cover, ...built.drone, ...built.rotor, ...built.gimbal, ...built.containers.flat()]
+    const parts = [...built.site, ...built.gantry, ...built.trolley, ...built.spreader, ...built.tractor, ...built.trailer, ...built.wheel,  ...built.load, ...built.trolleyWheel, ...built.cover, ...built.drone, ...built.rotor, ...built.gimbal, ...built.containers.flat()]
     parts.forEach(p => p.geometry.dispose())
   }, [built])
   useEffect(() => () => { contact.dispose(); Object.values(m).forEach(v => { v.map?.dispose(); v.dispose() }) }, [contact, m])
   const batches = useMemo(() => [...built.containers.map((parts, i) => ({ parts: parts.filter(p => p.material === m[cargoColors[i]]), positions: placements[i] })), { parts: built.containers[0].filter(p => p.material !== m.blue), positions: allCargoPositions }], [built, m])
   const aircraft = useRef<Group>(null), gimbal = useRef<Group>(null)
-  const vehicle = useRef<Group>(null), trailer = useRef<Group>(null), wheels = useRef<(Group | null)[]>([])
+  const vehicle = useRef<Group>(null), trailer = useRef<Group>(null)
   const trolley = useRef<Group>(null), spreader = useRef<Group>(null), cables = useRef<Group>(null)
-  const person = useRef<Group>(null), shoes = useRef<(Group | null)[]>([]), footShadows = useRef<(Mesh | null)[]>([]), legs = useRef<(Mesh | null)[]>([]), marker = useRef<Group>(null), hold = useRef<Group>(null), brake = useRef<Group>(null), recorded = useRef<Group>(null)
-  const rig = useMemo(() => ({ axis: new Vector3(0, 1, 0), hip: new Vector3(), knee: new Vector3(), ankle: new Vector3(), direction: new Vector3() }), [])
+  const cargoLoad = useRef<Group>(null), marker = useRef<Group>(null), hold = useRef<Group>(null), brake = useRef<Group>(null), recorded = useRef<Group>(null)
   useFrame(() => {
     const t = clock.current.time, x = vehicleX(t)
     vehicle.current!.position.set(x, 0, 0)
     trailer.current!.rotation.y = 0
-    wheels.current.forEach(w => { if (w) w.rotation.z = -(x + 20) / .59 })
+    const transfer = transferPose(t); cargoLoad.current!.position.set(...transfer.load)
     const { z, y } = trolleyPose(t)
     trolley.current!.position.z = z; spreader.current!.position.set(0, y, z)
     cables.current!.position.set(0, y + crane.anchorY, z); cables.current!.scale.y = crane.cableTop - y - crane.anchorY
     const flight = dronePose(t)
     aircraft.current!.position.set(...flight.position); aircraft.current!.rotation.set(flight.pitch, flight.yaw, flight.roll, 'YXZ')
     gimbal.current!.rotation.set(flight.gimbalPitch, flight.gimbalYaw, 0, 'YXZ')
-    const pose = supervisorPose(t)
-    person.current!.position.set(...pose.position)
-    person.current!.rotation.set(0, pose.yaw, 0)
-    pose.feet.forEach((foot, side) => {
-      const shoe = shoes.current[side]!
-      shoe.position.set(...foot.position); shoe.rotation.y = foot.yaw
-      footShadows.current[side]!.visible = foot.planted
-      const joints = pose.legs[side]
-      rig.hip.set(...joints.hip); rig.knee.set(...joints.knee); rig.ankle.set(...joints.ankle)
-      for (let part = 0; part < 2; part++) {
-        const start = part === 0 ? rig.hip : rig.knee, end = part === 0 ? rig.knee : rig.ankle, leg = legs.current[side * 2 + part]!
-        rig.direction.copy(end).sub(start)
-        leg.position.copy(start).add(end).multiplyScalar(.5)
-        leg.quaternion.setFromUnitVectors(rig.axis, rig.direction.normalize())
-      }
-    })
-    hold.current!.visible = t >= 27; brake.current!.visible = t >= 20; recorded.current!.visible = t >= droneTimes.record
-    if (marker.current) { marker.current.visible = t >= 4; marker.current.position.set(x - 3.2, .09, 0) }
+    hold.current!.visible = t >= T.correlate; brake.current!.visible = t >= T.correlate; recorded.current!.visible = t >= droneTimes.record
+    if (marker.current) { marker.current.visible = t >= T.verify; marker.current.position.set(x - 3.2, .09, 0) }
   })
   return <group>
     <Parts parts={built.site} /><Parts parts={built.gantry} />
     {batches.map((batch, i) => <Batch key={i} parts={batch.parts} positions={batch.positions} />)}
     <Contacts texture={contact} items={staticContacts} opacity={high ? .19 : .32} /><Grasses high={high} />
-    <group name="gantry-trolley" ref={trolley} position={[0, 0, -16]}><Parts parts={built.trolley} /><MovingParts parts={built.trolleyWheel} clock={clock} kind="trolley" /></group>
-    <group name="hoist-spreader" ref={spreader} position={[0, 5.1, -16]}><Parts parts={built.spreader} /></group>
-    <group name="hoist-cables" ref={cables} position={[0, 5.1 + crane.anchorY, -16]} scale={[1, crane.cableTop - 5.1 - crane.anchorY, 1]}>
+    <group name="gantry-trolley" ref={trolley} position={[0, 0, load.sourceZ]}><Parts parts={built.trolley} /><MovingParts parts={built.trolleyWheel} clock={clock} kind="trolley" /></group>
+    <group name="hoist-spreader" ref={spreader} position={[0, 6.3, load.sourceZ]}><Parts parts={built.spreader} /></group>
+    <group name="hoist-cables" ref={cables} position={[0, 6.3 + crane.anchorY, load.sourceZ]} scale={[1, crane.cableTop - 6.3 - crane.anchorY, 1]}>
       {crane.cableXs.flatMap(x => crane.cableZs.map(z => <mesh key={`${x}-${z}`} position={[x, .5, z]} castShadow><boxGeometry args={[.028, 1, .028]} /><meshStandardMaterial color="#394951" metalness={.5} roughness={.45} /></mesh>))}
     </group>
-    <group name="yard-vehicle" ref={vehicle} position={[-20, 0, 0]}>
+    <group name="yard-vehicle" ref={vehicle} position={[carrierStart, 0, 0]}>
       <Parts parts={built.tractor} />
-      <group ref={trailer} position={[-1.5, 0, 0]}><group position={[1.5, 0, 0]}><Parts parts={built.trailer} /><group position={[-5.3, 1.43, 0]}><Parts parts={built.load} /></group>{wheelPositions.slice(4).map((p, i) => <group key={i} position={p}><group ref={w => { wheels.current[i + 4] = w }}><Parts parts={built.wheel} /></group></group>)}</group></group>
-      {wheelPositions.slice(0, 4).map((p, i) => <group key={i} position={p}><group ref={w => { wheels.current[i] = w }}><Parts parts={built.wheel} /></group></group>)}
+      <group ref={trailer} position={[-1.5, 0, 0]}><group position={[1.5, 0, 0]}><Parts parts={built.trailer} /></group></group>
+      <MovingParts parts={built.wheel} clock={clock} kind="carrier"/>
       <Contacts texture={contact} items={vehicleContacts} opacity={.39} />
       <group ref={brake} visible={false}>{[-.9, .9].map(z => <mesh key={z} position={[-8.65, 1.13, z]}><boxGeometry args={[.018, .13, .28]} /><meshBasicMaterial color="#d68655" /></mesh>)}</group>
       <mesh position={[.7, 3.52, -.18]}><cylinderGeometry args={[.105, .105, .16, 12]} /><meshStandardMaterial color="#e8b76d" emissive="#e8b76d" emissiveIntensity={.22} roughness={.3} /></mesh>
     </group>
-    <group name="logistics-supervisor" ref={person} position={[20.7, .46, -6.5]}><Parts parts={built.person} /></group>
-    {[0, 1].map(side => <group key={side}>
-      <group ref={shoe => { shoes.current[side] = shoe }}><Parts parts={built.shoe} /><mesh ref={shadow => { footShadows.current[side] = shadow }} position={[0, .006, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[.4, .55]} /><meshBasicMaterial color="#29363a" map={contact} transparent opacity={.27} depthWrite={false} /></mesh></group>
-      {[0, 1].map(part => <mesh key={part} name={`supervisor-${side}-${part ? 'shin' : 'thigh'}`} ref={leg => { legs.current[side * 2 + part] = leg }} castShadow receiveShadow material={m.blue}><capsuleGeometry args={[.064, part ? supervisorRig.shin : supervisorRig.thigh, 3, 8]} /></mesh>)}
-    </group>)}
+    <group name="marked-load" ref={cargoLoad} position={[load.x,load.sourceBottom,load.sourceZ]}><Parts parts={built.load}/>{[-1,1].map(side=><group key={side}>{[-.55,0,.55].map(x=><mesh key={x} position={[x,1.45,side*1.301]} material={m.cream}><boxGeometry args={[.27,2,.025]}/></mesh>)}</group>)}</group>
+    <LoadLocks clock={clock} m={m}/>
+    <People clock={clock} high={high} m={m}/><Labels clock={clock}/>
     <group ref={hold} visible={false}><mesh position={[17.8, 2.21, -3.24]}><boxGeometry args={[.31, .065, .02]} /><meshBasicMaterial color="#e5b361" /></mesh><mesh position={[22.1, 1.92, -4.1]}><sphereGeometry args={[.115, 12, 8]} /><meshBasicMaterial color="#dcb074" /></mesh></group>
     <group ref={recorded} visible={false}><mesh position={[17.8, 1.94, -3.226]}><boxGeometry args={[.25, .11, .012]} /><meshBasicMaterial color="#d6caa8" /></mesh></group>
     {layers.tracks && <group ref={marker} visible={false}><mesh rotation={[-Math.PI / 2, 0, 0]} scale={[2.8, 1, 1]}><ringGeometry args={[1.92, 1.945, 64]} /><meshBasicMaterial color="#debb7c" transparent opacity={.68} depthWrite={false} /></mesh></group>}
