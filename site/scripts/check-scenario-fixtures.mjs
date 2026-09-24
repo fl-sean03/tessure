@@ -44,5 +44,6 @@ rejects(w => { w.scenarios[0].fallbackStills[1].at = 3 }, /exact narrative state
 rejects(w => { w.scenarios[0].fallbackStills[1].src = '/worlds/private-estate/../other.webp' }, /local world image/)
 rejects(w => { w.scenarios[0].beats[0].evidence[0].kind = 'identity' }, /new evidence declares/)
 rejects(w => { w.scenarios[0].beats[0].action = 'Launch' }, /one human decision/)
+rejects(w => { w.scenarios[0].cameras[1].cut = true }, /camera cuts are not allowed/)
 if (!source.scenarios) assert.throws(() => validateWorld(source, { release: true }), /legacy story cannot/)
 console.log('PASS: synthetic estate primary/comparison, subevent boundaries, independent timing, direct/reverse state selection; invalid story/still/evidence/decision contracts rejected.')

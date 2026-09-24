@@ -9,7 +9,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "check:contract": "node --experimental-strip-types scripts/check-contract.mjs && node --experimental-strip-types scripts/check-scenario-fixtures.mjs",
-    "check:release": "node --experimental-strip-types scripts/check-contract.mjs --release"
+    "check:continuity": "node --experimental-strip-types scripts/check-camera-continuity.mjs",
+    "check:release": "node --experimental-strip-types scripts/check-contract.mjs --release && npm run check:continuity"
   },
   "dependencies": {
     "next": "15.5.26",

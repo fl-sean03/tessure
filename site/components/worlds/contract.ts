@@ -1,6 +1,6 @@
 import type { ComponentType, MutableRefObject } from 'react'
 
-/** contract-v3: metres, +Y up. Absolute scenario time is the only animation source. */
+/** contract-v4: continuous automatic playback; metres, +Y up. Absolute authored time only. */
 export type Vec3 = [number, number, number]
 export type BeatId = 'detect' | 'verify' | 'correlate' | 'decide' | 'respond' | 'resolve'
 export type Quality = 'low' | 'high'
@@ -17,8 +17,9 @@ export type StoryEvent = {
 }
 export type Beat = { id: BeatId; at: number; title: string; body: string; evidence: Evidence[]; action?: string; subevents?: StoryEvent[] }
 export type CameraEasing = 'linear' | 'smooth' | 'smoother' | 'easeIn' | 'easeOut'
-/** cut applies on arrival at this key; easing/interpolation describe the outgoing segment. */
-export type CameraKey = { at: number; position: Vec3; target: Vec3; mobilePosition?: Vec3; mobileTarget?: Vec3; fov?: number; cut?: boolean; easing?: CameraEasing; interpolation?: 'linear' | 'spline' }
+/** Outgoing interpolation. pchip preserves shape and velocity across nonuniform key times.
+ * cut is legacy migration input only; continuous release validation rejects it. */
+export type CameraKey = { at: number; position: Vec3; target: Vec3; mobilePosition?: Vec3; mobileTarget?: Vec3; fov?: number; cut?: boolean; easing?: CameraEasing; interpolation?: 'linear' | 'spline' | 'pchip' }
 export type ShadowBounds = { left: number; right: number; top: number; bottom: number; near: number; far: number; bias: number; normalBias: number; mapSize: 512 | 1024 | 2048 }
 /** A representative state image, selected from its authored start time until the next still. */
 export type SceneStill = { at: number; src: string; alt: string }
@@ -62,4 +63,6 @@ export type ResourceStats = {
 export type RenderStats = {
   scene: string; scenario: string; time: number; quality: Quality; calls: number; triangles: number;
   textures: number; geometries: number; practicalLights: number; practicalShadows: number; frameMs: number; jsFrameMs: number;
+  /** Actual post-render pose/identity diagnostics; no simulated sensor or product data. */
+  cameraPosition: Vec3; cameraQuaternion: [number, number, number, number]; cameraFov: number; cameraAspect: number; worldUuid: string;
 } & ResourceStats

@@ -12,20 +12,19 @@ import { storyStates } from './scenario'
 
 type Props = {
   scene: SceneModule; scenario: ResolvedScenario; clock: MutableRefObject<SceneClock>; layers: Layers; quality: Quality;
-  revision: number; decisionPassed: MutableRefObject<boolean>; onTime: (time: number) => void;
+  revision: number; onTime: (time: number) => void;
   onPause: () => void; onFailure: () => void; onReady: (key: string) => void; onDowngrade: () => void
 }
 declare global {
   interface Window { __TESSURE_STATS__?: RenderStats; __TESSURE_CONTEXTS__?: number; __TESSURE_FRAMES__?: RenderStats[] }
 }
 type Timing = MutableRefObject<{ start: number }>
-function Director({ scene, scenario, clock, quality, revision, decisionPassed, onTime, onPause, onDowngrade, timing }: Props & { timing: Timing }) {
+function Director({ scene, scenario, clock, quality, revision, onTime, onPause, onDowngrade, timing }: Props & { timing: Timing }) {
   const { camera, size, gl, invalidate } = useThree()
   const lastUpdate = useRef(0)
   const lastCue = useRef(-1)
   const cueTimes = useMemo(() => storyStates(scenario).map(cue => cue.at), [scenario])
   const slow = useRef(0)
-  const decision = scenario.beats.find(b => b.id === 'decide')!.at
   useEffect(() => { invalidate(); slow.current = 0 }, [revision, quality, scene, scenario, invalidate])
   useFrame((_, delta) => {
     const start = performance.now()
@@ -33,12 +32,8 @@ function Director({ scene, scenario, clock, quality, revision, decisionPassed, o
     const state = clock.current
     if (state.playing) {
       const next = Math.min(scenario.duration, state.time + Math.min(delta, 0.08))
-      if (!decisionPassed.current && next >= decision) {
-        state.time = decision; state.playing = false; onPause(); onTime(decision)
-      } else {
-        state.time = next
-        if (next >= scenario.duration) { state.playing = false; onPause() }
-      }
+      state.time = next
+      if (next >= scenario.duration) { state.playing = false; onPause() }
     }
     const shot = sampleCamera(scenario.cameras, state.time, size.width < 640)
     camera.position.set(...shot.position)
@@ -68,7 +63,8 @@ function FrameEnd({ module, scenario, onReady, clock, quality, layers, revision,
     gl.render(scene, camera)
     if (!owned.current) return
     const resources = cache.current!.read(owned.current)
-    const stats: RenderStats = { scene: module.definition.id, scenario: scenario.id, time: clock.current.time, quality, ...resources, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
+    const stats: RenderStats = { scene: module.definition.id, scenario: scenario.id, time: clock.current.time, quality, ...resources, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start,
+      cameraPosition: camera.position.toArray(), cameraQuaternion: camera.quaternion.toArray(), cameraFov: (camera as PerspectiveCamera).fov, cameraAspect: (camera as PerspectiveCamera).aspect, worldUuid: owned.current.uuid }
     window.__TESSURE_STATS__ = stats
     const frames = window.__TESSURE_FRAMES__ ||= []
     frames.push(stats); if (frames.length > 300) frames.shift()
@@ -166,6 +162,6 @@ export default function WorldRuntime(props: Props) {
       window.__TESSURE_CONTEXTS__ = Math.max(0, (window.__TESSURE_CONTEXTS__ || 1) - 1)
     }
   }, [draw])
-  useEffect(draw, [draw, props.scene, props.scenario, props.quality, props.layers, props.revision, props.decisionPassed])
+  useEffect(draw, [draw, props.scene, props.scenario, props.quality, props.layers, props.revision])
   return <div ref={container} style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden="true" />
 }

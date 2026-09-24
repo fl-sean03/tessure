@@ -4,7 +4,7 @@ A public concept for a physical-security system designed to correlate and verify
 
 ## Website
 
-The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text and state-matched stills. Each primary incident pauses for human review before the operator's chosen response. Preauthorized local holds or alerts can appear earlier under site policy. The estate comparison has its own timeline and decision not to dispatch.
+The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text and state-matched stills. Each incident plays through the operator's review and physical response without requiring viewer approval. Visitors can pause, replay or explore any timestamp. Preauthorized local holds or alerts can appear earlier under site policy. The estate comparison has its own timeline and decision not to dispatch.
 
 ```sh
 cd site

@@ -29,23 +29,22 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
   const [readyKey, setReadyKey] = useState<string | null>(null)
   const [time, setTime] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [decisionPassed, updateDecisionPassed] = useState(false)
-  const decisionPassedRef = useRef(false)
-  function setDecisionPassed(value: boolean) { decisionPassedRef.current = value; updateDecisionPassed(value) }
   const [layers, setLayers] = useState<Layers>({ sensors: false, tracks: true })
   const [quality, setQuality] = useState<Quality>('high')
   const [reducedMotion, setReducedMotion] = useState(false)
   const [revision, setRevision] = useState(0)
   const clock = useRef<SceneClock>({ time: 0, playing: false })
   const stage = useRef<HTMLDivElement>(null)
+  const evidencePanel = useRef<HTMLElement>(null)
   const intendedPlay = useRef(false)
   const { cue, still } = stateAt(scenario, time)
   const decision = scenario.beats.find(b => b.id === 'decide')!
-  const atDecision = time >= decision.at && time < scenario.beats.find(b => b.id === 'respond')!.at && !decisionPassed
+  const duringReview = cue.anchor === 'decide'
   const pause = useCallback(() => { intendedPlay.current = false; clock.current.playing = false; setPlaying(false) }, [])
   const fail = useCallback(() => { setFailed(true); setActive(false); setLoading(false); pause() }, [pause])
   const onReady = useCallback((key: string) => { setReadyKey(key) }, [])
   const downgrade = useCallback(() => setQuality('low'), [])
+  useEffect(() => { evidencePanel.current?.scrollTo({ top: 0, behavior: 'instant' }) }, [selectionKey, cue.id])
   useEffect(() => {
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
     const update = () => { setReducedMotion(motion.matches); if (motion.matches) pause() }
@@ -84,34 +83,27 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
   function choose(id: string) {
     if (id === selected) return
     pause(); setSelected(id); setScenarioId(undefined); setTime(0); clock.current.time = 0
-    setDecisionPassed(false); setReadyKey(null); setRevision(v => v + 1)
+    setReadyKey(null); setRevision(v => v + 1)
     // Keep a single Canvas alive through world swaps; the poster covers the pending scene.
   }
   function chooseScenario(id: string) {
     if (id === scenario.id) return
     pause(); setScenarioId(id); setTime(0); clock.current.time = 0
-    setDecisionPassed(false); setReadyKey(null); setRevision(v => v + 1)
+    setReadyKey(null); setRevision(v => v + 1)
   }
   function seek(value: number) {
     pause(); const next = Math.min(scenario.duration, Math.max(0, value))
-    clock.current.time = next; setTime(next); setDecisionPassed(next > decision.at)
+    clock.current.time = next; setTime(next)
     setRevision(v => v + 1)
   }
   function play() {
     if (playing) { pause(); return }
     if (reducedMotion) return
-    if (time >= scenario.duration) { clock.current.time = 0; setTime(0); setDecisionPassed(false) }
-    if (atDecision) return
+    if (time >= scenario.duration) { clock.current.time = 0; setTime(0) }
     stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
     if (!active) { intendedPlay.current = true; setActive(true); setLoading(true); return }
     if (module?.definition.id !== selected || loading) { intendedPlay.current = true; return }
     clock.current.playing = true; setPlaying(true); setRevision(v => v + 1)
-  }
-  function continueDecision() {
-    if (active && (loading || module?.definition.id !== selected)) return
-    setDecisionPassed(true)
-    if (active && !reducedMotion) { stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' }); clock.current.playing = true; setPlaying(true); setRevision(v => v + 1) }
-    else seek(scenario.beats.find(b => b.id === 'respond')!.at)
   }
   const currentModule = module?.definition.id === selected
   const ready = readyKey === selectionKey
@@ -131,28 +123,28 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
     <div className="world-console">
       <div ref={stage} className="world-stage" aria-label={`${definition.name} illustrative scene`}>
         <img className={`world-poster ${posterVisible ? '' : 'is-hidden'}`} src={still?.src || scenario.poster} alt={still?.alt || scenario.posterAlt} width="1440" height="960" />
-        {active && !failed && module && runtimeScenario && <div className="world-canvas"><StageBoundary onError={fail}><Runtime scene={module} scenario={runtimeScenario} clock={clock} layers={layers} quality={quality} revision={revision} decisionPassed={decisionPassedRef} onTime={setTime} onPause={pause} onFailure={fail} onReady={onReady} onDowngrade={downgrade} /></StageBoundary></div>}
+        {active && !failed && module && runtimeScenario && <div className="world-canvas"><StageBoundary onError={fail}><Runtime scene={module} scenario={runtimeScenario} clock={clock} layers={layers} quality={quality} revision={revision} onTime={setTime} onPause={pause} onFailure={fail} onReady={onReady} onDowngrade={downgrade} /></StageBoundary></div>}
         <div className="stage-meta"><span className="stage-label"><i />{scenarioLabel}</span><span>{definition.setting}</span></div>
         {loading && <div className="stage-loading" role="status">Preparing the world…</div>}
-        <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={atDecision || loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{posterVisible ? imageLabel : 'Interactive illustration'}</span><Link href={`/worlds/${selected}`}>Open world page <span aria-hidden="true">↗</span></Link></div>
+        <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{posterVisible ? imageLabel : 'Interactive illustration'}</span><Link href={`/worlds/${selected}`}>Open world page <span aria-hidden="true">↗</span></Link></div>
       </div>
-      <aside className="evidence-panel" aria-label="Illustrated event evidence">
-        {!active && !failed && <button className="stage-launch" onClick={() => { stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' }); intendedPlay.current = !reducedMotion && time < decision.at; setActive(true); setLoading(true) }}><span aria-hidden="true">▷</span>{reducedMotion ? 'Enable a still 3D view' : 'Enter the world'}<small>{reducedMotion ? 'Reduced motion · manual exploration' : 'A guided sequence · you control the pace'}</small></button>}
+      <aside ref={evidencePanel} className="evidence-panel" tabIndex={0} aria-label="Illustrated event evidence">
+        {!active && !failed && <button className="stage-launch" onClick={() => { stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' }); intendedPlay.current = !reducedMotion; setActive(true); setLoading(true) }}><span aria-hidden="true">▷</span>{reducedMotion ? 'Enable a still 3D view' : 'Enter the world'}<small>{reducedMotion ? 'Reduced motion · manual exploration' : 'A complete sequence · pause or explore anytime'}</small></button>}
         {failed && <p className="stage-fallback" role="status"><strong>Still view</strong><span>Explore the complete story with the timeline and text below.</span></p>}
         <div className="evidence-kicker"><span>From signal to decision</span><span>{String(scenario.beats.findIndex(b => b.id === cue.anchor) + 1).padStart(2, '0')} / 06</span></div>
         <div className="evidence-current" aria-live="polite" aria-atomic="true"><p className={`beat-label ${cue.anchor}`}>{labels[cue.anchor]}</p><h4>{cue.title}</h4><p>{cue.body}</p></div>
         <div className="evidence-sources">{groupEvidence(cue.evidence).map(group => <section key={group.kind} className="evidence-group">{group.label && <h5>{group.label}</h5>}{group.entries.map((e, i) => <div className="evidence-source" key={`${cue.id}-${i}`}><span className="source-marker" aria-hidden="true" /><div><strong>{e.source}</strong><p>{e.detail}</p></div></div>)}</section>)}</div>
-        {atDecision && <div className="decision-panel"><p>Illustrative operator decision</p><strong>{decision.action}</strong><button className="button primary" onClick={continueDecision} disabled={loading || (active && !currentModule)}>Continue illustrative response <span aria-hidden="true">→</span></button><span>Or stay here and review the evidence.</span></div>}
+        {duringReview && <div className="operator-review"><p>Illustrative operator decision</p><strong>{decision.action}</strong><span>The operator’s review and response are part of this authored sequence.</span></div>}
         <p className="evidence-caption">Authored observations. No live sensor data or real-world controls.</p>
       </aside>
     </div>
     <div className="timeline-controls">
-      <button className="play-control" onClick={play} disabled={failed || atDecision || reducedMotion || loading || (active && !currentModule)} aria-label={playing ? 'Pause sequence' : time >= scenario.duration ? 'Replay sequence' : 'Play sequence'}><span aria-hidden="true">{playing ? 'Ⅱ' : '▷'}</span><span>{playing ? 'Pause' : time >= scenario.duration ? 'Replay' : 'Play'}</span></button>
+      <button className="play-control" onClick={play} disabled={failed || reducedMotion || loading || (active && !currentModule)} aria-label={playing ? 'Pause sequence' : time >= scenario.duration ? 'Replay sequence' : 'Play sequence'}><span aria-hidden="true">{playing ? 'Ⅱ' : '▷'}</span><span>{playing ? 'Pause' : time >= scenario.duration ? 'Replay' : 'Play'}</span></button>
       <label className="scrubber"><span className="sr-only">Illustrative playback time</span><input aria-valuetext={`${Math.floor(time)} of ${scenario.duration} illustration seconds`} type="range" min="0" max={scenario.duration} step="0.1" value={time} onChange={e => seek(Number(e.target.value))} /><span><b>{String(Math.floor(time)).padStart(2, '0')}</b> / {scenario.duration}s <span className="time-note">illustration</span></span></label>
       <div className="layer-controls" aria-label="Scene layers"><button aria-pressed={layers.sensors} onClick={() => { setLayers(s => ({ ...s, sensors: !s.sensors })); setRevision(v => v + 1) }}>Sensors</button><button aria-pressed={layers.tracks} onClick={() => { setLayers(s => ({ ...s, tracks: !s.tracks })); setRevision(v => v + 1) }}>Tracks</button><button aria-label={active ? 'Switch to static view' : 'Use static view'} aria-pressed={!active} onClick={() => { setActive(false); pause(); setReadyKey(null) }}>Static</button></div>
     </div>
     <div className="beat-navigation" aria-label="Jump to an authored beat">{scenario.beats.map((b, i) => <button key={b.id} aria-pressed={b.id === cue.anchor} onClick={() => seek(b.at)}><small>{String(i + 1).padStart(2, '0')}</small><span>{labels[b.id]}</span><span className="beat-dot" aria-hidden="true" /></button>)}</div>
-    {scenario.role !== 'legacy' && <p className="timeline-note">Explore the authored timeline. Jumping ahead previews the scripted response; it does not operate a real site.</p>}
+    {scenario.role !== 'legacy' && <p className="timeline-note">The illustration plays from beginning to end, including the operator’s review and response. Pause or jump to any moment to explore; these controls do not operate a real site.</p>}
     <div className="world-notes"><p><span className="eyebrow">The idea this world explores</span>{scenario.lesson}</p><details><summary>Read the story as text <span aria-hidden="true">+</span></summary><p className="story-identity">{scenario.label}</p><ol>{storyStates(scenario).map(state => <li key={state.id}><button className="story-state-link" onClick={() => seek(state.at)}>{state.at}s · {labels[state.anchor]}</button><h4>{state.title}</h4><p>{state.body}</p>{state.action && <p>Illustrative decision: {state.action}.</p>}{state.evidence.map((e, i) => <p key={i} className="story-evidence"><strong>{e.source}:</strong> {e.detail}</p>)}</li>)}</ol></details></div>
   </div>
 }

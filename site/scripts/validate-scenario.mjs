@@ -10,7 +10,7 @@ const text = value => typeof value === 'string' && value.trim().length > 0
 const finite = value => typeof value === 'number' && Number.isFinite(value)
 
 /** Content/asset contract, not proof of a rendered incident or real sensor capability. */
-export function validateWorld(world, { release = false, publicDir } = {}) {
+export function validateWorld(world, { release = false, continuous = release, publicDir } = {}) {
   const modern = Boolean(world.scenarios)
   assert(text(world.id) && slugPattern.test(world.id), 'stable world id')
   assert(world.practicalLightLimit >= 0 && world.practicalLightLimit <= 3)
@@ -69,6 +69,7 @@ export function validateWorld(world, { release = false, publicDir } = {}) {
     assert(scenario.cameras.length >= 2 && scenario.cameras[0].at === 0)
     assert(scenario.cameras.at(-1).at >= scenario.duration, 'camera covers terminal hold')
     assert(scenario.cameras.every((key, i) => finite(key.at) && (i === 0 || key.at > scenario.cameras[i - 1].at) && (key.fov === undefined || (key.fov >= 15 && key.fov <= 90))), 'ordered camera keys and usable field of view')
+    if (continuous) assert(scenario.cameras.every(key => !key.cut), `${world.id}/${scenario.id}: camera cuts are not allowed in continuous playback`)
     const times = new Set([0, scenario.duration, ...states.flatMap(s => [Math.max(0, s.at - 0.001), s.at, Math.min(scenario.duration, s.at + 0.001)])])
     for (const time of times) {
       const first = stateAt(scenario, time)
