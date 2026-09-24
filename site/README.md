@@ -13,7 +13,7 @@ npm run build
 npm start
 ```
 
-Node.js 22 or later. The npm lockfile is authoritative. Production is built from this directory through Vercel's Git integration.
+Use Node.js 24.x and npm 11.13.0, as pinned in `package.json`. The npm lockfile is authoritative. Production is built from this directory through Vercel's Git integration.
 
 ## Scene system
 

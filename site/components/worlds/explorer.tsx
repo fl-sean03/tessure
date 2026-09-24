@@ -57,7 +57,9 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
         const rect = stage.current?.getBoundingClientRect()
         if (!rect || rect.bottom <= 0 || rect.top >= innerHeight) pause()
       }
-    }, { threshold: 0.1 })
+    // Match the fully-offscreen guard: a higher threshold can notify before
+    // the last pixels leave, then never notify again at the viewport edge.
+    }, { threshold: 0 })
     if (stage.current) observer.observe(stage.current)
     return () => { document.removeEventListener('visibilitychange', hidden); observer.disconnect() }
   }, [pause])
