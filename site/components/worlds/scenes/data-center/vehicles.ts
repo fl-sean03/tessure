@@ -1,4 +1,5 @@
 import { clamp, progress } from '../../math'
+import { T } from './timing'
 
 /** Authored metres, +Y up, vehicle forward -Z. Pose is referenced to the rear axle. */
 export const roadY = .13
@@ -14,24 +15,12 @@ export const wheelLayout = (small = false) => {
   })))
 }
 const wheels = wheelLayout(), truck = vehicleSpec()
-// Stop on the receiving approach, aimed into the far bay with room ahead of its bollards.
-const outerX = 9.8, radius = 7, turnAngle = 55 * Math.PI / 180
-const turnZ = -25 + (3.46 + truck.rearZ) * Math.cos(turnAngle) + radius * Math.sin(turnAngle)
-const laneZ = .47 - turnZ, laneX = outerX - 4.8
+const radius=9, angle=Math.PI/4
 const smoother = (u: number) => u ** 3 * (10 + u * (-15 + 6 * u))
-const seventh = (u: number) => u ** 4 * (35 + u * (-84 + u * (70 - 20 * u)))
-
 type Rear = { x: number; z: number; heading: number; curvature: number }
-function lane(u: number): Rear {
-  const dx = laneX * 140 * u ** 3 * (1 - u) ** 3
-  const ddx = laneX * 420 * u ** 2 * (1 - u) ** 2 * (1 - 2 * u)
-  return { x: 4.8 + laneX * seventh(u), z: .47 - laneZ * u,
-    heading: -Math.atan2(dx, laneZ), curvature: -laneZ * ddx / (dx * dx + laneZ * laneZ) ** 1.5 }
-}
-function circle(u: number): Rear {
-  const heading = u * turnAngle
-  return { x: outerX - radius + radius * Math.cos(heading), z: turnZ - radius * Math.sin(heading), heading, curvature: 1 / radius }
-}
+// Two reverse arcs, separated by a full stop to reverse steering. Rear-axle reference.
+function reverseFirst(u:number):Rear { const h=u*angle;return{x:4.8+radius*(1-Math.cos(h)),z:12+truck.rearZ+radius*Math.sin(h),heading:h,curvature:-1/radius} }
+function reverseSecond(u:number):Rear {const h=angle*(1-u),a=reverseFirst(1);return{x:a.x+radius*(Math.cos(h)-Math.cos(angle)),z:a.z+radius*(Math.sin(angle)-Math.sin(h)),heading:h,curvature:1/radius}}
 function wheelPoint(p: Rear, x: number, z: number) {
   return [p.x + x * Math.cos(p.heading) + z * Math.sin(p.heading), p.z - x * Math.sin(p.heading) + z * Math.cos(p.heading)]
 }
@@ -55,8 +44,7 @@ function table(path: (u: number) => Rear) {
   }
   return rows
 }
-const laneTable = table(lane), turnTable = table(circle)
-const laneLength = laneTable.at(-1)!.distance, turnLength = turnTable.at(-1)!.distance
+const firstTable=table(reverseFirst),secondTable=table(reverseSecond)
 function sample(rows: ReturnType<typeof table>, distance: number) {
   const d = clamp(distance, 0, rows.at(-1)!.distance)
   let lo = 0, hi = rows.length - 1
@@ -75,29 +63,17 @@ function travel(t: number, keys: Key[]) {
   }
   return keys.at(-1)![1]
 }
-const truckKeys: Key[] = [[0, 0, 0], [4, 7, 1.5], [11, 14, 1.5], [18, 26, 2], [24.5, 26 + laneLength, 0]]
-const vanKeys: Key[] = [[0, 0, 0], [4, 3.5, .9], [11, 11.5, 1], [18, 18, .7], [24, 22, 0]]
-
-export function vehiclePose(t: number, small = false) {
-  if (small) {
-    const s = travel(t, vanKeys)
-    return { x: 4.8, z: 32.5 - s, heading: 0, rearX: 4.8, rearZ: 34.17 - s,
-      wheels: [0, 1, 2, 3].map(() => ({ steer: 0, roll: -s / .43, distance: s })) }
-  }
-  let p: Rear, distances: number[], curvature: number
-  const s = travel(t, truckKeys)
-  if (t < 18) {
-    p = { x: 4.8, z: 26.47 - s, heading: 0, curvature: 0 }; distances = [s, s, s, s]; curvature = 0
-  } else if (t < 24.5) {
-    const a = sample(laneTable, s - 26); p = lane(a.u); distances = a.rolling.map(d => 26 + d); curvature = p.curvature
-  } else {
-    const a = sample(turnTable, turnLength * smoother(progress(t, 26, 32)))
-    p = circle(a.u); distances = a.rolling.map((d, i) => 26 + laneTable.at(-1)!.rolling[i] + d)
-    // Steer while stopped, then make a rolling turn; unwind only after the body has stopped.
-    curvature = p.curvature * smoother(progress(t, 24.5, 26)) * (1 - smoother(progress(t, 32, 33.5)))
-  }
-  return { x: p.x - truck.rearZ * Math.sin(p.heading), z: p.z - truck.rearZ * Math.cos(p.heading),
-    heading: p.heading, rearX: p.x, rearZ: p.z,
-    wheels: wheels.map((w, i) => ({ steer: w.front ? Math.atan2(truck.wheelbase * curvature, 1 + w.x * curvature) : 0,
-      roll: -distances[i] / truck.radius, distance: distances[i] })) }
+const truckKeys:Key[]=[[0,0,0],[T.detect,2.5,.7],[T.crossed,6.5,1.3],[T.verify,12,1],[T.correlate,17,.6],[T.stopped,21,0]]
+export function vehiclePose(t:number,small=false){
+ if(small){const s=15*smoother(progress(t,0,T.detect));return{x:4.8,z:-4-s,heading:0,rearX:4.8,rearZ:-4-s+1.67,wheels:[0,1,2,3].map(()=>({steer:0,roll:-s/.43,distance:s}))}}
+ const forward=travel(t,truckKeys);let p:Rear={x:4.8,z:33+truck.rearZ-forward,heading:0,curvature:0},distances=[forward,forward,forward,forward],curvature=0
+ if(t>=T.guardReady){
+  const second=t>=T.reverseMiddle,rows=second?secondTable:firstTable
+  const u=smoother(progress(t,second?T.reverseSecond:T.reverse,second?T.parked:T.reverseMiddle)),a=sample(rows,rows.at(-1)!.distance*u)
+  p=(second?reverseSecond:reverseFirst)(a.u);distances=a.rolling.map((d,i)=>21+d+(second?firstTable.at(-1)!.rolling[i]:0))
+  curvature=second?(-1+2*smoother(progress(t,T.reverseMiddle,T.reverseSecond)))/radius:-smoother(progress(t,T.guardReady,T.reverse))/radius
+  curvature*=1-smoother(progress(t,T.parked,T.wheelsSettled))
+ }
+ return{x:p.x-truck.rearZ*Math.sin(p.heading),z:p.z-truck.rearZ*Math.cos(p.heading),heading:p.heading,rearX:p.x,rearZ:p.z,
+  wheels:wheels.map((w,i)=>({steer:w.front?Math.atan2(truck.wheelbase*curvature,1+w.x*curvature):0,roll:-distances[i]/truck.radius,distance:distances[i]}))}
 }

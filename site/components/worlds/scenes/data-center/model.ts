@@ -9,7 +9,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
 import { vehicleSpec, wheelLayout } from './vehicles'
-import { guardStep } from './guard'
 import { devices, devicePoint, type DeviceKind } from './devices'
 
 export type Finish = keyof typeof colors
@@ -17,7 +16,7 @@ const colors = {
   chalk: '#c8d1d3', white: '#e2e5df', joint: '#6e7c83', concrete: '#939f9f', edge: '#afbbb7',
   blue: '#315f9d', paleBlue: '#6589ad', glass: '#274652', glassLight: '#557885',
   asphalt: '#39494f', wet: '#52646e', steel: '#9dabaf', dark: '#25353d', rubber: '#1c272d',
-  van: '#91a29f', ground: '#778576', grass: '#647561', amber: '#d3a05b', lamp: '#f3dfb4', skin: '#bc9b80',
+  van: '#91a29f', ground: '#778576', grass: '#647561', amber: '#d3a05b', lamp: '#f3dfb4', skin: '#bc9b80', cabin:'#89a3aa',
 }
 export type Materials = Record<Finish, MeshStandardMaterial>
 export type Part = { geometry: BufferGeometry; material: MeshStandardMaterial }
@@ -40,6 +39,7 @@ export function createMaterials(): Materials {
   m.blue.roughness = .37; m.blue.metalness = .22; m.van.roughness = .31; m.van.metalness = .18
   m.glass.roughness = .16; m.glass.metalness = .36; m.glassLight.roughness = .2; m.glassLight.metalness = .25
   m.lamp.emissive.set(colors.lamp); m.lamp.emissiveIntensity = .55
+  m.cabin.transparent=true;m.cabin.opacity=.12;m.cabin.depthWrite=false;m.cabin.roughness=.2
   m.grass.side = DoubleSide
   return m
 }
@@ -76,8 +76,8 @@ export function builder(m: Materials, high: boolean) {
 export function makeCampus(m: Materials, high: boolean) {
   const a = builder(m, high)
   // Rounded pavement cut: narrow stone reveal, drainage verge and uninterrupted service spine.
-  a.slab([-7,-1.2,0],48,72,.7,3,'joint'); a.slab([-7,-.5,0],47.7,71.7,.46,2.85,'concrete')
-  a.slab([-7,-.04,0],47.4,71.4,.1,2.8,'ground')
+  a.slab([-4.7,-1.2,0],53,72,.7,3,'joint'); a.slab([-4.7,-.5,0],52.7,71.7,.46,2.85,'concrete')
+  a.slab([-4.7,-.04,0],52.4,71.4,.1,2.8,'ground')
   a.slab([6.2,.065,-.4],12.8,69,.065,1.5,'asphalt')
   a.slab([14,.075,-3],2.4,61,.22,.9,'concrete')
   a.slab([-1.3,.075,-4],2.1,61,.22,.6,'edge')
@@ -169,7 +169,9 @@ export function makeCampus(m: Materials, high: boolean) {
   }
   // Gate pavilion: glazing wraps two sides, deep roof fascia and a sheltered pedestrian apron.
   a.slab([12.85,.14,4.7],7.6,7.7,.25,.8,'edge')
-  a.box(guardStep.position,guardStep.size,'edge',.02)
+  a.slab([18,.075,6],3,34,.22,.5,'concrete')
+  for(let z=-4;z<=20;z+=2){a.cyl([16.4,.85,z],.12,1.44,'blue');a.cyl([16.4,1.3,z],.125,.15,'white')}
+  for(const x of[17.1,18.9])a.cyl([x,.85,5],.13,1.44,'blue')
   a.box([13.25,1.75,4],[5.35,2.9,5.35],'blue',.14)
   a.box([10.52,2,4.55],[.065,1.9,4.15],'glassLight',.01)
   a.box([13,2,6.73],[4.8,1.9,.06],'glass',.01)
@@ -191,7 +193,7 @@ export function makeCampus(m: Materials, high: boolean) {
   a.box([1.2,1.95,6.05],[.36,.7,.22],'dark',.035)
   a.box([1.2,2.08,6.18],[.22,.2,.026],'glassLight',.01)
   a.box([1.2,1.8,6.18],[.17,.05,.026],'white')
-  for(const [x,z] of [[1.1,6.5],[9.4,6.9],[9.4,3.1],[11.1,8.1],[13.4,8.1],[15.7,8.1]]) {
+  for(const [x,z] of [[1.1,6.5],[9.4,6.9],[9.4,3.1],[11.1,8.7],[13.4,8.1],[15.7,8.1]]) {
     a.cyl([x,.78,z],.12,1.22,'blue'); a.cyl([x,1.1,z],.124,.14,'white'); a.cyl([x,.21,z],.21,.1,'steel')
   }
   // Open-picket boundary: explicit joints, without dense moire-producing wire mesh.
@@ -256,7 +258,7 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
   const a=builder(m,high), paint:Finish=small?'van':'white', front=small?-2.5:-3.3, rear=small?2.5:3.3, width=small?2.1:2.42
   const v=vehicleSpec(small)
   // Open wheel wells belong to the body. Their clearance includes the steered tire envelope.
-  function shell(z0:number,z1:number,bottom:number,w:number,top:[number,number][],axles:number[],finish:Finish) {
+  function shell(z0:number,z1:number,bottom:number,w:number,top:[number,number][],axles:number[],finish:Finish,offset=0) {
     const profile=new Shape(),r=v.radius+.15
     profile.moveTo(z0,bottom)
     for(const z of [...axles].sort((a,b)=>a-b)) {
@@ -269,7 +271,7 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
     }
     profile.lineTo(z1,bottom);for(const [z,y]of top)profile.lineTo(z,y);profile.closePath()
     const g=new ExtrudeGeometry(profile,{depth:w,bevelEnabled:true,bevelSegments:2,bevelSize:.025,bevelThickness:.025,steps:1})
-    g.rotateY(-Math.PI/2);g.translate(w/2,0,0);a.put(g,finish)
+    g.rotateY(-Math.PI/2);g.translate(w/2+offset,0,0);a.put(g,finish)
   }
   a.box([0,.65,0],[small?.96:1.1,.32,rear-front-.1],'dark',.07)
   for(const z of [v.frontZ,v.rearZ])a.beam([-v.halfTrack,v.radius,z],[v.halfTrack,v.radius,z],.065,'dark')
@@ -280,7 +282,11 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
       a.box([x,1.3,.85],[.07,.16,4.8],'blue');a.box([x,2.15,.8],[.028,.45,3.85],'paleBlue')
       for(let z=-1.4;z<3.2;z+=.8)a.box([x,2.32,z],[.034,2,.025],'edge')
     }
-    shell(-3.275,-1.425,.565,2.35,[[-1.425,2.795],[-3.275,2.795]],[v.frontZ],'white')
+    for(const x of[-1.115,1.115])shell(-3.275,-1.425,.565,.12,[[-1.425,1.65],[-3.275,1.65]],[v.frontZ],'white',x)
+    a.box([0,1.19,-3.235],[2.15,.88,.1],'white',.025)
+    a.box([0,.71,-2.15],[2.13,.08,1.8],'dark',.02)
+    a.box([0,2.16,-1.46],[2.35,1.24,.1],'white',.03)
+    for(const x of[-1.13,1.13])a.box([x,2.22,-3.2],[.12,1.2,.13],'white',.03)
     a.box([0,2.93,-2.03],[2.2,.45,1.4],'white',.2)
   } else {
     // A shaped high-roof van: rear volume, lower nose, raked screen and a continuous belt line.
@@ -297,9 +303,9 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
     }
   }
   if(!small) {
-    a.box([0,2.16,front-.013],[2.02,.87,.07],'glass',.06,[.11,0,0])
+    a.box([0,2.16,front-.013],[2.02,.87,.025],'cabin',.06,[.11,0,0])
     a.box([0,2.14,front-.06],[.05,.83,.05],'joint')
-    for(const x of [-1.187,1.187]) { a.box([x,2.15,-2.42],[.037,.87,1.15],'glass',.07); a.box([x,1.48,-1.99],[.037,.06,.28],'steel',.015);a.box([x,.67,-1.35],[.26,.17,.4],'steel',.03) }
+    for(const x of [-1.187,1.187]) { a.box([x,2.15,-2.42],[.025,.87,1.15],'cabin',.07); a.box([x,1.48,-1.99],[.037,.06,.28],'steel',.015);a.box([x,.67,-1.35],[.26,.17,.4],'steel',.03) }
   }
   // Bodywork detail common to both scales: grille, lamps, mirrors, recessed rear doors.
   a.box([0,.91,front-.035],[width+.06,.25,.18],'dark',.04)
@@ -349,7 +355,7 @@ export function makeGuard(m: Materials, high: boolean, part:'body'|'shoe'|'arm')
     a.box([0,1.16,0],[.45,.58,.29],'blue',.14)
     a.box([0,1.17,.16],[.33,.48,.06],'amber',.035)
     a.box([0,1.13,.2],[.35,.055,.016],'white')
-    a.put(new SphereGeometry(.157,12,8),'skin',[0,1.65,0])
+    a.cyl([0,1.47,0],.07,.19,'skin');a.put(new SphereGeometry(.157,12,8),'skin',[0,1.65,0])
     a.cyl([0,1.79,0],.17,.065,'blue');a.box([0,1.78,.12],[.25,.025,.18],'blue',.025)
     a.beam([.26,1.38,0],[.32,1.09,.18],.063,'blue')
     a.put(new SphereGeometry(.069,8,6),'skin',[.32,1.05,.2]);a.box([.27,1.1,.27],[.25,.29,.04],'dark',.025,[.25,0,0])
@@ -372,3 +378,48 @@ export function contactTexture() {
   for(let y=0;y<64;y++)for(let x=0;x<64;x++) { const i=(y*64+x)*4,u=(x/63-.5)*2,v=(y/63-.5)*2;bytes.set([255,255,255,Math.round(Math.exp(-4*(u**6+v**6))*210)],i) }
   const t=new DataTexture(bytes,64,64,RGBAFormat);t.magFilter=t.minFilter=LinearFilter;t.needsUpdate=true;return t
 }
+
+/** Small repeated actor parts use vertex colors to retain color separation in a single draw. */
+export function coloredParts(parts:Part[],material:MeshStandardMaterial):Part[]{
+ const list=parts.map(p=>{const g=p.geometry.index?p.geometry.toNonIndexed():p.geometry.clone(),a=g.attributes.position,c=p.material.color,colors=new Float32Array(a.count*3);for(let i=0;i<a.count;i++)colors.set([c.r,c.g,c.b],i*3);g.setAttribute('color',new Float32BufferAttribute(colors,3));p.geometry.dispose();return g})
+ const merged=mergeGeometries(list,false)!;list.forEach(g=>g.dispose());return[{geometry:merged,material}]
+}
+export function makeIncidentFixtures(m:Materials,high:boolean){
+ const a=builder(m,high)
+ // Outer instruction and an open inspection bay, distinct from the secure inner boundary.
+ a.cyl([1.5,1.74,23],.065,3.22,'steel');a.box([1.5,3.25,22.96],[2.1,1.3,.08],'steel',.025)
+ a.cyl([1.2,2.3,6.05],.05,.8,'steel');a.box([1.2,2.65,6.16],[2,.8,.08],'steel',.025)
+ a.box([4.8,.131,24],[6.3,.003,.38],'white')
+ for(const x of[8.2,12])a.box([x,.132,25],[.09,.004,8],'amber')
+ for(const z of[21,29])a.box([10.1,.132,z],[3.8,.004,.09],'amber')
+ for(const x of[1.9,3.25,4.6,5.95,7.3,8.65])a.cyl([x,.12,7.4],.3,.035,'steel')
+ // Platform intercom: its head is reachable while the guard stays behind protective steelwork.
+ a.box([9.48,1.02,7.1],[.16,1.25,.16],'steel',.02);a.box([9.48,1.78,7.1],[.3,.4,.18],'dark',.025)
+ for(let y=1.68;y<1.88;y+=.05)a.box([9.48,y,7.198],[.2,.015,.008],'steel')
+ a.box([9.48,1.59,7.205],[.10,.035,.025],'amber',.01)
+ for(const x of[9.15,10.2,12.5,15.8])a.cyl([x,.88,8.65],.1,1.5,'blue')
+ a.beam([9.15,1.3,8.65],[15.8,1.3,8.65],.052,'steel')
+ a.box([14.05,1.44,7.06],[1.1,2.1,.42],'joint',.06)
+ a.box([14.05,2.45,7.30],[1.7,1.02,.2],'dark',.045)
+ a.box([14.05,1.35,7.37],[1.2,.12,.5],'steel',.035)
+ a.box([14.26,1.43,7.40],[.14,.06,.14],'amber',.02)
+ // Lane detector is a ground loop with an adjacent contact/status indicator, not a laser beam.
+ for(const x of[2.2,7.2])a.box([x,.133,16],[.07,.006,3],'joint')
+ for(const z of[14.5,17.5])a.box([4.7,.133,z],[5,.006,.07],'joint')
+ return a.finish()
+}
+export function makeBollards(m:Materials,high:boolean){const a=builder(m,high);for(const x of[1.9,3.25,4.6,5.95,7.3,8.65]){a.cyl([x,-.55,7.4],.24,1.2,'steel');a.cyl([x,-.12,7.4],.245,.13,'amber');a.cyl([x,.025,7.4],.24,.05,'dark')}return a.finish()}
+export function makePerson(m:Materials,high:boolean,role:'guard'|'staff'|'operator'){
+ const a=builder(m,high),shirt=role==='guard'?'blue':role==='staff'?'paleBlue':'joint'
+ a.box([0,1.16,0],[.45,.58,.29],shirt,.13);a.cyl([0,1.47,0],.07,.19,'skin');a.put(new SphereGeometry(.157,12,8),'skin',[0,1.65,0])
+ if(role==='guard'){a.cyl([0,1.79,0],.17,.065,'blue');a.box([0,1.17,.16],[.33,.48,.06],'amber',.035);a.box([0,1.13,.2],[.35,.05,.016],'white')}
+ a.beam([.26,1.38,0],[.30,1.02,.07],.06,shirt);a.put(new SphereGeometry(.065,8,6),'skin',[.30,.97,.08])
+ return a.finish()
+}
+export function makeDriver(m:Materials,high:boolean){const a=builder(m,high)
+ a.box([.57,1.72,-2.0],[.57,.16,.58],'dark',.06);a.box([.57,1.20,-2],[.15,.90,.15],'steel');a.box([.57,.75,-2.78],[.5,.04,.4],'dark');a.box([.57,2.10,-1.77],[.55,.88,.12],'dark',.07)
+ a.box([.57,2.05,-2.14],[.45,.59,.28],'amber',.10);a.cyl([.57,2.37,-2.2],.07,.16,'skin');a.put(new SphereGeometry(.155,12,8),'skin',[.57,2.53,-2.2])
+ for(const x of[.44,.70]){a.beam([x,1.76,-2.1],[x,1.54,-2.52],.07,'dark');a.beam([x,1.54,-2.52],[x,.88,-2.67],.065,'dark');a.box([x,.83,-2.78],[.18,.12,.33],'rubber',.03)}
+ a.box([.57,1.75,-3],[.8,.22,.3],'dark',.04);a.beam([.57,1.7,-3],[.57,1.99,-2.76],.045,'steel');return a.finish()
+}
+export function makeSteering(m:Materials,high:boolean){const a=builder(m,high);a.put(new TorusGeometry(.23,.026,6,high?24:16),'rubber');for(let i=0;i<3;i++)a.beam([0,0,0],[Math.sin(i*Math.PI*2/3)*.22,Math.cos(i*Math.PI*2/3)*.22,0],.016,'steel');a.cyl([0,0,0],.055,.05,'dark',[Math.PI/2,0,0]);for(const x of[-.23,.23])a.put(new SphereGeometry(.05,8,6),'skin',[x,0,0]);return a.finish()}
