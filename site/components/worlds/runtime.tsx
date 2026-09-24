@@ -1,12 +1,13 @@
 'use client'
 import { createRoot, extend, useFrame, useThree, type Catalogue } from '@react-three/fiber'
-import { Component, useCallback, useEffect, useRef, type ReactNode } from 'react'
+import { Component, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { ACESFilmicToneMapping, NeutralToneMapping, PerspectiveCamera, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three'
 extend(THREE as unknown as Catalogue)
 import type { MutableRefObject } from 'react'
 import type { Layers, Quality, RenderStats, SceneClock, SceneModule } from './contract'
 import { sampleCamera } from './math'
+import { AuthoredResourceCache } from './resource-stats'
 
 type Props = {
   scene: SceneModule; clock: MutableRefObject<SceneClock>; layers: Layers; quality: Quality;
@@ -52,17 +53,16 @@ function Director({ scene, clock, quality, revision, decisionPassed, onTime, onP
   }, -100)
   return null
 }
-function FrameEnd({ definitionId, clock, quality, timing }: { definitionId: string; clock: MutableRefObject<SceneClock>; quality: Quality; timing: Timing }) {
+function FrameEnd({ module, clock, quality, layers, revision, timing, owned }: { module: SceneModule; clock: MutableRefObject<SceneClock>; quality: Quality; layers: Layers; revision: number; timing: Timing; owned: MutableRefObject<THREE.Group | null> }) {
+  const cache = useRef<AuthoredResourceCache | null>(null)
+  if (!cache.current) cache.current = new AuthoredResourceCache()
+  useLayoutEffect(() => { cache.current!.invalidate() }, [module, quality, layers.sensors, layers.tracks, revision])
+  useEffect(() => () => cache.current!.dispose(), [])
   useFrame(({ gl, scene, camera }, delta) => {
     gl.render(scene, camera)
-    let practicalLights = 0, practicalShadows = 0
-    scene.traverse(object => {
-      if (object instanceof THREE.PointLight || object instanceof THREE.SpotLight) {
-        practicalLights += 1
-        if (object.castShadow) practicalShadows += 1
-      }
-    })
-    const stats: RenderStats = { scene: definitionId, time: clock.current.time, quality, practicalLights, practicalShadows, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
+    if (!owned.current) return
+    const resources = cache.current!.read(owned.current)
+    const stats: RenderStats = { scene: module.definition.id, time: clock.current.time, quality, ...resources, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
     window.__TESSURE_STATS__ = stats
     const frames = window.__TESSURE_FRAMES__ ||= []
     frames.push(stats); if (frames.length > 300) frames.shift()
@@ -80,15 +80,16 @@ function Contents(props: Props) {
   const { palette } = scene.definition
   const World = scene.World
   const timing = useRef({ start: 0 })
+  const owned = useRef<THREE.Group | null>(null)
   return <>
     <color attach="background" args={[palette.background]} />
     <fog attach="fog" args={[palette.fog, palette.fogNear, palette.fogFar]} />
     <ambientLight intensity={palette.ambient} />
     <hemisphereLight color={palette.hemisphereSky} groundColor={palette.hemisphereGround} intensity={palette.hemisphereIntensity} />
     <directionalLight key={`${scene.definition.id}-${quality}`} color={palette.sun} position={palette.sunPosition} intensity={palette.sunIntensity} castShadow={quality === 'high'} shadow-mapSize={[quality === 'high' ? palette.shadowBounds.mapSize : 512, quality === 'high' ? palette.shadowBounds.mapSize : 512]} shadow-camera-left={palette.shadowBounds.left} shadow-camera-right={palette.shadowBounds.right} shadow-camera-top={palette.shadowBounds.top} shadow-camera-bottom={palette.shadowBounds.bottom} shadow-camera-near={palette.shadowBounds.near} shadow-camera-far={palette.shadowBounds.far} shadow-bias={palette.shadowBounds.bias} shadow-normalBias={palette.shadowBounds.normalBias} />
-    <group key={scene.definition.id}><World clock={clock} quality={quality} layers={layers} /></group>
+    <group ref={owned} key={scene.definition.id}><World clock={clock} quality={quality} layers={layers} /></group>
     <Director {...props} timing={timing} />
-    <FrameEnd definitionId={scene.definition.id} clock={clock} quality={quality} timing={timing} />
+    <FrameEnd module={scene} clock={clock} quality={quality} layers={layers} revision={props.revision} timing={timing} owned={owned} />
   </>
 }
 /** Own initialization so unavailable WebGL cannot escape an async Canvas configure call. */

@@ -28,7 +28,14 @@ export type SceneDefinition = {
 }
 export type SceneModule = { definition: SceneDefinition; World: ComponentType<WorldProps> }
 export type TimedPoint = { at: number; position: Vec3 }
+/** Authored payload estimates, NOT GPU VRAM. Renderer/shadow/framebuffer overhead is excluded. */
+export type ResourceStats = {
+  geometryBytes: number; textureBytes: number;
+  /** Nonzero means the corresponding byte total is incomplete; do not certify a budget from it. */
+  geometryByteUnknowns: number; textureByteUnknowns: number;
+  resourceByteScope: 'authored-buffer-and-texture-payload';
+}
 export type RenderStats = {
   scene: string; time: number; quality: Quality; calls: number; triangles: number;
   textures: number; geometries: number; practicalLights: number; practicalShadows: number; frameMs: number; jsFrameMs: number;
-}
+} & ResourceStats
