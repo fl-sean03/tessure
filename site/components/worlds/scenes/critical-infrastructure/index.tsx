@@ -5,6 +5,7 @@ import { BufferGeometry, CatmullRomCurve3, DataTexture, Float32BufferAttribute, 
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { mix, progress, samplePath, smooth } from '../../math'
 import { definition } from './content'
+import { statusAtlas } from './status'
 import { contactTexture, insulatorGeometry, makePerson, makeSite, materials, scrubGeometry, scrubPlacements, terrain, type Part, type Placement, type Materials } from './geometry'
 
 function Parts({ parts, shadows = true }: { parts: Part[]; shadows?: boolean }) {
@@ -88,7 +89,9 @@ function Observation({ from, clock, start, local = false, color }: { from: Vec3;
   return <group ref={root} visible={false}><lineSegments geometry={geometry}><lineBasicMaterial color={color} transparent opacity={0.55} depthWrite={false} /></lineSegments><mesh ref={packet}><sphereGeometry args={[0.055, 8, 6]} /><meshBasicMaterial color={color} /></mesh></group>
 }
 function ConnectionState({ clock, sensors }: { clock: WorldProps['clock']; sensors: boolean }) {
-  const connected = useRef<Group>(null), queued = useRef<Group>(null), record = useRef<Group>(null), lamp = useRef<MeshBasicMaterial>(null), bars = useRef<MeshBasicMaterial>(null), packet = useRef<Mesh>(null)
+  const connected = useRef<Group>(null), queued = useRef<Group>(null), packet = useRef<Mesh>(null)
+  const display = useMemo(statusAtlas, [])
+  useEffect(() => () => display.dispose(), [display])
   const points = useMemo(() => new CatmullRomCurve3([new Vector3(15.5, 6.3, -0.8), new Vector3(18, 9, -3), new Vector3(24, 11, -7)]), [])
   const link = useMemo(() => new BufferGeometry().setFromPoints(points.getPoints(32)), [points])
   const continuous = useMemo(() => { const p = points.getPoints(32); return new BufferGeometry().setFromPoints(p.flatMap((v, i) => i < p.length - 1 ? [v, p[i + 1]] : [])) }, [points]), at = useMemo(() => new Vector3(), [])
@@ -97,19 +100,13 @@ function ConnectionState({ clock, sensors }: { clock: WorldProps['clock']; senso
     const t = clock.current.time, up = t < 4 || t >= 46
     if (connected.current) connected.current.visible = sensors && up
     if (queued.current) queued.current.visible = sensors && !up
-    if (record.current) record.current.visible = t >= 20
-    if (lamp.current) lamp.current.color.set(up ? '#a8c8d5' : '#d4a160')
-    if (bars.current) bars.current.color.set(t >= 46 ? '#b9d0da' : '#cda56d')
+    const state = t < 4 ? 0 : t < 20 ? 1 : t < 46 ? 2 : 3
+    display.offset.set((state % 2) * 0.5, state < 2 ? 0.5 : 0)
     if (packet.current) { points.getPoint((t * 0.22) % 1, at); packet.current.position.copy(at) }
   })
   return <group>
-    <mesh position={[8.58, 2.42, 6.7]}><circleGeometry args={[0.046, 12]} /><meshBasicMaterial color="#bdd1d3" /></mesh>
-    <mesh position={[8.96, 2.42, 6.7]}><circleGeometry args={[0.052, 12]} /><meshBasicMaterial ref={lamp} color="#a8c8d5" /></mesh>
-    <group ref={record} position={[8.8, 1.72, 6.71]} visible={false}>
-      <mesh><boxGeometry args={[0.7, 0.04, 0.014]} /><meshBasicMaterial ref={bars} color="#cda56d" /></mesh>
-      <mesh position={[0, -0.115, 0]}><boxGeometry args={[0.7, 0.04, 0.014]} /><meshBasicMaterial color="#b2c6c8" /></mesh>
-      <mesh position={[0, -0.23, 0]}><boxGeometry args={[0.48, 0.04, 0.014]} /><meshBasicMaterial color="#b2c6c8" /></mesh>
-    </group>
+    <mesh name="remote-status-display" position={[8.8, 2.15, 6.767]}><planeGeometry args={[2.12, 1.59]} /><meshBasicMaterial map={display} toneMapped={false} /></mesh>
+    <mesh name="local-power-lamp" position={[7.92, 1.1, 6.727]}><circleGeometry args={[0.065, 16]} /><meshBasicMaterial color="#bdd1d3" /></mesh>
     <group ref={connected} visible={false}><lineSegments geometry={continuous}><lineBasicMaterial color="#bdcdd9" transparent opacity={0.36} depthWrite={false} /></lineSegments><mesh ref={packet}><sphereGeometry args={[0.085, 8, 6]} /><meshBasicMaterial color="#c3d5df" /></mesh></group>
     <group ref={queued} visible={false}><lineSegments geometry={link}><lineBasicMaterial color="#cba674" transparent opacity={0.25} depthWrite={false} /></lineSegments>{[0, 1, 2].map(i => <mesh key={i} position={[9.55, 2.6 + i * 0.14, 6.2]}><boxGeometry args={[0.45, 0.045, 0.24]} /><meshBasicMaterial color="#d5b17f" transparent opacity={0.75} /></mesh>)}</group>
   </group>
@@ -129,7 +126,7 @@ function World({ clock, layers, quality }: WorldProps) {
     <Contact texture={contact} position={[-1.4, 0.24, -0.8]} size={[9.5, 8]} opacity={0.54} />
     <Contact texture={contact} position={[13, 0.241, 1.3]} size={[11.7, 9]} opacity={0.42} />
     <Contact texture={contact} position={[-7.6, 0.242, -9]} size={[24, 4]} opacity={0.32} />
-    <Contact texture={contact} position={[8.8, 0.464, 6.15]} size={[1.9, 2]} opacity={0.5} />
+    <Contact texture={contact} position={[8.8, 0.464, 6.15]} size={[3.1, 2.2]} opacity={0.5} />
     <Person role="visitor" clock={clock} m={m} high={high} contact={contact} /><Person role="guard" clock={clock} m={m} high={high} contact={contact} />
     <Person role="operator" clock={clock} m={m} high={high} contact={contact} /><Person role="technician" clock={clock} m={m} high={high} contact={contact} />
     <ConnectionState clock={clock} sensors={layers.sensors} />{layers.tracks && <Track clock={clock} />}
