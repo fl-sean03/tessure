@@ -7,6 +7,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
+import { dispatchAccess } from './supervisor'
 
 export const colors = {
   asphalt: '#55575a', concrete: '#b8b1a0', earth: '#89765e', gravel: '#827e75',
@@ -111,7 +112,7 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
   a.box([0, -.9, -12], [100, 1.6, 78], 'earth', .6)
   a.box([0, -.15, -12], [96, .3, 75], 'concrete', .22)
-  a.box([0, .025, -5], [91, .05, 54], 'asphalt', .04)
+  a.box([0, dispatchAccess.apronTop / 2, -5], [91, dispatchAccess.apronTop, 54], 'asphalt', .04)
   a.box([0, .058, -24], [91, .02, 6.4], 'gravel')
   // Parallel rail edge: timber sleepers, paired running rails and a short freight flat.
   for (let x = -43; x <= 43; x += high ? 1.25 : 1.8) a.box([x, .125, -24], [.22, .13, 3.3], 'earth', .025)
@@ -140,7 +141,7 @@ export function makeSite(m: Materials, high: boolean): Part[] {
     a.put(new SphereGeometry(1, 6, 4), i % 4 ? 'grass' : 'gravel', [x, .3 + s * .3, z], [0, i, .2], [s * 1.6, s * .6, s])
   }
   // Dispatch building: corrugated cladding, inset framed glazing, downpipes and roof plant.
-  a.box([26, .23, -8], [13.4, .46, 8.3], 'concrete', .15)
+  a.box(dispatchAccess.platform.position, dispatchAccess.platform.size, 'concrete', .15)
   a.box([27, 1.96, -8.5], [10.3, 3, 5.6], 'sand', .09)
   for (let x = 22; x < 32; x += .3) a.box([x, 1.93, -5.665], [.055, 2.86, .05], 'cream')
   for (const x of [23.3, 26.1, 28.9]) {
@@ -160,11 +161,11 @@ export function makeSite(m: Materials, high: boolean): Part[] {
     a.cylinder([x, 4.415, -9.1], .48, .03, 'dark', [0, 0, 0], .48, 20)
     for (let z = -9.6; z < -8.6; z += .18) a.box([x, 4.445, z], [1.1, .025, .025], 'steel')
   }
-  // Open working porch faces the bay, with human-height safety rails and a shallow access ramp.
+  // Front access steps: plinth .46, first tread .23, second tread .11, apron .05.
   a.box([20.45, 3.4, -6.75], [3.5, .2, 7.9], 'blue', .045)
   for (const z of [-10.3, -3.35]) a.box([18.95, 1.85, z], [.15, 3.3, .15], 'steel', .025)
-  a.box([20.5, .12, -3.45], [3.7, .22, 1.4], 'concrete', .05)
-  a.box([20.5, .06, -2.6], [3.7, .1, .45], 'concrete', .035)
+  a.box(dispatchAccess.upperStep.position, dispatchAccess.upperStep.size, 'concrete', .05)
+  a.box(dispatchAccess.lowerStep.position, dispatchAccess.lowerStep.size, 'concrete', .035)
   for (const x of [24, 27, 30]) { a.cylinder([x, .88, -3.55], .07, 1.2, 'steel'); a.cylinder([x, .4, -3.55], .15, .18, 'steel') }
   a.beam([24, 1.44, -3.55], [31.4, 1.44, -3.55], .065, 'steel')
   // Normal controlled departure: fixed closed boom, counterweight and verification call pedestal.
@@ -331,12 +332,17 @@ export function makePerson(m: Materials, high: boolean): Part[] {
   a.put(new SphereGeometry(.184, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 'cream', [0, 1.64, 0])
   a.cylinder([0, 1.645, 0], .205, .037, 'cream')
   for (const s of [-1, 1]) {
-    a.beam([s * .13, .86, 0], [s * .14, .16, s * .04], .13, 'blue')
-    a.box([s * .14, .085, .07 + s * .04], [.2, .17, .33], 'dark', .045)
     a.beam([s * .27, 1.34, 0], [s * .31, 1.05, .17], .12, 'yellow')
     a.beam([s * .31, 1.05, .17], [s * .17, 1.04, .34], .09, 'sand')
   }
   a.box([0, 1.09, .37], [.4, .046, .31], 'dark', .02, [.16, 0, 0])
   a.box([0, 1.117, .37], [.32, .012, .23], 'glass', .01, [.16, 0, 0])
+  return a.finish()
+}
+
+/** Independent shoes keep each planted sole on its own support surface. */
+export function makeSupervisorShoe(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  a.box([0, .085, 0], [.2, .17, .33], 'dark', .045)
   return a.finish()
 }

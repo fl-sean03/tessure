@@ -3,12 +3,13 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import {
   BufferGeometry, DataTexture, DoubleSide, Float32BufferAttribute, Group, InstancedMesh, LinearFilter,
-  Object3D, RGBAFormat,
+  Object3D, RGBAFormat, Mesh, Vector3,
 } from 'three'
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { mix, progress, seeded, smooth } from '../../math'
 import { definition } from './content'
-import { cargo, makeContainer, makeGantry, makeMaterials, makePerson, makeSite, makeSpreader, makeTractor, makeTrailer, makeTrolley, makeWheel, type Finish, type Part } from './geometry'
+import { supervisorPose } from './supervisor'
+import { cargo, makeContainer, makeGantry, makeMaterials, makePerson, makeSite, makeSpreader, makeSupervisorShoe, makeTractor, makeTrailer, makeTrolley, makeWheel, type Finish, type Part } from './geometry'
 
 /** Travel in metres is sampled from authored time, never integrated across frames. */
 export function vehicleX(t: number) {
@@ -99,17 +100,18 @@ function World({ clock, quality, layers }: WorldProps) {
   const contact = useMemo(makeContactTexture, [])
   const built = useMemo(() => ({
     site: makeSite(m, high), gantry: makeGantry(m, high), trolley: makeTrolley(m, high), spreader: makeSpreader(m, high),
-    tractor: makeTractor(m, high), trailer: makeTrailer(m, high), wheel: makeWheel(m, high), person: makePerson(m, high),
+    tractor: makeTractor(m, high), trailer: makeTrailer(m, high), wheel: makeWheel(m, high), person: makePerson(m, high), shoe: makeSupervisorShoe(m, high),
     load: makeContainer(m, high, 'orange', 6.1), containers: cargoColors.map(c => makeContainer(m, high, c)),
   }), [m, high])
   useEffect(() => () => {
-    const parts = [...built.site, ...built.gantry, ...built.trolley, ...built.spreader, ...built.tractor, ...built.trailer, ...built.wheel, ...built.person, ...built.load, ...built.containers.flat()]
+    const parts = [...built.site, ...built.gantry, ...built.trolley, ...built.spreader, ...built.tractor, ...built.trailer, ...built.wheel, ...built.person, ...built.shoe, ...built.load, ...built.containers.flat()]
     parts.forEach(p => p.geometry.dispose())
   }, [built])
   useEffect(() => () => { contact.dispose(); Object.values(m).forEach(v => { v.map?.dispose(); v.dispose() }) }, [contact, m])
   const vehicle = useRef<Group>(null), trailer = useRef<Group>(null), wheels = useRef<(Group | null)[]>([])
   const trolley = useRef<Group>(null), spreader = useRef<Group>(null), cables = useRef<Group>(null)
-  const person = useRef<Group>(null), marker = useRef<Group>(null), hold = useRef<Group>(null), brake = useRef<Group>(null), recorded = useRef<Group>(null)
+  const person = useRef<Group>(null), shoes = useRef<(Group | null)[]>([]), footShadows = useRef<(Mesh | null)[]>([]), legs = useRef<(Mesh | null)[]>([]), marker = useRef<Group>(null), hold = useRef<Group>(null), brake = useRef<Group>(null), recorded = useRef<Group>(null)
+  const rig = useMemo(() => ({ axis: new Vector3(0, 1, 0), hip: new Vector3(), knee: new Vector3(), ankle: new Vector3(), direction: new Vector3() }), [])
   useFrame(() => {
     const t = clock.current.time, x = vehicleX(t), arrival = smooth(progress(t, 0, 7))
     vehicle.current!.position.set(x, 0, .35 * (1 - arrival))
@@ -118,9 +120,25 @@ function World({ clock, quality, layers }: WorldProps) {
     const z = mix(-16, -13.4, smooth(progress(t, 6, 10))), y = mix(5.1, 10.2, smooth(progress(t, 0, 6)))
     trolley.current!.position.z = z; spreader.current!.position.set(0, y, z)
     cables.current!.position.set(0, y, z); cables.current!.scale.y = 17.5 - y
-    const p = smooth(progress(t, 27, 34)), walk = t > 27 && t < 34 ? Math.sin(t * 7) : 0
-    person.current!.position.set(mix(20.7, 17.9, p), mix(.46, .06, Math.min(1, p * 2)) + Math.abs(walk) * .026, mix(-6.5, -2.1, p))
-    person.current!.rotation.set(0, mix(-.56, -.96, p), walk * .025)
+    const pose = supervisorPose(t)
+    person.current!.position.set(...pose.position)
+    person.current!.rotation.set(0, pose.yaw, 0)
+    pose.feet.forEach((foot, side) => {
+      const shoe = shoes.current[side]!
+      shoe.position.set(...foot.position); shoe.rotation.y = foot.yaw
+      footShadows.current[side]!.visible = foot.planted
+      const lateral = side === 0 ? -.13 : .13
+      rig.hip.set(pose.position[0] + Math.cos(pose.yaw) * lateral, pose.position[1] + .86, pose.position[2] - Math.sin(pose.yaw) * lateral)
+      rig.ankle.set(foot.position[0], foot.position[1] + .16, foot.position[2])
+      rig.knee.copy(rig.hip).lerp(rig.ankle, .52)
+      rig.knee.x += Math.sin(pose.yaw) * .1; rig.knee.z += Math.cos(pose.yaw) * .1
+      for (let part = 0; part < 2; part++) {
+        const start = part === 0 ? rig.hip : rig.knee, end = part === 0 ? rig.knee : rig.ankle, leg = legs.current[side * 2 + part]!
+        rig.direction.copy(end).sub(start)
+        leg.position.copy(start).add(end).multiplyScalar(.5); leg.scale.set(1, rig.direction.length(), 1)
+        leg.quaternion.setFromUnitVectors(rig.axis, rig.direction.normalize())
+      }
+    })
     hold.current!.visible = t >= 27; brake.current!.visible = t >= 20; recorded.current!.visible = t >= 42
     if (marker.current) { marker.current.visible = t >= 4; marker.current.position.set(x - 3.2, .09, .35 * (1 - arrival)) }
   })
@@ -141,7 +159,11 @@ function World({ clock, quality, layers }: WorldProps) {
       <group ref={brake} visible={false}>{[-.9, .9].map(z => <mesh key={z} position={[-8.65, 1.13, z]}><boxGeometry args={[.018, .13, .28]} /><meshBasicMaterial color="#d68655" /></mesh>)}</group>
       <mesh position={[.7, 3.52, -.18]}><cylinderGeometry args={[.105, .105, .16, 12]} /><meshStandardMaterial color="#e8b76d" emissive="#e8b76d" emissiveIntensity={.22} roughness={.3} /></mesh>
     </group>
-    <group ref={person} position={[20.7, .46, -6.5]}><Parts parts={built.person} /><mesh position={[0, .025, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[1.15, .8]} /><meshBasicMaterial color="#29363a" map={contact} transparent opacity={.35} depthWrite={false} /></mesh></group>
+    <group ref={person} position={[20.7, .46, -6.5]}><Parts parts={built.person} /></group>
+    {[0, 1].map(side => <group key={side}>
+      <group ref={shoe => { shoes.current[side] = shoe }}><Parts parts={built.shoe} /><mesh ref={shadow => { footShadows.current[side] = shadow }} position={[0, .006, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[.4, .55]} /><meshBasicMaterial color="#29363a" map={contact} transparent opacity={.27} depthWrite={false} /></mesh></group>
+      {[0, 1].map(part => <mesh key={part} ref={leg => { legs.current[side * 2 + part] = leg }} castShadow receiveShadow material={m.blue}><boxGeometry args={[.13, 1, .14]} /></mesh>)}
+    </group>)}
     <group ref={hold} visible={false}><mesh position={[17.8, 2.21, -3.24]}><boxGeometry args={[.31, .065, .02]} /><meshBasicMaterial color="#e5b361" /></mesh><mesh position={[22.1, 1.92, -4.1]}><sphereGeometry args={[.115, 12, 8]} /><meshBasicMaterial color="#dcb074" /></mesh></group>
     <group ref={recorded} visible={false}><mesh position={[17.8, 1.94, -3.226]}><boxGeometry args={[.25, .11, .012]} /><meshBasicMaterial color="#d6caa8" /></mesh></group>
     {layers.tracks && <group ref={marker} visible={false}><mesh rotation={[-Math.PI / 2, 0, 0]} scale={[2.8, 1, 1]}><ringGeometry args={[1.92, 1.945, 64]} /><meshBasicMaterial color="#debb7c" transparent opacity={.68} depthWrite={false} /></mesh></group>}
