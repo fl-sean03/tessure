@@ -76,7 +76,7 @@ export function builder(m: Materials) {
   }
   return { put, box, oval, beam, tri, finish }
 }
-export function makeSite(m: Materials, high: boolean): Part[] {
+export function makeSite(m: Materials, high: boolean, incident = false): Part[] {
   const a = builder(m)
   // Broad rolling land runs into the morning haze; the architecture is cut into it.
   const n = 40, size = 90
@@ -121,9 +121,18 @@ export function makeSite(m: Materials, high: boolean): Part[] {
     a.box([cx + width / 2 - .18, base + 1.48, cz], [.36, 2.95, depth], timber ? 'wood' : 'stone', .025)
     a.box([cx, base + 1.48, back + .14], [width, 2.95, .3], 'stone', .02)
     a.box([cx, eave - .14, front - .14], [width, .3, .4], timber ? 'wood' : 'stone', .025)
-    a.box([cx, base + .09, front - .1], [width, .18, .42], 'stone2', .02)
-    a.box([cx, base + 1.5, front - .24], [width - .82, 2.63, .025], 'glass')
-    a.box([cx, base + .04, cz], [width - .55, .08, depth - .25], 'wood2')
+    if (incident && timber) {
+      // A real, clear doorway for the resident; no invisible glazing or sill across the route.
+      for (const side of [-1,1]) {
+        a.box([cx + side * 1.65,base + .09,front - .1],[1.65,.18,.42],'stone2',.02)
+        a.box([cx + side * 1.55,base + 1.5,front - .24],[1.5,2.63,.025],'glass')
+      }
+      a.box([cx,base-.025,front-.1],[1.65,.05,.5],'coping')
+    } else {
+      a.box([cx, base + .09, front - .1], [width, .18, .42], 'stone2', .02)
+      a.box([cx, base + 1.5, front - .24], [width - .82, 2.63, .025], 'glass')
+    }
+    a.box([cx, base + (incident && timber ? -.04 : .04), cz], [width - .55, .08, depth - .25], 'wood2')
     // Interior depth and daily objects remain visible behind the transparent glazing.
     a.box([cx, base + 1.45, back + .34], [width - .55, 2.6, .05], 'warm')
     for (const side of [-1, 1]) {
@@ -135,7 +144,10 @@ export function makeSite(m: Materials, high: boolean): Part[] {
       a.box([x, base + 1.49, front - .15], [.065, 2.74, .12], 'dark', .012)
       if (i === 2) a.box([x - .1, base + 1.25, front - .065], [.025, .2, .035], 'metal', .007)
     }
-    for (const y of [base + .18, eave - .28]) a.box([cx, y, front - .15], [width - .58, .064, .12], 'dark', .01)
+    for (const y of [base + .18, eave - .28]) {
+      if (incident && timber && y < base + .3) for (const side of [-1,1]) a.box([cx+side*1.6,y,front-.15],[1.4,.064,.12],'dark',.01)
+      else a.box([cx, y, front - .15], [width - .58, .064, .12], 'dark', .01)
+    }
     // Open gable has a timber tympanum, deep roof overhang and separate standing seams.
     a.tri([cx - width / 2, eave, front], [cx + width / 2, eave, front], [cx, ridge, front], 'wood')
     a.tri([cx + width / 2, eave, back], [cx - width / 2, eave, back], [cx, ridge, back], 'wood')
@@ -184,8 +196,8 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   for (const x of [-3.4, -2.4]) a.box([x, 1.46, -.52], [.065, .4, .38], 'dark', .01)
   for (const x of [3, 3.8]) a.box([x, 1.57, -2.1], [.8, .5, 1.9], 'linen', .13)
   a.box([3.4, 1.85, -2.9], [1.9, .82, .15], 'wood', .04)
-  a.box([4.95, 2.08, -1.2], [.7, 1.5, .55], 'wood', .03)
-  a.oval([4.95, 3, -1.2], [.24, .33, .24], 'warm')
+  a.box([4.95, 2.08, incident ? -1.7 : -1.2], [.7, 1.5, .55], 'wood', .03)
+  a.oval([4.95, 3, incident ? -1.7 : -1.2], [.24, .33, .24], 'warm')
   a.beam([-2.7, 4.1, -1.4], [-2.7, 3.36, -1.4], .012, 'dark')
   a.put(new CylinderGeometry(.17, .31, .22, 24, 1, true), 'linen', [-2.7, 3.36, -1.4])
   a.oval([-2.7, 3.25, -1.4], [.11, .07, .11], 'warm')
@@ -228,7 +240,8 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   a.box([8.7, .47, 2.15], [2.4, .18, .58], 'coping', .07)
   for (const x of [7.8, 9.6]) a.box([x, .22, 2.15], [.29, .44, .48], 'stone', .04)
   for (let i = 0; i < (high ? 65 : 36); i++) {
-    const x = -13 + seeded(i + 88) * 27, z = i < 18 ? 6.4 + seeded(i + 92) * 2 : -8 - seeded(i + 90) * 4
+    let x = -13 + seeded(i + 88) * 27; const z = i < 18 ? 6.4 + seeded(i + 92) * 2 : -8 - seeded(i + 90) * 4
+    if (incident && x > -10.6 && x < 6.8 && z > 3) x += 18
     a.oval([x, groundY(x, z) + .09, z], [.12 + seeded(i + 33) * .26, .11 + seeded(i + 40) * .14, .15 + seeded(i + 22) * .26], i % 3 ? 'stone' : 'stone2', [0, i, .2], 7)
   }
   return a.finish()

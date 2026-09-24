@@ -35,9 +35,9 @@ export function Fox({ clock, model, materials, thermal = false, warm, contact }:
     </group>)}
   </group>
 }
-export function Operator({ clock, parts, materials }: { clock: WorldProps['clock']; parts: Part[]; materials: Materials }) {
+export function Operator({ clock, parts, materials, timeOffset = 0 }: { clock: WorldProps['clock']; parts: Part[]; materials: Materials; timeOffset?: number }) {
   const upper = useRef<Mesh>(null), lower = useRef<Mesh>(null), elbow = useRef<Mesh>(null), hand = useRef<Mesh>(null), scratch = useMemo(() => ({ axis: new Vector3(0,1,0), direction: new Vector3() }), [])
-  useFrame(() => { const p = operatorAction(clock.current.time); pointBone(upper.current!, p.hip, p.knee, scratch.axis, scratch.direction); pointBone(lower.current!, p.knee, p.ankle, scratch.axis, scratch.direction); elbow.current!.position.set(...p.knee); hand.current!.position.set(...p.hand); hand.current!.userData.contact = p.contact })
+  useFrame(() => { const p = operatorAction(clock.current.time - timeOffset); pointBone(upper.current!, p.hip, p.knee, scratch.axis, scratch.direction); pointBone(lower.current!, p.knee, p.ankle, scratch.axis, scratch.direction); elbow.current!.position.set(...p.knee); hand.current!.position.set(...p.hand); hand.current!.userData.contact = p.contact })
   return <group name="estate-operator">
     <group name="estate-operator-seated" position={operatorPose.position} rotation={[0,operatorPose.yaw,0]}><Parts parts={parts} /></group>
     <mesh name="estate-operator-upper" ref={upper} material={materials.linen} castShadow><cylinderGeometry args={[.061,.05,operatorPose.upper,12]} /></mesh>

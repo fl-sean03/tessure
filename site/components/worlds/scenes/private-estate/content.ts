@@ -1,44 +1,48 @@
-import type { SceneDefinition } from '../../contract'
-
-export const definition: SceneDefinition = {
-  id: 'private-estate', number: '01', name: 'Private estate',
-  subtitle: 'The value of a quiet decision',
-  description: 'A home at the woodland edge. One uncertain movement. A reason to leave the morning undisturbed.',
-  lesson: 'Evidence can justify doing less. Here, an operator can dismiss a wildlife notification and preserve the reason for that decision.',
-  establishing: {
-    title: 'Before the house wakes',
-    body: 'Warm rooms overlook the damp garden. At this occupied home, a useful response protects residents’ quiet and privacy as well as their security.',
-  },
-  setting: 'Woodland residence · misty dawn', duration: 46,
-  poster: '/worlds/private-estate/poster.webp',
-  posterAlt: 'A russet fox passes a stepped limestone and timber home at dawn, with warm recessed windows and mist between the woodland trees. Original concept illustration.',
-  practicalLightLimit: 2,
-  palette: {
-    background: '#bdcecf', fog: '#bdcecf', fogNear: 21, fogFar: 58,
-    ambient: 0.36, sun: '#fff0d6', sunIntensity: 1.4, sunPosition: [-12, 22, 14],
-    hemisphereSky: '#d6e8f0', hemisphereGround: '#52604b', hemisphereIntensity: 1.5,
-    exposure: 1.05, toneMapping: 'aces',
-    shadowBounds: { left: -24, right: 24, top: 22, bottom: -20, near: 1, far: 70, bias: -0.00018, normalBias: 0.025, mapSize: 2048 },
-  },
-  cameras: [
-    { at: 0, position: [-17, 7, 22], target: [-0.9, 2.0, -0.2], mobilePosition: [-11, 6.2, 23], mobileTarget: [-2, 2.0, 0.8], fov: 42, easing: 'smoother', interpolation: 'spline' },
-    { at: 4, position: [-11,4.4,13], target: [-5.5,1.7,2.4], mobilePosition: [-8.3,3.2,9.4], mobileTarget: [-6.5,1.4,3.1], fov: 46, easing: 'smooth', interpolation: 'spline' },
-    { at: 10.9, position: [-9.5, 4.5, 15], target: [-1, 1.5, 0.8], mobilePosition: [-6.5, 4.5, 17], mobileTarget: [-1.6, 1.5, 1.7], fov: 42 },
-    { at: 11, position: [-1.0,3.8,12], target: [-1.6,1.7,3.0], mobilePosition: [-1.8,3.7,11.5], mobileTarget: [-2.1,1.7,3.2], fov: 50, cut: true, easing: 'linear', interpolation: 'spline' },
-    { at: 17.9, position: [-1.0,3.8,12], target: [-1.6,1.7,3.0], mobilePosition: [-1.8,3.7,11.5], mobileTarget: [-2.1,1.7,3.2], fov: 50 },
-    { at: 18, cut: true, position: [3.6, 4.5, 15], target: [0.5, 1.8, 1.8], mobilePosition: [1, 3.8, 13.4], mobileTarget: [0.5, 1.65, 2.6], fov: 44, easing: 'smoother', interpolation: 'spline' },
-    { at: 24.9, position: [5, 4.2, 13], target: [2.2, 1.5, 2.8], mobilePosition: [3, 4.2, 13.8], mobileTarget: [2.1, 1.65, 2.7], fov: 44 },
-    { at: 25, position: [-3.2,3.5,10.2], target: [1.65,1.7,2.65], mobilePosition: [-1.8,3.3,10.5], mobileTarget: [1.65,1.3,2.8], fov: 46, cut: true, easing: 'smooth', interpolation: 'spline' },
-    { at: 33, position: [0,3.8,12.3], target: [3,1.65,2.7], mobilePosition: [1,3.9,12.4], mobileTarget: [3.6,1.3,2.7], fov: 46, easing: 'smoother', interpolation: 'spline' },
-    { at: 40, position: [15, 7.3, 22], target: [2.8, 2, 0.2], mobilePosition: [10, 6.5, 21], mobileTarget: [3.3, 1.9, 1.7], fov: 43, easing: 'smoother', interpolation: 'spline' },
-    { at: 46, position: [16, 7.6, 23], target: [3, 2, 0.3], mobilePosition: [13, 6.3, 22], mobileTarget: [6, 1.8, 1.7], fov: 43 },
-  ],
-  beats: [
-    { id: 'detect', at: 4, title: 'Something along the garden edge', body: 'The outbuilding camera picks up movement beside the planting. One partial view is not yet a reason to disturb the household.', evidence: [{ source: 'Garden camera', detail: 'A fixed, outward-facing camera observes movement on the gravel approach.' }] },
-    { id: 'verify', at: 11, title: 'Low to the ground. Still moving.', body: 'Proposed on-site verification pairs garden motion with a warm fox outline. The inset is an Illustrative thermal-style view, shown only inside the drawn terrace sector. Heat alone does not explain the event.', evidence: [{ source: 'Terrace thermal', detail: 'Illustrative thermal-style view: a low warm outline in the authored garden sector; no temperatures.' }, { source: 'Garden camera', detail: 'Four legs, pointed ears and a long tail come into view.' }] },
-    { id: 'correlate', at: 18, title: 'A path past the home', body: 'The proposed local correlation links the animal shape and continuous garden path. The movement passes the terrace; no entrance event is shown.', evidence: [{ source: 'Linked observations', detail: 'Camera and thermal observations follow the same garden passage.' }, { source: 'Entrance context', detail: 'No entrance event appears in this authored sequence.' }] },
-    { id: 'decide', at: 25, title: 'A person makes the quiet call', body: 'The operator reviews the linked observations and chooses “Record as wildlife.” The reason is this animal’s passage, not a claim about the rest of the property.', evidence: [{ source: 'Review picture', detail: 'Animal outline, continuous path and entrance context stay together.' }, { source: 'Operator', detail: 'Proposed action: dismiss this notification without dispatch.' }], action: 'Record as wildlife' },
-    { id: 'respond', at: 33, title: 'Notification dismissed. Morning continues.', body: 'Following the authored human decision, the amber notification closes into the record. No guard is dispatched; the fox continues towards the trees.', evidence: [{ source: 'Operator decision', detail: 'Recorded as wildlife; notification dismissed.' }, { source: 'Site response', detail: 'No dispatch is initiated in this illustration.' }] },
-    { id: 'resolve', at: 40, title: 'Keep the reason, not the alarm', body: 'The supporting observations remain attached to the dismissal record. This resolves one illustrated event; it does not establish that the whole property is safe.', evidence: [{ source: 'Event record', detail: 'Garden camera + terrace thermal + path + human decision.' }, { source: 'Recorded outcome', detail: 'Wildlife notification closed without dispatch.' }] },
-  ],
+import type { SceneDefinition, ScenarioVariant, Evidence } from '../../contract'
+import { wildlife } from './wildlife-content'
+import { incidentTime as T } from './incident-motion'
+const observed=(source:string,detail:string):Evidence=>({kind:'observed',source,detail}),correlation=(source:string,detail:string):Evidence=>({kind:'correlation',source,detail}),response=(source:string,detail:string):Evidence=>({kind:'response',source,detail}),uncertain=(detail:string):Evidence=>({kind:'uncertainty',source:'Limits of this illustration',detail})
+const incident:ScenarioVariant={
+ id:'intrusion',label:'Perimeter intrusion',role:'primary',duration:T.end,
+ poster:'/worlds/private-estate/intrusion-poster.webp',posterAlt:'Illustrative perimeter intrusion at a woodland estate: an anonymous person crosses the lower stone boundary while the occupied residence and guarded inner approach remain visible.',
+ lesson:'Protection is a sequence: observe the boundary crossing, corroborate it, secure the occupied threshold and send a person to check. The fictional intruder’s retreat is scripted; the sensors do not establish identity or compel an outcome.',
+ establishing:{title:'An occupied home, two boundaries',body:'A resident moves beside the warm room. An unarmed guard is at the service shelter; the operator has a separate terrace console. The low stone perimeter and the inner stair gate protect different parts of this fictional home.'},
+ cameras:[
+  {at:0,position:[-17,8.5,23],target:[-2,1.8,4],mobilePosition:[-12,8,24],mobileTarget:[-2,1.8,4.5],fov:46,easing:'smoother'},
+  {at:T.detect,cut:true,position:[-9,3.7,12.5],target:[-4.4,1.2,8.5],mobilePosition:[-8.4,3.5,12.8],mobileTarget:[-4.4,1.2,8.5],fov:48},
+  {at:14.9,position:[-8.4,3.8,12.2],target:[-4.4,1.2,8.4],mobilePosition:[-8.4,3.5,12.8],mobileTarget:[-4.4,1.2,8.5],fov:48},
+  {at:T.verify,cut:true,position:[-1.8,5.3,15],target:[-2.3,1.8,5.8],mobilePosition:[-1.8,5.4,14.5],mobileTarget:[-2.3,1.9,5.8],fov:50},
+  {at:22.9,position:[-1.8,5.3,15],target:[-2.3,1.8,5.8],mobilePosition:[-1.8,5.4,14.5],mobileTarget:[-2.3,1.9,5.8],fov:50},
+  {at:T.correlate,cut:true,position:[-5,5.3,14],target:[-.5,1.7,4.5],mobilePosition:[-3,5,13],mobileTarget:[.6,1.85,4.5],fov:46},
+  {at:T.decide,cut:true,position:[-3.2,3.7,9],target:[1.65,1.9,2.05],mobilePosition:[-3.8,3.6,7],mobileTarget:[1.3,2.4,1.3],fov:46},
+  {at:35.8,position:[-3.2,3.7,9],target:[1.65,1.9,2.05],mobilePosition:[-3.8,3.6,7],mobileTarget:[1.3,2.4,1.3],fov:46},
+  {at:36,cut:true,position:[7.8,4.3,9.4],target:[3.55,1.5,1.9],mobilePosition:[7,4.1,9.3],mobileTarget:[3.65,1.15,2.2],fov:48},
+  {at:T.secured,cut:true,position:[-1,5.8,12],target:[2.4,1.4,4],mobilePosition:[-.3,5,11.5],mobileTarget:[2.4,1.5,4.3],fov:48},
+  {at:T.standoff,cut:true,position:[8.5,4.2,11],target:[2.6,1.3,4.8],mobilePosition:[7.5,3.9,11],mobileTarget:[2.6,1.3,4.8],fov:50},
+  {at:48,position:[8.5,4.2,11],target:[2.6,1.3,4.8],mobilePosition:[7.5,3.9,11],mobileTarget:[2.6,1.3,4.8],fov:50},
+  {at:56.9,position:[-9,5,14],target:[-3,1.3,7.5],mobilePosition:[-8,4.3,14],mobileTarget:[-3.5,1.4,7.6],fov:48},
+  {at:T.exitCross,cut:true,position:[-8.8,3.5,12.4],target:[-4.4,1.3,8.5],mobilePosition:[-8.4,3.5,12.8],mobileTarget:[-4.4,1.3,8.5],fov:48},
+  {at:65.9,position:[-8.8,3.5,12.4],target:[-4.4,1.3,8.5],mobilePosition:[-8.4,3.5,12.8],mobileTarget:[-4.4,1.3,8.5],fov:48},
+  {at:T.outside,cut:true,position:[-12,7,18],target:[-3,1.3,7],mobilePosition:[-11,6.5,18],mobileTarget:[-3,1.3,7],fov:48},
+  {at:T.inspected,cut:true,position:[-9,4,4.5],target:[-4.4,1.2,8.7],mobilePosition:[-8,3.4,4.5],mobileTarget:[-4.4,1.3,8.7],fov:50},
+  {at:T.end,position:[-14,7.5,20],target:[-1.5,1.7,5],mobilePosition:[-11,7,19],mobileTarget:[-2,1.8,5.8],fov:48},
+ ],
+ beats:[
+  {id:'detect',at:T.detect,title:'A deliberate crossing of the stone perimeter',body:'The rust-clothed figure is the authored intruder in this red-team scenario. They put both hands on the coping, step onto the low wall and land inside. The fixed camera observes the exposed crossing; it does not infer intent from clothing.',evidence:[observed('Garden camera','A person approaches and crosses the visible stone boundary.'),uncertain('The adversarial role is fictional ground truth, not a sensor classification.')],subevents:[{id:'coping-contact',at:9,title:'Hands and feet on the boundary',body:'Both hands brace on the coping while the first foot is supported on top and the other remains outside. The perimeter zone indicator records the crossing area.',evidence:[observed('Perimeter zone','A local boundary-zone event accompanies the supported crossing.')]}]},
+  {id:'verify',at:T.verify,title:'Two views corroborate one person inside',body:'The person has landed inside and walks toward the occupied terrace. The garden camera supplies shape and direction; the distinct terrace thermal contributes a labelled illustrative warm silhouette. No temperature or identity is assigned.',evidence:[observed('Garden camera','A human figure moves from the crossed wall toward the house.'),observed('Terrace thermal','Illustrative thermal-style view of the same person in the authored overlap; no temperatures.'),uncertain('Vegetation ends the depicted coverage. A hidden route is not a verified track.')]},
+  {id:'correlate',at:T.correlate,title:'The crossing becomes a local operator alert',body:'Proposed on-site correlation joins the camera passage, warm silhouette and perimeter-zone event. Under the illustrated preauthorized policy, the path lights come on and the operator’s console displays the linked observations.',evidence:[correlation('Proposed local correlation','Camera + thermal + boundary-zone event form one proposed incident.'),response('Preauthorized path lighting','The four garden luminaires activate; the console alert becomes visible.')]},
+  {id:'decide',at:T.decide,title:'Protect the occupied threshold; send a person',body:'The operator reviews the three observations. The resident is still beside the open doorway; the inner gate is open and the guard remains at the shelter. The decision below authorizes the protective response.',evidence:[observed('Local operator','The linked alert is present at the modeled console.'),uncertain('Securing the threshold and sending the guard are proposed actions until the authored decision continues.')],action:'Secure the inner terrace and send the guard to observe'},
+  {id:'respond',at:T.respond,title:'A resident clears the doorway',body:'After the human decision, the resident steps inside and away from the doorway. The operator reaches the modeled console control. Once the threshold is clear, the room shutter and inner stair gate close; the unarmed guard uses the protected service path.',evidence:[response('Human-authorized sequence','Resident clearance, console action, closure and guard observation follow the decision.')],subevents:[
+   {id:'inner-held',at:T.secured,title:'The inner threshold is held',body:'The room shutter and stair gate are fully closed. The resident is clear of their swept paths. The garden path remains lit as the guard approaches behind the fixed service railing.',evidence:[observed('Inner protection','Both mechanisms visibly reach their closed stops; the occupied room remains behind the shutter.'),response('Guard route','The guard stays on the home side of the service railing.')]},
+   {id:'warning',at:45,title:'An unarmed warning at a standoff',body:'The intruder reaches the held stair gate. The guard stops on the protected service path and raises an open hand. They remain separated; there is no contact or arrest.',evidence:[observed('Guard observation','A person stands at the closed inner approach.'),response('Unarmed guard','A visible open-hand warning from a fixed standoff.')]},
+   {id:'withdrawal',at:50,title:'The scripted intruder turns away',body:'The intruder turns and walks back along the exposed garden path. This is the scenario’s authored withdrawal, not an asserted effect of a sensor or a guaranteed deterrence result.',evidence:[observed('Garden passage','The person is moving away from the held inner approach.'),uncertain('The withdrawal is scripted; no forced-control capability is claimed.')]},
+   {id:'outside',at:T.outside,title:'Back over the same boundary',body:'The intruder climbs back over the low wall with supported hands and feet, lands outside and departs. The camera retains the visible path only until the person leaves its illustrated sector.',evidence:[observed('Garden camera','A supported outward crossing and departure from the depicted coverage.'),response('Inner protection','The shutter and gate remain closed.')]},
+  ]},
+  {id:'resolve',at:T.resolve,title:'Record the outcome; finish the boundary check',body:'The record now shows the held occupied threshold and the visible departure. The guard approaches the crossing from inside to inspect it; the third record tile remains pending until that check is completed.',evidence:[observed('Event record','Inner protection stayed engaged and the scripted intruder withdrew.'),uncertain('Identity remains unestablished; the sequence does not establish that the entire property is safe.')],subevents:[{id:'boundary-inspected',at:T.inspected,title:'The guard completes the inside inspection',body:'The guard stops inside the crossed wall and looks over the coping. The third tile joins the console record. The intruder remains outside, the lights remain on, and the occupied threshold stays secured.',evidence:[observed('Guard inspection','The crossing is inspected from inside the estate.'),response('Completed record','Boundary check appended; inner protection remains engaged.'),uncertain('No identity or outcome beyond this illustrated event is established.')]}]},
+ ],fallbackStills:[],
+}
+incident.fallbackStills=[{state:'establish',at:0,src:'/worlds/private-estate/intrusion-establish.webp',alt:incident.establishing.title+' Original illustrative incident.'},...incident.beats.flatMap(b=>[b,...(b.subevents||[])]).map(b=>({state:b.id,at:b.at,src:`/worlds/private-estate/intrusion-${b.id}.webp`,alt:b.title+' Original illustrative incident state.'}))]
+export const definition:SceneDefinition={
+ id:'private-estate',number:'01',name:'Private estate',subtitle:'The boundary holds',description:'An authored perimeter intrusion at an occupied woodland home. Corroborated observations, a human decision and visible protection — alongside an independent wildlife comparison.',setting:'Woodland residence · misty dawn',poster:incident.poster,posterAlt:incident.posterAlt,practicalLightLimit:3,
+ palette:{background:'#bdcecf',fog:'#bdcecf',fogNear:21,fogFar:58,ambient:.36,sun:'#fff0d6',sunIntensity:1.4,sunPosition:[-12,22,14],hemisphereSky:'#d6e8f0',hemisphereGround:'#52604b',hemisphereIntensity:1.5,exposure:1.05,toneMapping:'aces',shadowBounds:{left:-24,right:24,top:22,bottom:-20,near:1,far:70,bias:-.00018,normalBias:.025,mapSize:2048}},defaultScenario:'intrusion',scenarios:[incident,wildlife],
 }
