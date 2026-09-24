@@ -50,7 +50,7 @@ export function makeThermalLabel() {
   const canvas = document.createElement('canvas'); canvas.width = 640; canvas.height = 320
   const c = canvas.getContext('2d')!; c.fillStyle = '#193837'; c.fillRect(0,0,640,320); c.strokeStyle = '#9da99a'; c.lineWidth = 3; c.strokeRect(2,2,636,316)
   c.fillStyle = '#ecebd8'; c.font = '34px sans-serif'; c.fillText('Illustrative thermal-style view',22,45)
-  c.fillStyle = '#b8c2ac'; c.font = '23px sans-serif'; c.fillText('Terrace thermal · proposed component',22,298)
+  c.fillStyle = '#b8c2ac'; c.font = '34px sans-serif'; c.fillText('Proposed thermal component',22,298)
   return new CanvasTexture(canvas)
 }
 export function ThermalView({ clock, model, materials, label, warm }: { clock: WorldProps['clock']; model: ReturnType<typeof makeFox>; materials: Materials; label: CanvasTexture; warm: MeshBasicMaterial }) {
