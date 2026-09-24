@@ -8,7 +8,7 @@ import {
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { mix, progress, seeded, smooth } from '../../math'
 import { definition } from './content'
-import { supervisorPose } from './supervisor'
+import { supervisorPose, supervisorRig } from './supervisor'
 import { cargo, makeContainer, makeGantry, makeMaterials, makePerson, makeSite, makeSpreader, makeSupervisorShoe, makeTractor, makeTrailer, makeTrolley, makeWheel, type Finish, type Part } from './geometry'
 
 /** Travel in metres is sampled from authored time, never integrated across frames. */
@@ -127,15 +127,12 @@ function World({ clock, quality, layers }: WorldProps) {
       const shoe = shoes.current[side]!
       shoe.position.set(...foot.position); shoe.rotation.y = foot.yaw
       footShadows.current[side]!.visible = foot.planted
-      const lateral = side === 0 ? -.13 : .13
-      rig.hip.set(pose.position[0] + Math.cos(pose.yaw) * lateral, pose.position[1] + .86, pose.position[2] - Math.sin(pose.yaw) * lateral)
-      rig.ankle.set(foot.position[0], foot.position[1] + .16, foot.position[2])
-      rig.knee.copy(rig.hip).lerp(rig.ankle, .52)
-      rig.knee.x += Math.sin(pose.yaw) * .1; rig.knee.z += Math.cos(pose.yaw) * .1
+      const joints = pose.legs[side]
+      rig.hip.set(...joints.hip); rig.knee.set(...joints.knee); rig.ankle.set(...joints.ankle)
       for (let part = 0; part < 2; part++) {
         const start = part === 0 ? rig.hip : rig.knee, end = part === 0 ? rig.knee : rig.ankle, leg = legs.current[side * 2 + part]!
         rig.direction.copy(end).sub(start)
-        leg.position.copy(start).add(end).multiplyScalar(.5); leg.scale.set(1, rig.direction.length(), 1)
+        leg.position.copy(start).add(end).multiplyScalar(.5)
         leg.quaternion.setFromUnitVectors(rig.axis, rig.direction.normalize())
       }
     })
@@ -159,10 +156,10 @@ function World({ clock, quality, layers }: WorldProps) {
       <group ref={brake} visible={false}>{[-.9, .9].map(z => <mesh key={z} position={[-8.65, 1.13, z]}><boxGeometry args={[.018, .13, .28]} /><meshBasicMaterial color="#d68655" /></mesh>)}</group>
       <mesh position={[.7, 3.52, -.18]}><cylinderGeometry args={[.105, .105, .16, 12]} /><meshStandardMaterial color="#e8b76d" emissive="#e8b76d" emissiveIntensity={.22} roughness={.3} /></mesh>
     </group>
-    <group ref={person} position={[20.7, .46, -6.5]}><Parts parts={built.person} /></group>
+    <group name="logistics-supervisor" ref={person} position={[20.7, .46, -6.5]}><Parts parts={built.person} /></group>
     {[0, 1].map(side => <group key={side}>
       <group ref={shoe => { shoes.current[side] = shoe }}><Parts parts={built.shoe} /><mesh ref={shadow => { footShadows.current[side] = shadow }} position={[0, .006, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[.4, .55]} /><meshBasicMaterial color="#29363a" map={contact} transparent opacity={.27} depthWrite={false} /></mesh></group>
-      {[0, 1].map(part => <mesh key={part} ref={leg => { legs.current[side * 2 + part] = leg }} castShadow receiveShadow material={m.blue}><boxGeometry args={[.13, 1, .14]} /></mesh>)}
+      {[0, 1].map(part => <mesh key={part} name={`supervisor-${side}-${part ? 'shin' : 'thigh'}`} ref={leg => { legs.current[side * 2 + part] = leg }} castShadow receiveShadow material={m.blue}><capsuleGeometry args={[.064, part ? supervisorRig.shin : supervisorRig.thigh, 3, 8]} /></mesh>)}
     </group>)}
     <group ref={hold} visible={false}><mesh position={[17.8, 2.21, -3.24]}><boxGeometry args={[.31, .065, .02]} /><meshBasicMaterial color="#e5b361" /></mesh><mesh position={[22.1, 1.92, -4.1]}><sphereGeometry args={[.115, 12, 8]} /><meshBasicMaterial color="#dcb074" /></mesh></group>
     <group ref={recorded} visible={false}><mesh position={[17.8, 1.94, -3.226]}><boxGeometry args={[.25, .11, .012]} /><meshBasicMaterial color="#d6caa8" /></mesh></group>
