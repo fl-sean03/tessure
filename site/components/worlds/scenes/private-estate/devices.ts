@@ -3,7 +3,7 @@ import { surfaceY } from './surface'
 export type Device = { id: 'camera' | 'thermal'; position: Vec3; target: Vec3; mount: Vec3; near: number; far: number; halfAngle: number }
 export const devices: Device[] = [
   { id: 'camera', position: [-7.12, 2.30, 1.83], target: [-4.6, .65, 4.7], mount: [-7.12, 2.45, 1.445], near: 4.15, far: 5.55, halfAngle: .95 },
-  { id: 'thermal', position: [.02, 3.35, 2.64], target: [-1.35, .65, 4.8], mount: [.02, 3.42, 2.415], near: 4.15, far: 5.55, halfAngle: .89 },
+  { id: 'thermal', position: [.02, 3.35, 2.64], target: [-1.35, .65, 4.8], mount: [.02, 3.42, 2.415], near: 4.15, far: 5.55, halfAngle: 1.0 },
 ]
 export function deviceDirection(device: Device): Vec3 { const d = device.target.map((v, i) => v - device.position[i]) as Vec3, n = Math.hypot(...d); return d.map(v => v / n) as Vec3 }
 /** Front optical surface, including the thermal lens's offset within its housing. */
