@@ -1,5 +1,6 @@
 import type { Vec3 } from '../../contract'
 import { vehiclePose } from './vehicles'
+import { T } from './timing'
 const sub=(a:Vec3,b:Vec3)=>a.map((v,i)=>v-b[i]) as Vec3
 const unit=(a:Vec3)=>{const d=Math.hypot(...a);return a.map(v=>v/d) as Vec3}
 const cross=(a:Vec3,b:Vec3):Vec3=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]
@@ -11,7 +12,7 @@ function device(origin:Vec3,target:Vec3,horizontal:number,vertical:number){
 /** Authored sectors explain direction and contribution; none of these values are sensor specifications. */
 export const devices={
   camera:device([8.65,5.15,7.55],[4.8,2.1,18.5],38*Math.PI/180,28*Math.PI/180),
-  radar:device([.24,3.25,15.8],[5,1.8,15.8],70*Math.PI/180,35*Math.PI/180),
+  radar:device([.24,3.25,15.8],[5,1.8,15.8],76*Math.PI/180,35*Math.PI/180),
 }
 export type DeviceKind=keyof typeof devices
 export function devicePoint(kind:DeviceKind,p:Vec3):Vec3 {
@@ -33,6 +34,6 @@ export function sectorGround(kind:DeviceKind){
   return polygon
 }
 export function observations(kind:DeviceKind,time:number){
-  if(time<(kind==='camera'?4:8)||time>=42)return []
-  return [false,true].flatMap(small=>{const p=vehiclePose(time,small),point:Vec3=[p.x,kind==='camera'?2.4:1.5,p.z];return inSector(kind,point)?[{small,point}]:[]})
+  if(time<T.detect||time>T.end)return []
+  return [false].flatMap(small=>{const p=vehiclePose(time,small),point:Vec3=[p.x,kind==='camera'?2.4:1.5,p.z];return inSector(kind,point)?[{small,point}]:[]})
 }
