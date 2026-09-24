@@ -6,20 +6,23 @@ import type { DataTexture } from 'three'
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { mix, seeded } from '../../math'
 import { definition } from './content'
-import { arrivalZ, deliveryX, deliveryHeading, gateAngle, guardProgress } from './motion'
+import { arrivalZ, deliveryX, deliveryHeading, gateAngle, guardGait, guardProgress } from './motion'
 import { contactTexture, createMaterials, makeBarrier, makeCampus, makeChiller, makeGuard, makeVehicle, type Part } from './model'
 
 function Parts({ parts }: { parts: Part[] }) {
   return <>{parts.map((p,i)=><mesh key={i} geometry={p.geometry} material={p.material} castShadow receiveShadow />)}</>
 }
-const roofUnits = [-23,-14,-5,4].flatMap(z=>[-16,-6].map(x=>[x,9.43,z] as Vec3))
+// Body bottom .075 above its origin seats on the mounting plate's 9.39 top.
+const roofUnits = [-23,-14,-5,4].flatMap(z=>[-16,-6].map(x=>[x,9.315,z] as Vec3))
 function Repeated({ part, positions }: { part: Part; positions: Vec3[] }) {
   const ref=useRef<InstancedMesh>(null)
   useLayoutEffect(()=>{
-    const o=new Object3D()
-    positions.forEach((p,i)=>{o.position.set(...p);o.updateMatrix();ref.current!.setMatrixAt(i,o.matrix)})
-    ref.current!.instanceMatrix.needsUpdate=true;ref.current!.computeBoundingSphere()
-  },[positions])
+    const mesh=ref.current!,o=new Object3D()
+    positions.forEach((p,i)=>{o.position.set(...p);o.updateMatrix();mesh.setMatrixAt(i,o.matrix)})
+    mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere()
+    // Parent disables automatic disposal; release instance buffers, not shared geometry/material.
+    return ()=>{mesh.dispose()}
+  },[part,positions])
   return <instancedMesh ref={ref} args={[part.geometry,part.material,positions.length]} castShadow receiveShadow />
 }
 function Contact({ texture, position, size, opacity=.3 }: { texture:DataTexture; position:Vec3; size:[number,number]; opacity?:number }) {
@@ -72,7 +75,7 @@ function World({ clock,layers,quality }: WorldProps) {
     if(truck.current){truck.current.position.set(deliveryX(t),.145,arrivalZ(t));truck.current.rotation.y=deliveryHeading(t)}
     van.current?.position.set(4.8,.145,arrivalZ(t,true))
     if(gate.current)gate.current.rotation.z=gateAngle(t)
-    const p=guardProgress(t),walk=t>30&&t<38?Math.sin((t-30)*7.3)*.31:0
+    const p=guardProgress(t),walk=guardGait(t)
     if(guard.current){guard.current.position.set(mix(12.3,7.15,p),.145,mix(8.8,9.3,p));guard.current.rotation.y=-Math.PI/2}
     if(left.current)left.current.rotation.x=walk
     if(right.current)right.current.rotation.x=-walk
