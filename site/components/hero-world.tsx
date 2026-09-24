@@ -39,9 +39,9 @@ export default function HeroWorld() {
   return <div className="hero-visual" ref={container} data-film-playing={playing}>
     <Image src={heroFilm.poster} alt={heroFilm.posterAlt} fill priority sizes="(max-width: 760px) 100vw, 57vw" />
     {enabled && <video ref={video} className={`hero-film ${started ? 'has-started' : ''}`} src={heroFilm.src} muted playsInline loop preload="auto" autoPlay aria-hidden="true" onPlaying={() => { setPlaying(true); setStarted(true) }} onPause={() => setPlaying(false)} onError={() => { setEnabled(false); setStarted(false) }} onTimeUpdate={e => setPhase(Math.max(0, heroFilm.moments.findLastIndex(moment => moment.at <= e.currentTarget.currentTime)))} />}
-    <div className="hero-visual-top"><span>Illustrative world / 05</span><span>First light in the yard</span></div>
+    <div className="hero-visual-top"><span>Illustrative world / 05</span><span>A cargo diversion</span></div>
     <div className="hero-sources" aria-hidden="true">{['Camera', 'Radar', 'Thermal'].map((source, i) => <span key={source} className={!started || i < moment.sources ? 'observed' : ''}><i />{source}</span>)}<span className="hero-event">→ One event</span></div>
-    <div className="hero-annotation"><span className="annotation-dot" /><div><strong>{started ? moment.title : 'Separate signals. A shared picture.'}</strong><span>{started ? moment.detail : 'Designed to connect observations before a person acts.'}</span></div></div>
+    <div className="hero-annotation"><span className="annotation-dot" /><div><strong>{started ? moment.title : 'A marked load takes the wrong route.'}</strong><span>{started ? moment.detail : 'Proposed local correlation. Human-directed response.'}</span></div></div>
     <p className="visual-caption">Authored illustration · no live sensor data</p>
     {enabled && started && <button className="hero-motion" aria-label={playing ? 'Pause hero illustration' : 'Play hero illustration'} onClick={() => { paused.current = playing; if (playing) video.current?.pause(); else video.current?.play().catch(() => setPlaying(false)) }}>{playing ? 'Ⅱ Pause' : '▷ Play'}</button>}
   </div>
