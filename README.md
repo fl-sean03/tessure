@@ -1,10 +1,10 @@
 # Tessure
 
-A public concept for a physical-security system designed to correlate and verify site sensor observations automatically, with evidence supporting a human decision. The website explains the proposed approach through six illustrative worlds. It is not a deployed security product.
+A public concept for a physical-security system designed to correlate and verify site sensor observations automatically, with evidence supporting a human decision. The website explains the proposed approach through six fictional security incidents and a separate benign estate comparison. It is not a deployed security product.
 
 ## Website
 
-The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text.
+The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text and state-matched stills. Each primary incident pauses for human review before the operator's chosen response. Preauthorized local holds or alerts can appear earlier under site policy. The estate comparison has its own timeline and decision not to dispatch.
 
 ```sh
 cd site
@@ -17,6 +17,7 @@ Validation and a production build:
 ```sh
 npm run typecheck
 npm run check:contract
+npm run check:release
 npm run build
 npm start
 ```
