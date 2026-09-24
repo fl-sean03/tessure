@@ -39,7 +39,9 @@ function Person({ role, clock, m, high, contact }: { role: 'visitor' | 'guard' |
     } else if (role === 'guard') {
       position = samplePath([{ at: 0, position: [16.4, 0.48, 6] }, { at: 29, position: [16.4, 0.48, 6] }, { at: 33, position: [11.6, 0.25, 7.8] }, { at: 38, position: [11.2, 0.24, 10.7] }], t)
       position[1] = position[2] < 7.47 ? 0.46 : position[2] < 8.05 ? 0.34 : 0.24
-      heading = t <= 29 ? -Math.PI / 2 : t < 33 ? -1.19 : t < 38 ? -0.14 : -0.43
+      // Turn as the eased path leaves the decision hold, slows at 33s, and arrives at 38s.
+      heading = -Math.PI / 2 + (Math.PI / 2 - 1.19) * smooth(progress(t, 29, 29.6))
+        + 1.05 * smooth(progress(t, 32.4, 33.6)) - 0.29 * smooth(progress(t, 37.4, 38))
       stride = t > 29 && t < 38 ? Math.sin((t - 29) * 6.2) * 0.44 * Math.min(progress(t, 29, 29.4), 1 - progress(t, 37.6, 38)) : 0
       gesture = smooth(progress(t, 38, 39.4)) * 0.72
     } else if (role === 'operator') {
