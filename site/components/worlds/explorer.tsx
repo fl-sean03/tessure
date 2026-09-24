@@ -1,10 +1,11 @@
 'use client'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Layers, Quality, SceneClock, SceneModule } from './contract'
 import { catalogue, findScene } from './catalogue'
 import { loaders } from './loaders'
+import { groupEvidence, scenariosFor, selectScenario, stateAt, storyStates } from './scenario'
 const Runtime = dynamic(() => import('./runtime'), { ssr: false })
 const labels = { establish: 'Normal site activity', detect: 'Detect', verify: 'Verify', correlate: 'Correlate', decide: 'Human review', respond: 'Respond', resolve: 'Record' }
 class StageBoundary extends Component<{ children: ReactNode; onError: () => void }, { error: boolean }> {
@@ -16,11 +17,16 @@ class StageBoundary extends Component<{ children: ReactNode; onError: () => void
 export default function WorldExplorer({ initialScene = 'logistics-yard' }: { initialScene?: string }) {
   const [selected, setSelected] = useState(initialScene)
   const definition = findScene(selected) || catalogue[4]
+  const [scenarioId, setScenarioId] = useState<string>()
+  const scenarios = useMemo(() => scenariosFor(definition), [definition])
+  const scenario = useMemo(() => selectScenario(definition, scenarioId), [definition, scenarioId])
+  const selectionKey = `${selected}/${scenario.id}`
   const [module, setModule] = useState<SceneModule | null>(null)
+  const runtimeScenario = useMemo(() => module?.definition.id === selected ? scenario : module ? selectScenario(module.definition) : null, [module, selected, scenario])
   const [active, setActive] = useState(false)
   const [failed, setFailed] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [ready, setReady] = useState(false)
+  const [readyKey, setReadyKey] = useState<string | null>(null)
   const [time, setTime] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [decisionPassed, updateDecisionPassed] = useState(false)
@@ -33,12 +39,12 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
   const clock = useRef<SceneClock>({ time: 0, playing: false })
   const stage = useRef<HTMLDivElement>(null)
   const intendedPlay = useRef(false)
-  const beat = [...definition.beats].reverse().find(b => time >= b.at) || { id: 'establish' as const, ...definition.establishing, evidence: [] }
-  const decision = definition.beats.find(b => b.id === 'decide')!
-  const atDecision = time >= decision.at && time < definition.beats.find(b => b.id === 'respond')!.at && !decisionPassed
+  const { cue, still } = stateAt(scenario, time)
+  const decision = scenario.beats.find(b => b.id === 'decide')!
+  const atDecision = time >= decision.at && time < scenario.beats.find(b => b.id === 'respond')!.at && !decisionPassed
   const pause = useCallback(() => { intendedPlay.current = false; clock.current.playing = false; setPlaying(false) }, [])
   const fail = useCallback(() => { setFailed(true); setActive(false); setLoading(false); pause() }, [pause])
-  const onReady = useCallback(() => { setReady(true); setLoading(false) }, [])
+  const onReady = useCallback((key: string) => { setReadyKey(key) }, [])
   const downgrade = useCallback(() => setQuality('low'), [])
   useEffect(() => {
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
@@ -77,19 +83,24 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
   }, [selected, active, fail])
   function choose(id: string) {
     if (id === selected) return
-    pause(); setSelected(id); setTime(0); clock.current.time = 0
-    setDecisionPassed(false); setRevision(v => v + 1)
+    pause(); setSelected(id); setScenarioId(undefined); setTime(0); clock.current.time = 0
+    setDecisionPassed(false); setReadyKey(null); setRevision(v => v + 1)
     // Keep a single Canvas alive through world swaps; the poster covers the pending scene.
   }
+  function chooseScenario(id: string) {
+    if (id === scenario.id) return
+    pause(); setScenarioId(id); setTime(0); clock.current.time = 0
+    setDecisionPassed(false); setReadyKey(null); setRevision(v => v + 1)
+  }
   function seek(value: number) {
-    pause(); const next = Math.min(definition.duration, Math.max(0, value))
+    pause(); const next = Math.min(scenario.duration, Math.max(0, value))
     clock.current.time = next; setTime(next); setDecisionPassed(next > decision.at)
     setRevision(v => v + 1)
   }
   function play() {
     if (playing) { pause(); return }
     if (reducedMotion) return
-    if (time >= definition.duration) { clock.current.time = 0; setTime(0); setDecisionPassed(false) }
+    if (time >= scenario.duration) { clock.current.time = 0; setTime(0); setDecisionPassed(false) }
     if (atDecision) return
     stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
     if (!active) { intendedPlay.current = true; setActive(true); setLoading(true); return }
@@ -100,13 +111,14 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
     if (active && (loading || module?.definition.id !== selected)) return
     setDecisionPassed(true)
     if (active && !reducedMotion) { stage.current?.scrollIntoView({ block: 'center', behavior: 'instant' }); clock.current.playing = true; setPlaying(true); setRevision(v => v + 1) }
-    else seek(definition.beats.find(b => b.id === 'respond')!.at)
+    else seek(scenario.beats.find(b => b.id === 'respond')!.at)
   }
   const currentModule = module?.definition.id === selected
-  const still = definition.fallbackStills?.findLast(frame => frame.at <= time)
+  const ready = readyKey === selectionKey
   const posterVisible = !(active && currentModule && ready && !failed)
   const imageLabel = still ? 'Illustrative still' : 'Illustrative overview'
-  return <div className="world-explorer" data-scene={selected} data-beat={beat.id} data-playing={playing} data-ready={ready && currentModule}>
+  const scenarioLabel = scenario.role === 'primary' ? 'Illustrative red-team scenario' : scenario.role === 'comparison' ? 'Illustrative wildlife comparison' : 'Illustrative world'
+  return <div className="world-explorer" data-scene={selected} data-scenario={scenario.id} data-state={cue.id} data-beat={cue.anchor} data-playing={playing} data-ready={ready && currentModule}>
     <div className="world-index" aria-label="Choose an illustrative world">
       {catalogue.map(s => <button key={s.id} className={`world-choice ${selected === s.id ? 'selected' : ''}`} aria-pressed={selected === s.id} onClick={() => choose(s.id)}>
         {/* Self-made scene posters. Lazy-loaded; essential labels remain HTML. */}
@@ -115,30 +127,32 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
       </button>)}
     </div>
     <div className="world-heading"><div><p className="eyebrow">World {definition.number} <span className="dot-separator">/</span> {definition.name}</p><h3>{definition.subtitle}</h3></div><p>{definition.description}</p></div>
+    {scenarios.length > 1 && <fieldset className="scenario-selector"><legend>Scenario</legend><div>{scenarios.map(option => <button key={option.id} data-scenario-role={option.role} aria-pressed={option.id === scenario.id} onClick={() => chooseScenario(option.id)}>{option.label}</button>)}</div><p>Each scenario has its own sequence and decision. Switching starts at the beginning.</p></fieldset>}
     <div className="world-console">
       <div ref={stage} className="world-stage" aria-label={`${definition.name} illustrative scene`}>
-        <img className={`world-poster ${posterVisible ? '' : 'is-hidden'}`} src={still?.src || definition.poster} alt={still?.alt || definition.posterAlt} width="1440" height="960" />
-        {active && !failed && module && <div className="world-canvas"><StageBoundary onError={fail}><Runtime scene={module} clock={clock} layers={layers} quality={quality} revision={revision} decisionPassed={decisionPassedRef} onTime={setTime} onPause={pause} onFailure={fail} onReady={onReady} onDowngrade={downgrade} /></StageBoundary></div>}
-        <div className="stage-meta"><span className="stage-label"><i />Illustrative world</span><span>{definition.setting}</span></div>
+        <img className={`world-poster ${posterVisible ? '' : 'is-hidden'}`} src={still?.src || scenario.poster} alt={still?.alt || scenario.posterAlt} width="1440" height="960" />
+        {active && !failed && module && runtimeScenario && <div className="world-canvas"><StageBoundary onError={fail}><Runtime scene={module} scenario={runtimeScenario} clock={clock} layers={layers} quality={quality} revision={revision} decisionPassed={decisionPassedRef} onTime={setTime} onPause={pause} onFailure={fail} onReady={onReady} onDowngrade={downgrade} /></StageBoundary></div>}
+        <div className="stage-meta"><span className="stage-label"><i />{scenarioLabel}</span><span>{definition.setting}</span></div>
         {!active && !failed && <button className="stage-launch" onClick={() => { intendedPlay.current = !reducedMotion && time < decision.at; setActive(true); setLoading(true) }}><span aria-hidden="true">▷</span>{reducedMotion ? 'Enable a still 3D view' : 'Enter the world'}<small>{reducedMotion ? 'Reduced motion · manual exploration' : 'A guided sequence · you control the pace'}</small></button>}
         {loading && <div className="stage-loading" role="status">Preparing the world…</div>}
         {failed && <div className="stage-fallback">{imageLabel}<span>The complete story is available in the beat controls and text below.</span></div>}
         <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={atDecision || loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{posterVisible ? imageLabel : 'Interactive illustration'}</span><Link href={`/worlds/${selected}`}>Open world page <span aria-hidden="true">↗</span></Link></div>
       </div>
       <aside className="evidence-panel" aria-label="Illustrated event evidence">
-        <div className="evidence-kicker"><span>From signal to decision</span><span>{String(definition.beats.findIndex(b => b.id === beat.id) + 1).padStart(2, '0')} / 06</span></div>
-        <div className="evidence-current" aria-live="polite" aria-atomic="true"><p className={`beat-label ${beat.id}`}>{labels[beat.id]}</p><h4>{beat.title}</h4><p>{beat.body}</p></div>
-        <div className="evidence-sources">{beat.evidence.map((e, i) => <div key={`${beat.id}-${i}`}><span className="source-marker" aria-hidden="true" /><div><strong>{e.source}</strong><p>{e.detail}</p></div></div>)}</div>
+        <div className="evidence-kicker"><span>From signal to decision</span><span>{String(scenario.beats.findIndex(b => b.id === cue.anchor) + 1).padStart(2, '0')} / 06</span></div>
+        <div className="evidence-current" aria-live="polite" aria-atomic="true"><p className={`beat-label ${cue.anchor}`}>{labels[cue.anchor]}</p><h4>{cue.title}</h4><p>{cue.body}</p></div>
+        <div className="evidence-sources">{groupEvidence(cue.evidence).map(group => <section key={group.kind} className="evidence-group">{group.label && <h5>{group.label}</h5>}{group.entries.map((e, i) => <div className="evidence-source" key={`${cue.id}-${i}`}><span className="source-marker" aria-hidden="true" /><div><strong>{e.source}</strong><p>{e.detail}</p></div></div>)}</section>)}</div>
         {atDecision && <div className="decision-panel"><p>Illustrative operator decision</p><strong>{decision.action}</strong><button className="button primary" onClick={continueDecision} disabled={loading || (active && !currentModule)}>Continue illustrative response <span aria-hidden="true">→</span></button><span>Or stay here and review the evidence.</span></div>}
         <p className="evidence-caption">Authored observations. No live sensor data or real-world controls.</p>
       </aside>
     </div>
     <div className="timeline-controls">
-      <button className="play-control" onClick={play} disabled={failed || atDecision || reducedMotion || loading || (active && !currentModule)} aria-label={playing ? 'Pause sequence' : time >= definition.duration ? 'Replay sequence' : 'Play sequence'}><span aria-hidden="true">{playing ? 'Ⅱ' : '▷'}</span><span>{playing ? 'Pause' : time >= definition.duration ? 'Replay' : 'Play'}</span></button>
-      <label className="scrubber"><span className="sr-only">Illustrative playback time</span><input aria-valuetext={`${Math.floor(time)} of ${definition.duration} illustration seconds`} type="range" min="0" max={definition.duration} step="0.1" value={time} onChange={e => seek(Number(e.target.value))} /><span><b>{String(Math.floor(time)).padStart(2, '0')}</b> / {definition.duration}s <span className="time-note">illustration</span></span></label>
-      <div className="layer-controls" aria-label="Scene layers"><button aria-pressed={layers.sensors} onClick={() => { setLayers(s => ({ ...s, sensors: !s.sensors })); setRevision(v => v + 1) }}>Sensors</button><button aria-pressed={layers.tracks} onClick={() => { setLayers(s => ({ ...s, tracks: !s.tracks })); setRevision(v => v + 1) }}>Tracks</button><button aria-label={active ? 'Switch to static view' : 'Use static view'} aria-pressed={!active} onClick={() => { setActive(false); pause(); setReady(false) }}>Static</button></div>
+      <button className="play-control" onClick={play} disabled={failed || atDecision || reducedMotion || loading || (active && !currentModule)} aria-label={playing ? 'Pause sequence' : time >= scenario.duration ? 'Replay sequence' : 'Play sequence'}><span aria-hidden="true">{playing ? 'Ⅱ' : '▷'}</span><span>{playing ? 'Pause' : time >= scenario.duration ? 'Replay' : 'Play'}</span></button>
+      <label className="scrubber"><span className="sr-only">Illustrative playback time</span><input aria-valuetext={`${Math.floor(time)} of ${scenario.duration} illustration seconds`} type="range" min="0" max={scenario.duration} step="0.1" value={time} onChange={e => seek(Number(e.target.value))} /><span><b>{String(Math.floor(time)).padStart(2, '0')}</b> / {scenario.duration}s <span className="time-note">illustration</span></span></label>
+      <div className="layer-controls" aria-label="Scene layers"><button aria-pressed={layers.sensors} onClick={() => { setLayers(s => ({ ...s, sensors: !s.sensors })); setRevision(v => v + 1) }}>Sensors</button><button aria-pressed={layers.tracks} onClick={() => { setLayers(s => ({ ...s, tracks: !s.tracks })); setRevision(v => v + 1) }}>Tracks</button><button aria-label={active ? 'Switch to static view' : 'Use static view'} aria-pressed={!active} onClick={() => { setActive(false); pause(); setReadyKey(null) }}>Static</button></div>
     </div>
-    <div className="beat-navigation" aria-label="Jump to an authored beat">{definition.beats.map((b, i) => <button key={b.id} aria-pressed={b.id === beat.id} onClick={() => seek(b.at)}><small>{String(i + 1).padStart(2, '0')}</small><span>{labels[b.id]}</span><span className="beat-dot" aria-hidden="true" /></button>)}</div>
-    <div className="world-notes"><p><span className="eyebrow">The idea this world explores</span>{definition.lesson}</p><details><summary>Read the story as text <span aria-hidden="true">+</span></summary><ol>{definition.beats.map(b => <li key={b.id}><span>{b.at}s · {labels[b.id]}</span><h4>{b.title}</h4><p>{b.body}</p>{b.action && <p>Illustrative decision: {b.action}.</p>}</li>)}</ol></details></div>
+    <div className="beat-navigation" aria-label="Jump to an authored beat">{scenario.beats.map((b, i) => <button key={b.id} aria-pressed={b.id === cue.anchor} onClick={() => seek(b.at)}><small>{String(i + 1).padStart(2, '0')}</small><span>{labels[b.id]}</span><span className="beat-dot" aria-hidden="true" /></button>)}</div>
+    {scenario.role !== 'legacy' && <p className="timeline-note">Explore the authored timeline. Jumping ahead previews the scripted response; it does not operate a real site.</p>}
+    <div className="world-notes"><p><span className="eyebrow">The idea this world explores</span>{scenario.lesson}</p><details><summary>Read the story as text <span aria-hidden="true">+</span></summary><p className="story-identity">{scenario.label}</p><ol>{storyStates(scenario).map(state => <li key={state.id}><button className="story-state-link" onClick={() => seek(state.at)}>{state.at}s · {labels[state.anchor]}</button><h4>{state.title}</h4><p>{state.body}</p>{state.action && <p>Illustrative decision: {state.action}.</p>}{state.evidence.map((e, i) => <p key={i} className="story-evidence"><strong>{e.source}:</strong> {e.detail}</p>)}</li>)}</ol></details></div>
   </div>
 }

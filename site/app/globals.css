@@ -24,3 +24,17 @@
 @media(max-width:760px){.step-definitions{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;margin-bottom:28px}.contact-purpose{font-size:14px}.hero-visual-top{align-items:flex-start;font-size:12px;gap:10px}.hero-visual-top>span{max-width:50%}.hero-sources{display:none}.hero-sources>span{padding:5px 6px}.hero-visual .visual-caption{max-width:calc(100% - 125px);line-height:1.4}.hero-annotation{bottom:76px}.beat-navigation button{gap:5px;padding:10px 5px}.beat-navigation small{font-size:12px}.beat-dot{flex-shrink:0}.stage-footer>a{max-width:65%}}
 
 .play-control:disabled{background:#53634f;color:var(--white);border:1px dashed #d4d9ce}
+
+/* A world may offer a separate comparison; it shares the stage, not its decision state. */
+.scenario-selector{border:0;padding:0;margin:0 0 22px;min-width:0}
+.scenario-selector legend{font-size:12px;font-family:var(--mono);color:#43583d;margin-bottom:9px}
+.scenario-selector>div{display:flex;flex-wrap:wrap;gap:8px}
+.scenario-selector button{background:#f3f5ee;border:1px solid #8a9c81;padding:10px 16px;min-height:44px;font-size:13px;line-height:1.4}
+.scenario-selector button[aria-pressed=true]{background:#244c3e;border-color:#244c3e;color:#fff}
+.scenario-selector>p,.timeline-note{font-size:12px;line-height:1.6;color:#43583d;margin-top:9px}
+.evidence-group h5{font-size:12px;font-weight:500;line-height:1.5;color:#43583d;margin:15px 0 0}
+.evidence-source{display:flex;gap:10px;padding:14px 0;border-top:1px solid #e1e5da}
+.story-identity{font-size:13px;margin-top:16px;color:#43583d}
+.story-state-link{display:inline-block;min-height:44px;padding:7px 0;background:transparent;border:0;font:12px var(--mono);color:#43583d;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.world-notes li .story-evidence{margin-top:8px;font-size:12px}
+@media(max-width:760px){.scenario-selector button{font-size:12px;flex:1;min-width:130px}.evidence-source{padding:12px 0}}

@@ -1,49 +1,54 @@
 'use client'
 import { createRoot, extend, useFrame, useThree, type Catalogue } from '@react-three/fiber'
-import { Component, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
+import { Component, useCallback, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { ACESFilmicToneMapping, NeutralToneMapping, PerspectiveCamera, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three'
 extend(THREE as unknown as Catalogue)
 import type { MutableRefObject } from 'react'
-import type { Layers, Quality, RenderStats, SceneClock, SceneModule } from './contract'
+import type { Layers, Quality, RenderStats, ResolvedScenario, SceneClock, SceneModule } from './contract'
 import { sampleCamera } from './math'
 import { AuthoredResourceCache } from './resource-stats'
+import { storyStates } from './scenario'
 
 type Props = {
-  scene: SceneModule; clock: MutableRefObject<SceneClock>; layers: Layers; quality: Quality;
+  scene: SceneModule; scenario: ResolvedScenario; clock: MutableRefObject<SceneClock>; layers: Layers; quality: Quality;
   revision: number; decisionPassed: MutableRefObject<boolean>; onTime: (time: number) => void;
-  onPause: () => void; onFailure: () => void; onReady: () => void; onDowngrade: () => void
+  onPause: () => void; onFailure: () => void; onReady: (key: string) => void; onDowngrade: () => void
 }
 declare global {
   interface Window { __TESSURE_STATS__?: RenderStats; __TESSURE_CONTEXTS__?: number; __TESSURE_FRAMES__?: RenderStats[] }
 }
 type Timing = MutableRefObject<{ start: number }>
-function Director({ scene, clock, quality, revision, decisionPassed, onTime, onPause, onDowngrade, timing }: Props & { timing: Timing }) {
+function Director({ scene, scenario, clock, quality, revision, decisionPassed, onTime, onPause, onDowngrade, timing }: Props & { timing: Timing }) {
   const { camera, size, gl, invalidate } = useThree()
   const lastUpdate = useRef(0)
+  const lastCue = useRef(-1)
+  const cueTimes = useMemo(() => storyStates(scenario).map(cue => cue.at), [scenario])
   const slow = useRef(0)
-  const decision = scene.definition.beats.find(b => b.id === 'decide')!.at
-  useEffect(() => { invalidate() }, [revision, quality, scene, invalidate])
+  const decision = scenario.beats.find(b => b.id === 'decide')!.at
+  useEffect(() => { invalidate(); slow.current = 0 }, [revision, quality, scene, scenario, invalidate])
   useFrame((_, delta) => {
     const start = performance.now()
     timing.current.start = start
     const state = clock.current
     if (state.playing) {
-      const next = Math.min(scene.definition.duration, state.time + Math.min(delta, 0.08))
+      const next = Math.min(scenario.duration, state.time + Math.min(delta, 0.08))
       if (!decisionPassed.current && next >= decision) {
         state.time = decision; state.playing = false; onPause(); onTime(decision)
       } else {
         state.time = next
-        if (next >= scene.definition.duration) { state.playing = false; onPause() }
+        if (next >= scenario.duration) { state.playing = false; onPause() }
       }
     }
-    const shot = sampleCamera(scene.definition.cameras, state.time, size.width < 640)
+    const shot = sampleCamera(scenario.cameras, state.time, size.width < 640)
     camera.position.set(...shot.position)
     camera.lookAt(...shot.target)
     if (camera instanceof PerspectiveCamera && camera.fov !== shot.fov) { camera.fov = shot.fov; camera.updateProjectionMatrix() }
-    if (start - lastUpdate.current > 150 || !state.playing) {
+    const cue = cueTimes.findLastIndex(at => state.time >= at)
+    if (cue !== lastCue.current || start - lastUpdate.current > 150 || !state.playing) {
       onTime(state.time)
       lastUpdate.current = start
+      lastCue.current = cue
     }
     // Coarse sustained-frame backstop. Software rendering is reported separately in evidence.
     if (state.playing && quality === 'high' && delta > 0.06) slow.current += 1
@@ -53,19 +58,25 @@ function Director({ scene, clock, quality, revision, decisionPassed, onTime, onP
   }, -100)
   return null
 }
-function FrameEnd({ module, clock, quality, layers, revision, timing, owned }: { module: SceneModule; clock: MutableRefObject<SceneClock>; quality: Quality; layers: Layers; revision: number; timing: Timing; owned: MutableRefObject<THREE.Group | null> }) {
+function FrameEnd({ module, scenario, onReady, clock, quality, layers, revision, timing, owned }: { module: SceneModule; scenario: ResolvedScenario; onReady: Props['onReady']; clock: MutableRefObject<SceneClock>; quality: Quality; layers: Layers; revision: number; timing: Timing; owned: MutableRefObject<THREE.Group | null> }) {
   const cache = useRef<AuthoredResourceCache | null>(null)
+  const shown = useRef('')
   if (!cache.current) cache.current = new AuthoredResourceCache()
-  useLayoutEffect(() => { cache.current!.invalidate() }, [module, quality, layers.sensors, layers.tracks, revision])
+  useLayoutEffect(() => { cache.current!.invalidate() }, [module, scenario, quality, layers.sensors, layers.tracks, revision])
   useEffect(() => () => cache.current!.dispose(), [])
   useFrame(({ gl, scene, camera }, delta) => {
     gl.render(scene, camera)
     if (!owned.current) return
     const resources = cache.current!.read(owned.current)
-    const stats: RenderStats = { scene: module.definition.id, time: clock.current.time, quality, ...resources, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
+    const stats: RenderStats = { scene: module.definition.id, scenario: scenario.id, time: clock.current.time, quality, ...resources, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries, frameMs: delta * 1000, jsFrameMs: performance.now() - timing.current.start }
     window.__TESSURE_STATS__ = stats
     const frames = window.__TESSURE_FRAMES__ ||= []
     frames.push(stats); if (frames.length > 300) frames.shift()
+    const key = `${module.definition.id}/${scenario.id}`
+    // A rapid A→B→A selection may commit only A. Its reset revision still
+    // needs a fresh-frame acknowledgement before the poster can be removed.
+    const frameKey = `${key}/${revision}`
+    if (shown.current !== frameKey) { shown.current = frameKey; onReady(key) }
   }, 1)
   return null
 }
@@ -76,7 +87,7 @@ class WorldBoundary extends Component<{ children: ReactNode; onError: () => void
   render() { return this.state.error ? null : this.props.children }
 }
 function Contents(props: Props) {
-  const { scene, quality, clock, layers } = props
+  const { scene, scenario, quality, clock, layers } = props
   const { palette } = scene.definition
   const World = scene.World
   const timing = useRef({ start: 0 })
@@ -87,9 +98,9 @@ function Contents(props: Props) {
     <ambientLight intensity={palette.ambient} />
     <hemisphereLight color={palette.hemisphereSky} groundColor={palette.hemisphereGround} intensity={palette.hemisphereIntensity} />
     <directionalLight key={`${scene.definition.id}-${quality}`} color={palette.sun} position={palette.sunPosition} intensity={palette.sunIntensity} castShadow={quality === 'high'} shadow-mapSize={[quality === 'high' ? palette.shadowBounds.mapSize : 512, quality === 'high' ? palette.shadowBounds.mapSize : 512]} shadow-camera-left={palette.shadowBounds.left} shadow-camera-right={palette.shadowBounds.right} shadow-camera-top={palette.shadowBounds.top} shadow-camera-bottom={palette.shadowBounds.bottom} shadow-camera-near={palette.shadowBounds.near} shadow-camera-far={palette.shadowBounds.far} shadow-bias={palette.shadowBounds.bias} shadow-normalBias={palette.shadowBounds.normalBias} />
-    <group ref={owned} key={scene.definition.id}><World clock={clock} quality={quality} layers={layers} /></group>
+    <group ref={owned} key={`${scene.definition.id}/${scenario.id}`}><World clock={clock} quality={quality} layers={layers} scenarioId={scenario.id} /></group>
     <Director {...props} timing={timing} />
-    <FrameEnd module={scene} clock={clock} quality={quality} layers={layers} revision={props.revision} timing={timing} owned={owned} />
+    <FrameEnd module={scene} scenario={scenario} onReady={props.onReady} clock={clock} quality={quality} layers={layers} revision={props.revision} timing={timing} owned={owned} />
   </>
 }
 /** Own initialization so unavailable WebGL cannot escape an async Canvas configure call. */
@@ -110,7 +121,6 @@ export default function WorldRuntime(props: Props) {
       size: { width: rect.width, height: rect.height, top: 0, left: 0 },
       shadows: p.quality === 'high' ? { type: PCFShadowMap } : false,
       camera: { near: 0.5, far: 600, fov: 38 },
-      onCreated: () => { if (root.current === r) latest.current.onReady() },
     }).then(() => {
       gl.toneMapping = latest.current.scene.definition.palette.toneMapping === 'neutral' ? NeutralToneMapping : ACESFilmicToneMapping
       gl.toneMappingExposure = latest.current.scene.definition.palette.exposure
@@ -156,6 +166,6 @@ export default function WorldRuntime(props: Props) {
       window.__TESSURE_CONTEXTS__ = Math.max(0, (window.__TESSURE_CONTEXTS__ || 1) - 1)
     }
   }, [draw])
-  useEffect(draw, [draw, props.scene, props.quality, props.layers, props.revision, props.decisionPassed])
+  useEffect(draw, [draw, props.scene, props.scenario, props.quality, props.layers, props.revision, props.decisionPassed])
   return <div ref={container} style={{ width: '100%', height: '100%', display: 'block' }} aria-hidden="true" />
 }

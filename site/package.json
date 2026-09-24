@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "check:contract": "node --experimental-strip-types scripts/check-contract.mjs"
+    "check:contract": "node --experimental-strip-types scripts/check-contract.mjs && node --experimental-strip-types scripts/check-scenario-fixtures.mjs",
+    "check:release": "node --experimental-strip-types scripts/check-contract.mjs --release"
   },
   "dependencies": {
     "next": "15.5.26",

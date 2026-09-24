@@ -8,40 +8,21 @@ registerHooks({ resolve(specifier, context, nextResolve) {
   }
 } })
 import { samplePath, sampleCamera } from '../components/worlds/math.ts'
+const { validateWorld } = await import('./validate-scenario.mjs')
+const { catalogue } = await import('../components/worlds/catalogue.ts')
+const { loaders } = await import('../components/worlds/loaders.ts')
+const { fileURLToPath } = await import('node:url')
 const slugs = ['private-estate','data-center','resort-marina','event-overlay','logistics-yard','critical-infrastructure']
-const ids = ['detect','verify','correlate','decide','respond','resolve']
-for (const slug of slugs) {
-  const { definition: s } = await import(`../components/worlds/scenes/${slug}/content.ts`)
-  assert.equal(s.id, slug)
-  assert.deepEqual(s.beats.map(b => b.id), ids)
-  assert(s.beats.every((b,i) => b.title && b.body && b.evidence.length && (i === 0 || b.at > s.beats[i-1].at)))
-  assert(s.duration > s.beats.at(-1).at)
-  assert(s.beats[0].at >= 3 && s.beats[0].at <= 6, 'normal life before detect')
-  assert(s.establishing.title && s.establishing.body)
-  assert(s.practicalLightLimit >= 0 && s.practicalLightLimit <= 3)
-  assert(s.palette.exposure > 0 && s.palette.hemisphereIntensity >= 0)
-  assert(s.palette.shadowBounds.right > s.palette.shadowBounds.left)
-  assert(s.beats[3].action)
-  if (s.fallbackStills) {
-    assert(s.fallbackStills.length && s.fallbackStills[0].at === 0, 'state stills start at the initial state')
-    assert(s.fallbackStills.every((frame, i) => frame.src.startsWith('/worlds/' + slug + '/') && frame.alt && Number.isFinite(frame.at) && frame.at >= 0 && frame.at <= s.duration && (i === 0 || frame.at > s.fallbackStills[i - 1].at)), 'ordered local state stills with meaningful alt text')
-  }
-  assert(s.cameras.every((key, i) => (i === 0 || key.at > s.cameras[i - 1].at) && (key.fov === undefined || (key.fov >= 15 && key.fov <= 90))), 'ordered camera keys and usable field of view')
-  assert.equal(s.cameras[0].at, 0)
-  assert(s.cameras.at(-1).at >= s.duration)
-  for (const t of [0, ...s.beats.map(b => b.at), s.duration]) {
-    for (const mobile of [true,false]) {
-      const pose = sampleCamera(s.cameras,t,mobile)
-      assert([...pose.position,...pose.target,pose.fov].every(Number.isFinite))
-      sampleCamera(s.cameras,s.duration-t,mobile)
-      assert.deepEqual(sampleCamera(s.cameras,t,mobile),pose,'seek must not depend on prior time')
-    }
-  }
-}
+assert.deepEqual(catalogue.map(s => s.id), slugs)
+assert.deepEqual(Object.keys(loaders), slugs)
+const release = process.argv.includes('--release')
+const publicDir = fileURLToPath(new URL('../public/', import.meta.url))
+const checked = catalogue.map(world => validateWorld(world, { release, publicDir }))
+console.log(`PASS: ${checked.length} world contracts; ${checked.filter(s => s.migrated).length} migrated incident worlds; release=${release}.`)
 const path=[{at:0,position:[0,0,0]},{at:5,position:[5,2,0]},{at:10,position:[5,2,10]}]
 assert.deepEqual(samplePath(path,-5),[0,0,0]); assert.deepEqual(samplePath(path,15),[5,2,10]); assert.deepEqual(samplePath(path,5),[5,2,0])
 const point=samplePath(path,3);samplePath(path,9);assert.deepEqual(samplePath(path,3),point)
-console.log('PASS: six narrative contracts; finite desktop/phone cameras; absolute-time seeking and path endpoints.')
+console.log('PASS: finite desktop/phone cameras, state boundaries, absolute-time seeking and path endpoints.')
 
 const cuts=[{at:0,position:[0,0,10],target:[0,0,0],easing:'linear'},{at:4,position:[10,5,0],target:[1,0,0],cut:true},{at:8,position:[20,10,0],target:[2,0,0],interpolation:'spline'}]
 assert.deepEqual(sampleCamera(cuts,3.999,false).position,[0,0,10])
