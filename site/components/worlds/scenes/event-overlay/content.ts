@@ -8,8 +8,10 @@ export const incident:ScenarioVariant={
  poster:'/worlds/event-overlay/poster.webp',posterAlt:'Violet evening amphitheatre with a restricted staff passage beside two public streams, a staffed checkpoint and separate timber relief route.',
  cameras:[
  view(0,[33,30,41],[0,1,3],[24,29,38],[1,1,5]),
- view(4,[15,9,20],[7,1,8.4],[13,8,17],[7,1.1,8.4]),
- view(T.detect,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5]),
+ // Phone detail holds through the reach, reader response and credential withdrawal.
+ view(4,[15,9,20],[7,1,8.4],[3.9,2.55,12.2],[5.85,1.18,8.85]),
+ view(T.detect,[12.5,5.4,15.7],[6.8,1.1,8.6],[3.9,2.55,12.2],[5.85,1.18,8.85]),
+ view(8.5,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5]),
  view(11,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5],false),
  view(14,[12.5,6.5,14.7],[7,1,6.8],[11.7,6.3,14.3],[7,1.1,7.2],false),
  view(T.verify,[14,10,16],[7.3,1.4,6.5],[13.5,9.7,16],[7.3,1.4,6.5]),
@@ -18,9 +20,13 @@ export const incident:ScenarioVariant={
  view(T.decide,[22,18,29],[2,1,9],[15,21,30],[2,1,10]),
  view(T.respond,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7]),
  view(37.8,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7],false),
- view(38.5,[.5,7.6,23],[-6.9,1,14.5],[-.8,7.1,22],[-6.9,1.1,14.5]),
- view(T.reliefReady,[.5,7.6,23],[-6.9,1,14.5],[-.8,7.1,22],[-6.9,1.1,14.5],false),
- view(T.stopView,[1,7.5,10],[7.3,1,4],[1,7,10],[7.3,1.1,4]),
+ // Separate phone shots connect each planted operator to the moving mechanism.
+ view(38.5,[.5,7.6,23],[-6.9,1,14.5],[-10.7,2.9,17.8],[-7.9,1.13,14.1]),
+ view(40.3,[.5,7.6,23],[-6.9,1,14.5],[-1,3.7,10],[-3.8,1,14]),
+ // The relief leaf has finished opening; let the phone read the held stop arm before release.
+ view(41.8,[.5,7.6,23],[-6.9,1,14.5],[5,3.2,6.5],[7.08,1.05,3.75]),
+ view(T.reliefReady,[.5,7.6,23],[-6.9,1,14.5],[5,3.2,6.5],[7.08,1.05,3.75],false),
+ view(T.stopView,[1,7.5,10],[7.3,1,4],[5,3.2,6.5],[7.08,1.05,3.75]),
  view(51,[1.3,8,15],[7.4,1,7.6],[1.3,8,15],[7.4,1.1,7.6],false),
  view(55,[4,13,26],[-3,1,13.5],[2,12,23],[-4,1.1,13.8]),
  view(61,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1]),
