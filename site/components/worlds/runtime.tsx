@@ -123,10 +123,19 @@ export default function WorldRuntime(props: Props) {
     c.style.cssText = 'width:100%;height:100%;display:block'
     c.setAttribute('aria-hidden', 'true')
     host.appendChild(c); canvas.current = c
+    // Use the stage's own context for both the capability check and renderer.
+    // A separate probe canvas would briefly consume a second WebGL context.
+    const attributes: WebGLContextAttributes = { antialias: true, alpha: false, powerPreference: 'low-power' }
+    let context: WebGL2RenderingContext | null = null
+    try { context = c.getContext('webgl2', attributes) } catch { /* unavailable or denied */ }
+    if (!context) { c.remove(); canvas.current = null; latest.current.onFailure(); return }
     let gl: WebGLRenderer
     try {
-      gl = new WebGLRenderer({ canvas: c, antialias: true, alpha: false, powerPreference: 'low-power' })
-    } catch { c.remove(); canvas.current = null; latest.current.onFailure(); return }
+      gl = new WebGLRenderer({ canvas: c, context, ...attributes })
+    } catch {
+      context.getExtension('WEBGL_lose_context')?.loseContext()
+      c.remove(); canvas.current = null; latest.current.onFailure(); return
+    }
     const loseContext = gl.forceContextLoss.bind(gl)
     let released = false
     gl.forceContextLoss = () => { if (!released) { released = true; if (!gl.getContext().isContextLost()) loseContext() } }

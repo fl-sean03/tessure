@@ -103,6 +103,9 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
     else seek(definition.beats.find(b => b.id === 'respond')!.at)
   }
   const currentModule = module?.definition.id === selected
+  const still = definition.fallbackStills?.findLast(frame => frame.at <= time)
+  const posterVisible = !(active && currentModule && ready && !failed)
+  const imageLabel = still ? 'Illustrative still' : 'Illustrative overview'
   return <div className="world-explorer" data-scene={selected} data-beat={beat.id} data-playing={playing} data-ready={ready && currentModule}>
     <div className="world-index" aria-label="Choose an illustrative world">
       {catalogue.map(s => <button key={s.id} className={`world-choice ${selected === s.id ? 'selected' : ''}`} aria-pressed={selected === s.id} onClick={() => choose(s.id)}>
@@ -114,13 +117,13 @@ export default function WorldExplorer({ initialScene = 'logistics-yard' }: { ini
     <div className="world-heading"><div><p className="eyebrow">World {definition.number} <span className="dot-separator">/</span> {definition.name}</p><h3>{definition.subtitle}</h3></div><p>{definition.description}</p></div>
     <div className="world-console">
       <div ref={stage} className="world-stage" aria-label={`${definition.name} illustrative scene`}>
-        <img className={`world-poster ${active && currentModule && ready && !failed ? 'is-hidden' : ''}`} src={definition.poster} alt={definition.posterAlt} width="1440" height="960" />
+        <img className={`world-poster ${posterVisible ? '' : 'is-hidden'}`} src={still?.src || definition.poster} alt={still?.alt || definition.posterAlt} width="1440" height="960" />
         {active && !failed && module && <div className="world-canvas"><StageBoundary onError={fail}><Runtime scene={module} clock={clock} layers={layers} quality={quality} revision={revision} decisionPassed={decisionPassedRef} onTime={setTime} onPause={pause} onFailure={fail} onReady={onReady} onDowngrade={downgrade} /></StageBoundary></div>}
         <div className="stage-meta"><span className="stage-label"><i />Illustrative world</span><span>{definition.setting}</span></div>
         {!active && !failed && <button className="stage-launch" onClick={() => { intendedPlay.current = !reducedMotion && time < decision.at; setActive(true); setLoading(true) }}><span aria-hidden="true">▷</span>{reducedMotion ? 'Enable a still 3D view' : 'Enter the world'}<small>{reducedMotion ? 'Reduced motion · manual exploration' : 'A guided sequence · you control the pace'}</small></button>}
         {loading && <div className="stage-loading" role="status">Preparing the world…</div>}
-        {failed && <div className="stage-fallback">Static view <span>The complete story is available in the beat controls and text below.</span></div>}
-        <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={atDecision || loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{active ? 'Interactive illustration' : 'Illustrated scene'}</span><Link href={`/worlds/${selected}`}>Open world page <span aria-hidden="true">↗</span></Link></div>
+        {failed && <div className="stage-fallback">{imageLabel}<span>The complete story is available in the beat controls and text below.</span></div>}
+        <div className="stage-footer">{active && currentModule && !reducedMotion && <button className="stage-play" onClick={play} disabled={atDecision || loading} aria-label={playing ? "Pause world motion" : "Play world motion"}>{playing ? "Ⅱ Pause" : "▷ Play"}</button>}<span>{posterVisible ? imageLabel : 'Interactive illustration'}</span><Link href={`/worlds/${selected}`}>Open world page <span aria-hidden="true">↗</span></Link></div>
       </div>
       <aside className="evidence-panel" aria-label="Illustrated event evidence">
         <div className="evidence-kicker"><span>From signal to decision</span><span>{String(definition.beats.findIndex(b => b.id === beat.id) + 1).padStart(2, '0')} / 06</span></div>

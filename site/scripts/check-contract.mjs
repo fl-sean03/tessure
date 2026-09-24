@@ -22,6 +22,10 @@ for (const slug of slugs) {
   assert(s.palette.exposure > 0 && s.palette.hemisphereIntensity >= 0)
   assert(s.palette.shadowBounds.right > s.palette.shadowBounds.left)
   assert(s.beats[3].action)
+  if (s.fallbackStills) {
+    assert(s.fallbackStills.length && s.fallbackStills[0].at === 0, 'state stills start at the initial state')
+    assert(s.fallbackStills.every((frame, i) => frame.src.startsWith('/worlds/' + slug + '/') && frame.alt && Number.isFinite(frame.at) && frame.at >= 0 && frame.at <= s.duration && (i === 0 || frame.at > s.fallbackStills[i - 1].at)), 'ordered local state stills with meaningful alt text')
+  }
   assert(s.cameras.every((key, i) => (i === 0 || key.at > s.cameras[i - 1].at) && (key.fov === undefined || (key.fov >= 15 && key.fov <= 90))), 'ordered camera keys and usable field of view')
   assert.equal(s.cameras[0].at, 0)
   assert(s.cameras.at(-1).at >= s.duration)
