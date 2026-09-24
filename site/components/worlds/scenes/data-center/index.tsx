@@ -1,14 +1,16 @@
 'use client'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { BufferGeometry, Float32BufferAttribute, Group, InstancedMesh, Object3D } from 'three'
+import { BufferGeometry, DoubleSide, Float32BufferAttribute, Group, InstancedMesh, Mesh, Object3D, Vector3 } from 'three'
 import type { DataTexture } from 'three'
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
-import { mix, seeded } from '../../math'
+import { seeded } from '../../math'
 import { roadY, vehiclePose, vehicleSpec, wheelLayout } from './vehicles'
 import { definition } from './content'
-import { arrivalZ, deliveryX, deliveryHeading, gateAngle, guardGait, guardProgress } from './motion'
-import { contactTexture, createMaterials, makeBarrier, makeCampus, makeChiller, makeGuard, makeVehicle, makeWheel, type Part } from './model'
+import { guardPose, guardRig } from './guard'
+import { devices, observations, sectorGround, type DeviceKind } from './devices'
+import { arrivalZ, deliveryX, deliveryHeading, gateAngle } from './motion'
+import { contactTexture, createMaterials, makeBarrier, makeCampus, makeChiller, makeGuard, makeVehicle, makeWheel, makeTrackGeometry, type Materials, type Part } from './model'
 
 function Parts({ parts }: { parts: Part[] }) {
   return <>{parts.map((p,i)=><mesh key={i} geometry={p.geometry} material={p.material} castShadow receiveShadow />)}</>
@@ -39,31 +41,60 @@ function Grasses({ high }: { high:boolean }) {
   return <instancedMesh ref={ref} args={[undefined,undefined,n]}><coneGeometry args={[1,1,3]}/><meshStandardMaterial color="#859181" roughness={1}/></instancedMesh>
 }
 function Track({ clock, second }: { clock:WorldProps['clock']; second:boolean }) {
-  const ref=useRef<Group>(null)
+  const ref=useRef<Group>(null),geometry=useMemo(()=>makeTrackGeometry(second),[second])
+  useEffect(()=>()=>geometry.dispose(),[geometry])
   useFrame(()=>{
     const t=clock.current.time
     if(ref.current){ref.current.visible=t>=(second?11:4);ref.current.position.set(second?4.8:deliveryX(t),.18,arrivalZ(t,second));ref.current.rotation.y=second?0:deliveryHeading(t)}
   })
-  return <group ref={ref} visible={false}>
-    {[-1,1].flatMap(s=>[-1,1].map(e=><group key={`${s}-${e}`} position={[s*(second?1.55:1.75),0,e*(second?3:3.8)]}>
-      <mesh position={[-s*.32,0,0]}><boxGeometry args={[.66,.018,.055]}/><meshBasicMaterial color={second?'#d5af73':'#8dbec4'}/></mesh>
-      <mesh position={[0,0,-e*.36]}><boxGeometry args={[.055,.018,.75]}/><meshBasicMaterial color={second?'#d5af73':'#8dbec4'}/></mesh>
-    </group>))}
+  return <group ref={ref} visible={false}><mesh geometry={geometry}><meshBasicMaterial color={second?'#d5af73':'#8dbec4'}/></mesh></group>
+}
+function Observation({ clock, kind }: { clock:WorldProps['clock']; kind:DeviceKind }) {
+  const ref=useRef<Group>(null),built=useMemo(()=>{
+    const polygon=sectorGround(kind),lines=new BufferGeometry(),fill=new BufferGeometry(),triangles:number[]=[]
+    const points=polygon.flatMap((p,i)=>[...p,...polygon[(i+1)%polygon.length]])
+    points.push(...new Array(12).fill(0));lines.setAttribute('position',new Float32BufferAttribute(points,3))
+    for(let i=1;i<polygon.length-1;i++)triangles.push(...polygon[0],...polygon[i],...polygon[i+1])
+    fill.setAttribute('position',new Float32BufferAttribute(triangles,3));return{lines,fill,count:polygon.length*2}
+  },[kind])
+  useEffect(()=>()=>{built.lines.dispose();built.fill.dispose()},[built])
+  useFrame(()=>{
+    const t=clock.current.time,links=observations(kind,t)
+    if(ref.current)ref.current.visible=t>=(kind==='camera'?4:8)&&t<42
+    const p=built.lines.attributes.position
+    for(let i=0;i<2;i++){p.setXYZ(built.count+i*2,...devices[kind].origin);p.setXYZ(built.count+i*2+1,...(links[i]?.point??devices[kind].origin))}
+    p.needsUpdate=true;built.lines.computeBoundingSphere()
+  })
+  const color=kind==='radar'?'#c9a879':'#a7ccd6'
+  return <group ref={ref} name={`sector-${kind}`} visible={false}>
+    <lineSegments geometry={built.lines}><lineBasicMaterial color={color} transparent opacity={.6} depthWrite={false}/></lineSegments>
+    <mesh geometry={built.fill}><meshBasicMaterial color={color} transparent opacity={.045} side={DoubleSide} depthWrite={false}/></mesh>
   </group>
 }
-function Observation({ clock, radar=false }: { clock:WorldProps['clock']; radar?:boolean }) {
-  const ref=useRef<Group>(null),geometry=useMemo(()=>{
-    const g=new BufferGeometry();g.setAttribute('position',new Float32BufferAttribute(new Float32Array(6),3));return g
-  },[])
-  useEffect(()=>()=>geometry.dispose(),[geometry])
+function Guard({clock,body,shoe,arm,materials,contact}:{clock:WorldProps['clock'];body:Part[];shoe:Part[];arm:Part[];materials:Materials;contact:DataTexture}) {
+  const root=useRef<Group>(null),freeArm=useRef<Group>(null),feet=useRef<(Group|null)[]>([]),legs=useRef<(Mesh|null)[]>([]),shadows=useRef<(Group|null)[]>([])
+  const rig=useMemo(()=>({axis:new Vector3(0,1,0),a:new Vector3(),b:new Vector3(),direction:new Vector3()}),[])
   useFrame(()=>{
-    const t=clock.current.time
-    if(ref.current)ref.current.visible=t>=(radar?11:4)&&t<42
-    const p=geometry.attributes.position
-    p.setXYZ(0,...(radar?[.1,3.2,22]:[8.75,5.15,7.58]) as Vec3)
-    p.setXYZ(1,4.8,radar?.45:2.6,arrivalZ(t,true));p.needsUpdate=true;geometry.computeBoundingSphere()
+    const pose=guardPose(clock.current.time)
+    root.current!.position.set(...pose.position);root.current!.rotation.y=pose.yaw;freeArm.current!.rotation.x=pose.armSwing
+    pose.feet.forEach((foot,side)=>{
+      feet.current[side]!.position.set(...foot.position);feet.current[side]!.rotation.y=foot.yaw
+      shadows.current[side]!.visible=foot.planted
+      const joints=pose.legs[side]
+      for(let part=0;part<2;part++){
+        rig.a.set(...(part===0?joints.hip:joints.knee));rig.b.set(...(part===0?joints.knee:joints.ankle))
+        const mesh=legs.current[side*2+part]!;mesh.position.copy(rig.a).add(rig.b).multiplyScalar(.5)
+        mesh.quaternion.setFromUnitVectors(rig.axis,rig.direction.copy(rig.b).sub(rig.a).normalize())
+      }
+    })
   })
-  return <group ref={ref} visible={false}><lineSegments geometry={geometry}><lineBasicMaterial color={radar?'#cfb17c':'#abd0d8'} transparent opacity={.65} depthWrite={false}/></lineSegments></group>
+  return <group name="guard-rig">
+    <group name="guard-body" ref={root}><group dispose={null}><Parts parts={body}/><group ref={freeArm} position={[-.26,1.38,0]}><Parts parts={arm}/></group></group></group>
+    {[0,1].map(side=><group key={side}>
+      <group name={`guard-foot-${side}`} ref={o=>{feet.current[side]=o}}><group dispose={null}><Parts parts={shoe}/></group><group ref={o=>{shadows.current[side]=o}}><Contact texture={contact} position={[0,.002,.035]} size={[.35,.5]} opacity={.4}/></group></group>
+      {[0,1].map(part=><mesh key={part} name={`guard-${side}-${part?'shin':'thigh'}`} ref={o=>{legs.current[side*2+part]=o}} material={materials.dark} castShadow receiveShadow><cylinderGeometry args={[.062,.062,part?guardRig.lower:guardRig.upper,10]}/></mesh>)}
+    </group>)}
+  </group>
 }
 function Vehicle({clock,small=false,body,wheelParts,contact}:{clock:WorldProps['clock'];small?:boolean;body:Part[];wheelParts:Part[][];contact:DataTexture}) {
   const root=useRef<Group>(null),steer=useRef<(Group|null)[]>([]),spin=useRef<(Group|null)[]>([])
@@ -84,18 +115,15 @@ function Vehicle({clock,small=false,body,wheelParts,contact}:{clock:WorldProps['
   </group>
 }
 function World({ clock,layers,quality }: WorldProps) {
-  const high=quality==='high',gate=useRef<Group>(null),guard=useRef<Group>(null),left=useRef<Group>(null),right=useRef<Group>(null)
+  const high=quality==='high',gate=useRef<Group>(null)
   const materials=useMemo(createMaterials,[]),contact=useMemo(contactTexture,[])
-  const all=useMemo(()=>({site:makeCampus(materials,high),cooling:makeChiller(materials,high),truck:makeVehicle(materials,high,false),van:makeVehicle(materials,high,true),truckLeft:makeWheel(materials,high,false,-1),truckRight:makeWheel(materials,high,false,1),vanLeft:makeWheel(materials,high,true,-1),vanRight:makeWheel(materials,high,true,1),gate:makeBarrier(materials,high),guard:makeGuard(materials,high,'body'),leg:makeGuard(materials,high,'leg')}),[materials,high])
+  const all=useMemo(()=>({site:makeCampus(materials,high),cooling:makeChiller(materials,high),truck:makeVehicle(materials,high,false),van:makeVehicle(materials,high,true),truckLeft:makeWheel(materials,high,false,-1),truckRight:makeWheel(materials,high,false,1),vanLeft:makeWheel(materials,high,true,-1),vanRight:makeWheel(materials,high,true,1),gate:makeBarrier(materials,high),guard:makeGuard(materials,high,'body'),shoe:makeGuard(materials,high,'shoe'),arm:makeGuard(materials,high,'arm')}),[materials,high])
   useEffect(()=>()=>{Object.values(all).flat().forEach(p=>p.geometry.dispose())},[all])
   useEffect(()=>()=>{contact.dispose();Object.values(materials).forEach(m=>{m.map?.dispose();m.dispose()})},[materials,contact])
   useFrame(()=>{
     const t=clock.current.time
     if(gate.current)gate.current.rotation.z=gateAngle(t)
-    const p=guardProgress(t),walk=guardGait(t)
-    if(guard.current){guard.current.position.set(mix(12.3,7.15,p),.145,mix(8.8,9.3,p));guard.current.rotation.y=-Math.PI/2}
-    if(left.current)left.current.rotation.x=walk
-    if(right.current)right.current.rotation.x=-walk
+
   })
   return <group>
     <group dispose={null}><Parts parts={all.site}/>{all.cooling.map((part,i)=><Repeated key={i} part={part} positions={roofUnits}/>)}</group>
@@ -106,12 +134,9 @@ function World({ clock,layers,quality }: WorldProps) {
     <Vehicle clock={clock} body={all.truck} wheelParts={[all.truckLeft,all.truckRight]} contact={contact}/>
     <Vehicle clock={clock} small body={all.van} wheelParts={[all.vanLeft,all.vanRight]} contact={contact}/>
     <group ref={gate} position={[1.3,1.48,5]} rotation={[0,0,1.47]} dispose={null}><Parts parts={all.gate}/></group>
-    <group ref={guard} position={[12.3,.145,8.8]}>
-      <group dispose={null}><Parts parts={all.guard}/><group ref={left} position={[-.12,.88,0]}><Parts parts={all.leg}/></group><group ref={right} position={[.12,.88,0]}><Parts parts={all.leg}/></group></group>
-      <Contact texture={contact} position={[0,.017,0]} size={[.85,.85]} opacity={.45}/>
-    </group>
+    <Guard clock={clock} body={all.guard} shoe={all.shoe} arm={all.arm} materials={materials} contact={contact}/>
     {layers.tracks&&<><Track clock={clock} second={false}/><Track clock={clock} second/></>}
-    {layers.sensors&&<><Observation clock={clock}/><Observation clock={clock} radar/></>}
+    {layers.sensors&&<><Observation clock={clock} kind="camera"/><Observation clock={clock} kind="radar"/></>}
     <pointLight position={[12.8,2.8,7.2]} intensity={7} distance={5.5} decay={2} color="#ffe0ac"/>
   </group>
 }
