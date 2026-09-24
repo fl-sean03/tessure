@@ -22,16 +22,16 @@ export function sectorEdges(device: Device, z: number) {
   const p = lensPosition(device), d = deviceDirection(device), yaw = Math.atan2(d[0], d[2]), low = Math.max(-1.4, yaw - device.halfAngle), high = Math.min(1.4, yaw + device.halfAngle)
   return [Math.max(-10, p[0] + (z - p[2]) * Math.tan(low)), Math.min(7, p[0] + (z - p[2]) * Math.tan(high))]
 }
-export function sectorGrid(device: Device) {
+export function sectorGrid(device: Device, heightAt = surfaceY) {
   const vertices: number[] = [], outline: Vec3[] = []
   for (let j = 0; j <= 8; j++) {
     const z = device.near + (device.far - device.near) * j / 8, edge = sectorEdges(device, z)
-    outline.push([edge[0], surfaceY(edge[0], z) + .012, z])
-    if (j === 8) for (let k = 1; k <= 24; k++) { const x = edge[0] + (edge[1] - edge[0]) * k / 24; outline.push([x, surfaceY(x, z) + .012, z]) }
+    outline.push([edge[0], heightAt(edge[0], z) + .012, z])
+    if (j === 8) for (let k = 1; k <= 24; k++) { const x = edge[0] + (edge[1] - edge[0]) * k / 24; outline.push([x, heightAt(x, z) + .012, z]) }
   }
-  for (let j = 7; j >= 0; j--) { const z = device.near + (device.far - device.near) * j / 8, x = sectorEdges(device, z)[1]; outline.push([x, surfaceY(x, z) + .012, z]) }
+  for (let j = 7; j >= 0; j--) { const z = device.near + (device.far - device.near) * j / 8, x = sectorEdges(device, z)[1]; outline.push([x, heightAt(x, z) + .012, z]) }
   for (let j = 0; j < 8; j++) for (let k = 0; k < 24; k++) {
-    const point = (jj: number, kk: number): Vec3 => { const z = device.near + (device.far - device.near) * jj / 8, edge = sectorEdges(device, z), x = edge[0] + (edge[1] - edge[0]) * kk / 24; return [x, surfaceY(x, z) + .012, z] }
+    const point = (jj: number, kk: number): Vec3 => { const z = device.near + (device.far - device.near) * jj / 8, edge = sectorEdges(device, z), x = edge[0] + (edge[1] - edge[0]) * kk / 24; return [x, heightAt(x, z) + .012, z] }
     const a = point(j, k), b = point(j, k + 1), c = point(j + 1, k), d = point(j + 1, k + 1)
     vertices.push(...a, ...c, ...b, ...b, ...c, ...d)
   }

@@ -25,14 +25,14 @@ function makeEquipment(m: Materials, device: Device) {
   }
   return { body: b.finish(), mount: mount.finish() }
 }
-export function Equipment({ materials, clock, sensors }: { materials: Materials; clock: WorldProps['clock']; sensors: boolean }) {
-  return <>{devices.map(device => <DeviceAssembly key={device.id} device={device} materials={materials} clock={clock} sensors={sensors} />)}</>
+export function Equipment({ materials, clock, sensors, layout = devices, start = [4,11], end = 33, heightAt }: { materials: Materials; clock: WorldProps['clock']; sensors: boolean; layout?: Device[]; start?: [number,number]; end?: number; heightAt?: (x:number,z:number)=>number }) {
+  return <>{layout.map((device, i) => <DeviceAssembly key={device.id} device={device} materials={materials} clock={clock} sensors={sensors} start={start[i]} end={end} heightAt={heightAt} />)}</>
 }
-function DeviceAssembly({ device, materials, clock, sensors }: { device: Device; materials: Materials; clock: WorldProps['clock']; sensors: boolean }) {
+function DeviceAssembly({ device, materials, clock, sensors, start, end, heightAt }: { device: Device; materials: Materials; clock: WorldProps['clock']; sensors: boolean; start: number; end: number; heightAt?: (x:number,z:number)=>number }) {
   const built = useMemo(() => makeEquipment(materials,device),[materials,device]), direction = useMemo(() => { const o = new Object3D(); o.position.set(...device.position); o.lookAt(...device.target); return o.quaternion },[device])
-  const coverage = useRef<Group>(null), geometry = useMemo(() => { const grid = sectorGrid(device), fill = new BufferGeometry(); fill.setAttribute('position',new Float32BufferAttribute(grid.vertices,3)); fill.computeVertexNormals(); const outline = new BufferGeometry().setFromPoints(grid.outline.map(p=>new Vector3(...p))); const lens = lensPosition(device), a = grid.outline[0], b = grid.outline[grid.outline.length-1]; const rays = new BufferGeometry().setFromPoints([new Vector3(...a),new Vector3(...lens),new Vector3(...lens),new Vector3(...b)]); return {fill,outline,rays} },[device])
+  const coverage = useRef<Group>(null), geometry = useMemo(() => { const grid = sectorGrid(device,heightAt), fill = new BufferGeometry(); fill.setAttribute('position',new Float32BufferAttribute(grid.vertices,3)); fill.computeVertexNormals(); const outline = new BufferGeometry().setFromPoints(grid.outline.map(p=>new Vector3(...p))); const lens = lensPosition(device), a = grid.outline[0], b = grid.outline[grid.outline.length-1]; const rays = new BufferGeometry().setFromPoints([new Vector3(...a),new Vector3(...lens),new Vector3(...lens),new Vector3(...b)]); return {fill,outline,rays} },[device,heightAt])
   useEffect(() => () => { [...built.body,...built.mount].forEach(p=>p.geometry.dispose()); Object.values(geometry).forEach(g=>g.dispose()) },[built,geometry])
-  useFrame(() => { if(coverage.current)coverage.current.visible=sensors&&clock.current.time >= (device.id==='camera'?4:11)&&clock.current.time<33 })
+  useFrame(() => { if(coverage.current)coverage.current.visible=sensors&&clock.current.time >= start&&clock.current.time<end })
   const color = device.id==='camera'?'#b5d4d8':'#dfbe8b'
   return <>
     <group name={`estate-${device.id}-mount`}><Parts parts={built.mount} /></group>
