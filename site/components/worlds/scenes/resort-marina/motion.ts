@@ -27,6 +27,9 @@ export function aircraftPose(t:number){
  let yaw=t>=55&&t<=T.airExit?from+wrapAngle(to-from)*smooth(progress(t,55,T.airExit)):Math.atan2(d.x,d.z),turn=wrapAngle(Math.atan2(after.x,after.z)-Math.atan2(before.x,before.z))
  let pitch=Math.atan2(-d.y,Math.hypot(d.x,d.z))*.5,bank=clamp(-turn*8,-.26,.26)
  if(t>16&&t<18){const next=airPass.getTangent(0),u=smooth(progress(t,16,18));yaw+=wrapAngle(Math.atan2(next.x,next.z)-yaw)*u;pitch*=1-u;bank*=1-u}
+ // Meet the level approach and departure-turn holds without roll steps.
+ // This only attenuates the observation leg's existing curvature bank.
+ if(t>=18&&t<55)bank*=smooth(progress(t,18,20))*(1-smooth(progress(t,53,55)))
  if(t>=55&&t<=T.airExit){pitch=Math.atan2(-exitStart.y,Math.hypot(exitStart.x,exitStart.z))*.5*smooth(progress(t,55,T.airExit));bank=0}
  return{p,yaw,pitch,bank,rotor:t*67,visible:t<80}
 }
