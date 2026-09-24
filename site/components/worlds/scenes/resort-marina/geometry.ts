@@ -6,6 +6,11 @@ import { seeded } from '../../math'
 export const finishes = { plaster: '#ded3b9', stone: '#aa9e86', cut: '#b9a585', sand: '#d2bd8d', timber: '#90704b', endgrain: '#b6986b', dark: '#273e41', glass: '#3b6670', steel: '#a6b5af', ivory: '#e5dec6', cloth: '#cfb684', burgundy: '#9e4f3e', navy: '#264d5e', leaf: '#64794e', leafLight: '#89935b', trunk: '#796443', amber: '#dfab52', teal: '#4c9e9a', skin: '#bd9878', uniform: '#698e95', rubber: '#334542' }
 export type Finish = keyof typeof finishes
 export type Materials = Record<Finish, MeshStandardMaterial>
+export const mooringTies: Record<'sail' | 'moored' | 'kayak', { local: Vec3; anchor: Vec3 }[]> = {
+  sail: [{ local: [.855, .765, 2.6], anchor: [-14.9, .88, 8.8] }, { local: [1.23, .675, -2.5], anchor: [-14.9, .88, .5] }],
+  moored: [{ local: [-.64, .77, 1.8], anchor: [-8.6, .65, 5] }, { local: [-1.02, .685, -1.8], anchor: [-7.4, .88, 7.7] }],
+  kayak: [{ local: [.205, .22, .9], anchor: [-14.9, .88, 8.8] }],
+}
 export type Part = { geometry: BufferGeometry; material: MeshStandardMaterial }
 export function createMaterials(): Materials {
   const m = {} as Materials
@@ -19,7 +24,7 @@ export function createMaterials(): Materials {
   m.steel.metalness = .65; m.steel.roughness = .35
   m.glass.metalness = .4; m.glass.roughness = .22
   m.burgundy.roughness = .3; m.navy.roughness = .34; m.ivory.roughness = .4
-  m.cloth.side = DoubleSide; m.leaf.side = DoubleSide; m.leafLight.side = DoubleSide
+  m.ivory.side = DoubleSide; m.cloth.side = DoubleSide; m.leaf.side = DoubleSide; m.leafLight.side = DoubleSide
   return m
 }
 export function assembly(m: Materials, high: boolean) {
@@ -108,20 +113,23 @@ export function makeSite(m: Materials, high: boolean) {
   for (const x of [17, 20.3]) { a.box([x, 2.73, -5.215], [2.45, 2.64, .08], 'dark', .055); for (let j = 0; j < 13; j++) a.box([x, 1.65 + j * .17, -5.14], [2.35, .065, .04], 'timber'); a.box([x + .66, 2.8, -5.08], [.06, .28, .04], 'steel') }
   a.box([19, 5.1, -8.5], [4.5, .15, 2.5], 'glass', .035, [-.12, 0, 0])
   for (let i = 0; i < 5; i++) a.box([17 + i, 5.1, -8.5], [.035, .2, 2.5], 'steel')
-  a.cylinder([15.6, 5.5, -5.3], .065, 2.1, 'steel')
-  a.beam([15.6, 6.43, -5.3], [15.6, 6.43, -4.63], .05, 'steel')
-  for (const x of [15.43, 15.77]) { a.box([x, 6.4, -4.53], [.26, .23, .56], 'ivory', .05); a.cylinder([x, 6.4, -4.22], .075, .028, 'glass', [Math.PI / 2, 0, 0]) }
   // Working quay, stacked supplies and rubber fenders: unlike the public timber marina.
   a.box([18, .57, -1.1], [10.8, 1.1, 4.6], 'stone', .12)
   for (let i = 0; i < 17; i++) a.box([13 + i * .64, 1.13, 1.16], [.59, .09, .35], i % 2 ? 'amber' : 'stone', .01)
   for (const x of [14.1, 17.5, 21]) { a.cylinder([x, .45, 1.25], .24, .78, 'rubber'); a.cylinder([x, 1.24, .7], .13, .25, 'dark'); a.box([x, 1.38, .7], [.48, .07, .13], 'steel', .025) }
   for (let i = 0; i < 4; i++) { a.box([21.2, 1.45 + i * .31, -3.4], [1.6, .28, 1.2], 'endgrain', .035); a.box([21.2, 1.6 + i * .31, -3.4], [1.6, .025, .05], 'timber') }
+  // Fixed paired optics share a bolted mast on the working quay.
+  a.box([21.875, 1.19, .32], [.52, .14, .52], 'steel', .025)
+  a.cylinder([21.875, 2.27, .32], .075, 2.15, 'steel')
+  a.beam([21.875, 3.32, .32], [21.875, 3.32, .8], .055, 'steel')
+  a.beam([21.55, 3.32, .8], [22.2, 3.32, .8], .055, 'steel')
+  for (const x of [21.69, 22.06]) for (const z of [.14, .5]) a.cylinder([x, 1.275, z], .04, .035, 'dark')
   // Stone breakwater hooks around the inlet; every rock is seeded and sits through waterline.
   for (let i = 0; i < (high ? 118 : 78); i++) {
     const t = i / (high ? 117 : 77), x = 28 - 6 * Math.pow(t, 3), z = -9 + 29 * t
     a.put(new SphereGeometry(1, 6, 4), i % 3 ? 'stone' : 'cut', [x + (seeded(i) - .5) * 2.9, .1 + seeded(i + 50) * .6, z], [seeded(i + 3), i, seeded(i + 8)], [1.05 + seeded(i + 1) * .7, .65 + seeded(i + 4) * .45, 1 + seeded(i + 9) * .45])
   }
-  a.cylinder([22.3, 1.3, 18], 1.05, 1.1, 'stone'); a.cylinder([22.3, 3.6, 18], .1, 3.8, 'ivory'); a.cylinder([22.3, 5.38, 18], .42, .24, 'ivory'); a.box([22.3, 5.64, 18], [1.3, .2, .23], 'ivory', .065)
+  a.cylinder([22.3, 1.3, 18], 1.05, 1.1, 'stone'); a.cylinder([22.3, 3.6, 18], .1, 3.8, 'ivory'); a.cylinder([22.3, 5.38, 18], .42, .24, 'ivory'); a.cylinder([22.3, 5.53, 18], .16, .22, 'steel')
   // Public floating timber pontoons with individual deck planks, piling collars and cleats.
   function dock(x: number, z: number, w: number, d: number) {
     a.box([x, .28, z], [w, .38, d], 'dark', .08)
@@ -132,6 +140,7 @@ export function makeSite(m: Materials, high: boolean) {
   for (const [x, z] of [[-14.9, -6], [-14.9, .5], [-14.9, 8.8], [-7.4, 7.7], [-1.45, 8.4], [-1.4, 2.5]]) {
     a.cylinder([x, .32, z], .14, 3, 'timber'); a.cylinder([x, 1.78, z], .17, .14, 'ivory'); a.cylinder([x, .46, z], .23, .26, 'dark'); a.box([x, .88, z], [.38, .08, .15], 'steel', .025)
   }
+  a.box([-8.6, .61, 5], [.16, .07, .14], 'steel', .015)
   // Visitor pennant and service buoys are physical wayfinding, not tactical overlays.
   a.cylinder([-2, 2.05, 3.5], .045, 3, 'ivory'); a.put(cloth(1.1, .55, .14), 'teal', [-1.5, 3.1, 3.5], [Math.PI / 2, 0, 0])
   for (const [x, z] of [[12.1, 4.1], [17, 5.1], [21.5, 4]]) { a.cylinder([x, .14, z], .36, .35, 'amber', [0, 0, 0], .2); a.cylinder([x, .58, z], .055, .64, 'ivory'); a.cylinder([x, .8, z], .13, .16, 'amber') }
@@ -159,7 +168,7 @@ export function makeBoat(m: Materials, high: boolean, kind: 'arrival' | 'sail' |
     a.box([0, .95, .46], [.78, .55, .7], 'ivory', .09)
     a.box([0, 1.43, .67], [.85, .5, .045], 'glass', .035, [-.18, 0, 0])
     a.box([0, 1.2, -.12], [.58, .29, .44], 'cloth', .085)
-    a.box([0, .37, -l * .52], [.49, .7, .49], 'dark', .12); a.box([0, -.14, -l * .53], [.13, .52, .2], 'steel', .035)
+    if (kind === 'moored') { a.box([0, .37, -l * .52], [.49, .7, .49], 'dark', .12); a.box([0, -.14, -l * .53], [.13, .52, .2], 'steel', .035) }
     for (const s of [-1, 1]) for (const z of [-1.1, .7]) a.beam([s * .8, .75, z], [s * .83, 2.2, z + .16], .023, 'steel')
     a.put(cloth(1.86, 2.08, -.15), kind === 'arrival' ? 'ivory' : 'navy', [0, 2.2, -.08])
     a.box([0, .98, 1.6], [.91, .18, .66], 'cloth', .11)
@@ -174,6 +183,7 @@ export function makeBoat(m: Materials, high: boolean, kind: 'arrival' | 'sail' |
     a.beam([0, 8.3, .6], [0, .82, 3.8], .014, 'steel'); a.beam([0, 8.3, .6], [0, .74, -4], .014, 'steel')
     for (const s of [-1, 1]) { a.beam([s * 1.17, .8, -2.5], [0, 6.3, .6], .013, 'steel'); for (const z of [-3, -1.5, 1.2, 2.6]) a.cylinder([s * (z > 2 ? .7 : 1.13), 1.0, z], .019, .58, 'steel') }
   }
+  if (kind !== 'arrival') for (const { local: [x, y, z] } of mooringTies[kind]) a.box([x, y - .02, z], [.16, .06, .12], 'steel', .015)
   return a.finish()
 }
 export function makePalm(m: Materials, high: boolean) {
@@ -197,5 +207,40 @@ export function makePerson(m: Materials, high: boolean, staff = false) {
   for (const s of [-1, 1]) { a.beam([s * .1, .82, 0], [s * .13, .13, .04], .072, 'navy'); a.box([s * .13, .085, .07], [.17, .12, .28], 'dark', .04) }
   a.beam([-.23, 1.27, 0], [-.29, .87, .05], .058, 'skin')
   if (!staff) a.beam([.23, 1.27, 0], [.29, .87, .05], .058, 'skin')
+  return a.finish()
+}
+
+export function makeOutboard(m: Materials, high: boolean) {
+  const a = assembly(m, high)
+  a.box([0, 0, 0], [.49, .7, .49], 'dark', .09)
+  a.box([0, -.51, -.055], [.13, .52, .2], 'steel', .025)
+  a.cylinder([0, -.61, -.18], .10, .10, 'dark', [Math.PI / 2, 0, 0])
+  a.box([0, -.61, -.245], [.28, .055, .035], 'steel', .012)
+  return a.finish()
+}
+export function makeWalkerBody(m: Materials, high: boolean, staff: boolean) {
+  const a = assembly(m, high)
+  a.box([0, 1.04, 0], [.36, .49, .25], staff ? 'uniform' : 'ivory', .08)
+  a.cylinder([0, 1.34, 0], .065, .14, 'skin')
+  a.put(new SphereGeometry(.145, 10, 8), 'skin', [0, 1.5, 0])
+  a.cylinder([0, 1.61, 0], .19, .055, 'cloth')
+  return a.finish()
+}
+export function makeShoe(m: Materials, high: boolean) {
+  const a = assembly(m, high)
+  a.box([0, .055, .045], [.17, .11, .29], 'dark', .025)
+  return a.finish()
+}
+export function makeRestingKayak(m: Materials, high: boolean) {
+  const a = assembly(m, high)
+  // Shaped buoyant shell, resting paddle clipped alongside, seated guest with supported limbs.
+  const g = hullGeometry(3.3, .67); g.scale(1, .28, 1); a.put(g, 'amber', [0, .03, 0])
+  a.box([0, .22, -.15], [.48, .09, .93], 'dark', .08)
+  a.box([0, .54, -.31], [.31, .46, .25], 'ivory', .075)
+  a.put(new SphereGeometry(.13, 10, 8), 'skin', [0, .91, -.28])
+  for (const side of [-1, 1]) { a.beam([side * .1, .32, -.2], [side * .14, .29, .55], .065, 'navy'); a.beam([side * .19, .72, -.25], [side * .21, .39, .04], .05, 'skin') }
+  a.beam([.38, .27, -1.2], [.38, .27, 1.2], .022, 'timber')
+  for (const z of [-1.2, 1.2]) a.box([.38, .27, z], [.16, .03, .36], 'ivory', .045)
+  for (const { local: [x, y, z] } of mooringTies.kayak) a.box([x, y - .02, z], [.1, .06, .1], 'steel', .01)
   return a.finish()
 }
