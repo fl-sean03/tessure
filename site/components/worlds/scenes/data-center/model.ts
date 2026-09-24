@@ -1,7 +1,7 @@
 import {
   BoxGeometry, BufferGeometry, Color, CylinderGeometry, DataTexture, DoubleSide,
   ExtrudeGeometry, Float32BufferAttribute, LinearFilter, LinearMipmapLinearFilter,
-  MeshStandardMaterial, Object3D, Quaternion, RepeatWrapping, RGBAFormat, Shape,
+  Matrix4, MeshStandardMaterial, Object3D, Quaternion, RepeatWrapping, RGBAFormat, Shape,
   SphereGeometry, TorusGeometry, Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
@@ -9,6 +9,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
 import { vehicleSpec, wheelLayout } from './vehicles'
+import { guardStep } from './guard'
+import { devices, devicePoint, type DeviceKind } from './devices'
 
 export type Finish = keyof typeof colors
 const colors = {
@@ -167,6 +169,7 @@ export function makeCampus(m: Materials, high: boolean) {
   }
   // Gate pavilion: glazing wraps two sides, deep roof fascia and a sheltered pedestrian apron.
   a.slab([12.85,.14,4.7],7.6,7.7,.25,.8,'edge')
+  a.box(guardStep.position,guardStep.size,'edge',.02)
   a.box([13.25,1.75,4],[5.35,2.9,5.35],'blue',.14)
   a.box([10.52,2,4.55],[.065,1.9,4.15],'glassLight',.01)
   a.box([13,2,6.73],[4.8,1.9,.06],'glass',.01)
@@ -183,6 +186,8 @@ export function makeCampus(m: Materials, high: boolean) {
   a.slab([1.05,.13,4.6],1.8,4,.26,.65,'edge')
   a.box([1.1,.92,5],[.76,1.27,.9],'blue',.1)
   a.box([1.1,1.58,5],[.84,.13,.94],'steel',.04)
+  a.box([1.2,.41,6.02],[.38,.04,.42],'steel',.015)
+  a.box([1.2,1.08,5.98],[.13,1.32,.13],'steel',.025)
   a.box([1.2,1.95,6.05],[.36,.7,.22],'dark',.035)
   a.box([1.2,2.08,6.18],[.22,.2,.026],'glassLight',.01)
   a.box([1.2,1.8,6.18],[.17,.05,.026],'white')
@@ -197,14 +202,32 @@ export function makeCampus(m: Materials, high: boolean) {
       for(let j=1;j<8;j++)a.box([x+j*.35,1.3,4.6],[.035,2.1,.035],'steel')
     }
   }
-  // Distinct camera and radar housings. Neither is a tactical range claim.
-  a.cyl([9.25,2.65,7],.075,5.0,'steel',[0,0,0],.05)
-  a.beam([9.25,4.9,7],[8.75,5.15,7],.045,'steel')
-  a.box([8.75,5.18,7.2],[.34,.26,.67],'white',.09)
-  a.box([8.75,5.15,7.55],[.24,.17,.025],'dark',.025)
-  a.cyl([8.75,5.15,7.58],.059,.027,'glass',[Math.PI/2,0,0])
-  a.cyl([.1,1.75,22],.075,3.3,'steel')
-  a.box([.1,3.2,22],[.65,.62,.19],'white',.1,[0,.2,0]); a.box([.1,2.45,22],[.38,.62,.2],'joint',.05)
+  // Fixed devices: local +Z is their declared optical/panel front. No PTZ or radar rotation.
+  function devicePart(kind:DeviceKind,g:BufferGeometry,f:Finish,p:Vec3=[0,0,0],r:Vec3=[0,0,0]) {
+    const d=devices[kind],local=new Object3D();local.position.set(...p);local.position.z-=kind==='camera'?.036:.0275;local.rotation.set(...r);local.updateMatrix()
+    const frame=new Matrix4().makeBasis(new Vector3(...d.right),new Vector3(...d.up),new Vector3(...d.axis));frame.setPosition(...d.origin)
+    g.applyMatrix4(local.matrix).applyMatrix4(frame);a.put(g,f)
+  }
+  const deviceBox=(kind:DeviceKind,p:Vec3,size:Vec3,f:Finish,bevel=.02)=>devicePart(kind,new RoundedBoxGeometry(...size,1,bevel),f,p)
+  a.cyl([9.1,2.59,7.2],.075,4.92,'steel',[0,0,0],.05)
+  a.cyl([9.1,.16,7.2],.17,.06,'steel')
+  a.beam([9.1,5.05,7.2],devicePoint('camera',[0,-.14,-.32]),.045,'steel')
+  deviceBox('camera',[0,0,-.34],[.39,.28,.68],'white',.06)
+  deviceBox('camera',[0,.18,-.29],[.45,.065,.82],'white',.025)
+  deviceBox('camera',[0,0,-.005],[.32,.22,.03],'dark',.025)
+  devicePart('camera',new CylinderGeometry(.083,.083,.03,high?24:16),'steel',[0,0,.016],[Math.PI/2,0,0])
+  devicePart('camera',new CylinderGeometry(.067,.067,.015,high?24:16),'glass',[0,0,.036],[Math.PI/2,0,0])
+  a.beam(devicePoint('camera',[.13,-.13,-.55]),[9.1,4.85,7.2],.016,'dark')
+  a.cyl([.1,1.64,15.8],.065,3.02,'steel')
+  a.cyl([.1,.16,15.8],.16,.06,'steel')
+  a.beam([.1,3.05,15.8],devicePoint('radar',[0,-.1,-.16]),.055,'steel')
+  deviceBox('radar',[0,0,-.12],[.76,.7,.24],'white',.05)
+  deviceBox('radar',[0,0,.01],[.65,.58,.035],'paleBlue',.035)
+  for(const x of[-.29,.29])for(const y of[-.26,.26])devicePart('radar',new CylinderGeometry(.022,.022,.022,8),'steel',[x,y,.04],[Math.PI/2,0,0])
+  for(let x=-.25;x<=.26;x+=.1)deviceBox('radar',[x,0,-.267],[.035,.53,.075],'joint',.006)
+  a.box([.1,2.25,15.8],[.34,.62,.4],'joint',.035)
+  a.box([.29,2.25,15.8],[.05,.5,.32],'white',.015)
+  a.beam(devicePoint('radar',[.22,-.32,-.18]),[.1,2.54,15.8],.022,'dark')
   // Low garden / gravel roof edge cues, deliberately without ornamental tree blobs.
   a.slab([-25,.06,-6],4.7,53,.18,1.6,'edge');a.slab([-25,.24,-6],4.1,52,.035,1.3,'ground')
   for(let i=0;i<(high?85:44);i++) {
@@ -313,20 +336,37 @@ export function makeBarrier(m: Materials, high: boolean) {
   for(let x=.65;x<7;x+=.9)a.box([x,.003,.101],[.38,.15,.014],'blue',0,[0,0,-.28])
   a.cyl([0,0,0],.23,.25,'steel',[Math.PI/2,0,0]); return a.finish()
 }
-export function makeGuard(m: Materials, high: boolean, part:'body'|'leg') {
+export function makeGuard(m: Materials, high: boolean, part:'body'|'shoe'|'arm') {
   const a=builder(m,high)
-  if(part==='leg') { a.beam([0,0,0],[0,-.77,.015],.075,'dark');a.box([0,-.805,.06],[.18,.15,.3],'rubber',.065) }
-  else {
+  if(part==='shoe') {
+    a.box([0,.066,.035],[.18,.132,.31],'rubber',.045)
+    a.box([0,.01,.035],[.185,.02,.315],'rubber',.005)
+  } else if(part==='arm') {
+    a.beam([0,0,0],[-.035,-.2,.035],.065,'blue')
+    a.beam([-.035,-.2,.035],[-.025,-.37,.09],.057,'blue')
+    a.put(new SphereGeometry(.066,10,8),'skin',[-.025,-.41,.09])
+  } else {
     a.box([0,1.16,0],[.45,.58,.29],'blue',.14)
     a.box([0,1.17,.16],[.33,.48,.06],'amber',.035)
     a.box([0,1.13,.2],[.35,.055,.016],'white')
     a.put(new SphereGeometry(.157,12,8),'skin',[0,1.65,0])
     a.cyl([0,1.79,0],.17,.065,'blue');a.box([0,1.78,.12],[.25,.025,.18],'blue',.025)
-    a.beam([-.26,1.38,0],[-.29,.98,.13],.063,'blue');a.beam([.26,1.38,0],[.32,1.09,.18],.063,'blue')
+    a.beam([.26,1.38,0],[.32,1.09,.18],.063,'blue')
     a.put(new SphereGeometry(.069,8,6),'skin',[.32,1.05,.2]);a.box([.27,1.1,.27],[.25,.29,.04],'dark',.025,[.25,0,0])
+    a.box([.27,1.1,.295],[.19,.22,.008],'joint',.01,[.25,0,0])
   }
   return a.finish()
 }
+
+export function makeTrackGeometry(second:boolean) {
+  const geometries:BufferGeometry[]=[]
+  for(const s of[-1,1])for(const e of[-1,1]){
+    const x=s*(second?1.55:1.75),z=e*(second?3:3.8)
+    geometries.push(new BoxGeometry(.66,.018,.055).translate(x-s*.32,0,z),new BoxGeometry(.055,.018,.75).translate(x,0,z-e*.36))
+  }
+  const merged=mergeGeometries(geometries,false)!;geometries.forEach(g=>g.dispose());return merged
+}
+
 export function contactTexture() {
   const bytes=new Uint8Array(64*64*4)
   for(let y=0;y<64;y++)for(let x=0;x<64;x++) { const i=(y*64+x)*4,u=(x/63-.5)*2,v=(y/63-.5)*2;bytes.set([255,255,255,Math.round(Math.exp(-4*(u**6+v**6))*210)],i) }
