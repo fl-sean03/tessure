@@ -7,6 +7,9 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
+import { groundY, pathZ, pathPoints, courtTriangles, pathTriangles } from './surface'
+import { consolePose } from './motion'
+export { groundY, pathZ } from './surface'
 
 export type Finish = 'stone' | 'stone2' | 'coping' | 'wood' | 'wood2' | 'roof' | 'seam' | 'glass' | 'warm' | 'linen' | 'earth' | 'grass' | 'gravel' | 'bark' | 'dark' | 'metal' | 'rust' | 'cream' | 'fur' | 'screen'
 export type Materials = Record<Finish, MeshStandardMaterial>
@@ -73,17 +76,6 @@ export function builder(m: Materials) {
   }
   return { put, box, oval, beam, tri, finish }
 }
-export function groundY(x: number, z: number) {
-  return .04 + Math.max(0, -z - 1.5) * .105 + Math.max(0, Math.abs(x) - 10) * .045 + Math.sin(x * .29) * Math.sin(z * .3) * .055
-}
-export function pathZ(x: number) { return 4.7 + .24 * Math.sin(x * .33) }
-function ribbon(a: ReturnType<typeof builder>, points: Vec3[], width: number, f: Finish) {
-  for (let i = 1; i < points.length; i++) {
-    const p = points[i - 1], q = points[i], dx = q[0] - p[0], dz = q[2] - p[2], d = Math.hypot(dx, dz), ox = -dz / d * width / 2, oz = dx / d * width / 2
-    a.tri([p[0] - ox, p[1], p[2] - oz], [p[0] + ox, p[1], p[2] + oz], [q[0] - ox, q[1], q[2] - oz], f)
-    a.tri([q[0] - ox, q[1], q[2] - oz], [p[0] + ox, p[1], p[2] + oz], [q[0] + ox, q[1], q[2] + oz], f)
-  }
-}
 export function makeSite(m: Materials, high: boolean): Part[] {
   const a = builder(m)
   // Broad rolling land runs into the morning haze; the architecture is cut into it.
@@ -94,11 +86,13 @@ export function makeSite(m: Materials, high: boolean): Part[] {
     a.tri(p, q, r, 'grass'); a.tri(r, q, s, 'grass')
   }
   // Gravel arrival court, a meandering footpath, steel garden edging and stepping treads.
-  a.oval([-9, .075, 7.7], [4.6, .08, 7.8], 'gravel', [0, -.15, 0], 40)
-  const path: Vec3[] = Array.from({ length: 49 }, (_, i) => { const x = -12 + i * .5; return [x, groundY(x, pathZ(x)) + .07, pathZ(x)] })
-  ribbon(a, path, 1.35, 'gravel')
+  for (const [p, q, r] of [...courtTriangles, ...pathTriangles]) a.tri(p, q, r, 'gravel')
+  const path = pathPoints
   for (let i = 0; i < path.length - 1; i++) for (const side of [-1, 1]) {
-    const p = path[i], q = path[i + 1]; a.beam([p[0], p[1] + .018, p[2] + side * .69], [q[0], q[1] + .018, q[2] + side * .69], .014, 'metal', .014, 5)
+    const p = path[i], q = path[i + 1]
+    // The woodland footpath exits through a real opening in its low steel edging.
+    if (side === -1 && p[0] >= 9) continue
+    a.beam([p[0], p[1] + .018, p[2] + side * .69], [q[0], q[1] + .018, q[2] + side * .69], .014, 'metal', .014, 5)
   }
   // Terraces with individually staggered stone courses and separate projecting copings.
   function wall(x: number, z: number, length: number, h: number, depth = .44) {
@@ -198,10 +192,14 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   // Operator's small garden-facing console, integrated into the terrace study.
   a.box([1.45, 2.08, 1.52], [1.72, .09, .76], 'wood2', .025)
   for (const x of [.72, 2.18]) for (const z of [1.24, 1.8]) a.box([x, 1.7, z], [.055, .78, .055], 'dark', .012)
-  a.box([1.48, 2.39, 1.37], [1.01, .66, .065], 'dark', .03, [-.08, 0, 0])
-  a.box([1.48, 2.39, 1.412], [.92, .55, .012], 'screen', .01, [-.08, 0, 0])
-  a.box([1.48, 2.16, 1.58], [.83, .045, .43], 'metal', .012)
-  for (let j = 0; j < 4; j++) for (let i = 0; i < 10; i++) a.box([1.13 + i * .069, 2.19, 1.43 + j * .069], [.044, .007, .042], 'dark')
+  const laptop = builder(m)
+  laptop.box([0, .25, -.16], [1.01, .66, .065], 'dark', .03, [-.08, 0, 0])
+  laptop.box([0, .25, -.117], [.92, .55, .012], 'screen', .01, [-.08, 0, 0])
+  laptop.box([0, .009, .055], [.90, .045, .51], 'metal', .012)
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 10; i++) laptop.box([-.35 + i * .069, .035, -.075 + j * .056], [.044, .007, .034], 'dark')
+  laptop.box([0, .033, .19], [.23, .01, .13], 'dark', .004)
+  laptop.box([0, .0385, .19], [.18, .001, .085], 'screen')
+  for (const part of laptop.finish()) { part.geometry.rotateY(consolePose.yaw); part.geometry.translate(...consolePose.origin); const key = Object.entries(m).find(([, material]) => material === part.material)![0] as Finish; a.put(part.geometry, key) }
   a.box([1.99, 2.14, 1.75], [.27, .035, .18], 'linen', .009)
   a.put(new CylinderGeometry(.065, .057, .15, 14), 'linen', [.82, 2.21, 1.62])
   // A folded throw and spare chair convey occupation without exposing personal details.
@@ -220,13 +218,6 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   }
   a.box([-7.95, 1.55, 1.5], [.035, .18, .04], 'metal')
   for (const side of [-1, 1]) a.box([-8.35 + side * .94, 3.15, -.4], [2.06, .13, 4.25], 'roof', .018, [0, 0, -side * .36])
-  // Discreet camera and thermal housings, two physically different positions.
-  for (const p of [[-6.82, 2.91, 1.5], [6.02, 3.57, .12]] as Vec3[]) {
-    a.box([p[0], p[1] - .1, p[2] - .08], [.09, .18, .15], 'metal', .02)
-    a.box(p, [.23, .16, .34], 'coping', .03, [-.16, 0, 0])
-    a.box([p[0], p[1] - .025, p[2] + .172], [.14, .09, .022], 'dark', .016)
-    a.oval([p[0], p[1] - .025, p[2] + .188], [.031, .031, .012], 'glass')
-  }
   // Human-scale boundary: spaced posts and two wires, never a fortress fence.
   for (let x = -14; x <= 15; x += 2.3) {
     const z = -9.7, y = groundY(x, z)
@@ -244,57 +235,58 @@ export function makeSite(m: Materials, high: boolean): Part[] {
 }
 
 // Fox anatomy is built around a horizontal spine, pointed muzzle and heavy white-tipped brush.
-export function makeFox(m: Materials): { body: Part[]; head: Part[]; tail: Part[]; leg: Part[] } {
-  const b = builder(m)
-  b.oval([0, .59, 0], [.58, .225, .195], 'rust', [0, 0, -.035], 18)
-  b.oval([-.33, .6, 0], [.27, .25, .19], 'rust')
-  b.oval([.39, .67, 0], [.25, .265, .18], 'rust', [0, 0, -.37])
-  b.oval([.35, .55, .015], [.15, .18, .145], 'cream', [0, 0, -.26])
-  b.oval([.0, .438, .015], [.36, .073, .14], 'cream')
-  const h = builder(m)
-  h.oval([.07, .025, 0], [.205, .17, .144], 'rust', [0, 0, .05])
-  // Tapered long nose; cream cheeks and an actual dark nose.
-  h.beam([.1, -.025, 0], [.39, -.095, 0], .12, 'rust', .033, 10)
-  h.oval([.235, -.09, .06], [.137, .044, .047], 'cream', [0, -.16, -.15])
-  h.oval([.235, -.09, -.06], [.137, .044, .047], 'cream', [0, .16, -.15])
-  h.oval([.387, -.092, 0], [.04, .031, .035], 'dark')
-  for (const s of [-1, 1]) {
-    h.oval([.14, .055, s * .127], [.021, .024, .013], 'dark')
-    // Ears are triangular wedges, black backs and pale inner surfaces.
-    const x = -.065, z = s * .104
-    h.tri([x - .08, .115, z - .045], [x + .09, .115, z - .045], [x - .038, .35, z], 'fur')
-    h.tri([x + .09, .115, z + .046], [x - .08, .115, z + .046], [x - .038, .35, z], 'rust')
-    h.tri([x + .091, .115, z - .045], [x + .09, .115, z + .046], [x - .038, .35, z], 'rust')
-    h.tri([x + .065, .146, z + s * .035], [x - .047, .146, z + s * .035], [x - .034, .3, z], 'cream')
-  }
-  const t = builder(m)
-  t.oval([-.35, -.13, 0], [.46, .165, .175], 'rust', [0, 0, .27], 16)
-  t.oval([-.71, -.19, 0], [.24, .135, .137], 'cream', [0, 0, -.06], 14)
-  const l = builder(m)
-  l.beam([0, 0, 0], [.035, -.23, 0], .064, 'rust', .048)
-  l.beam([.035, -.23, 0], [-.01, -.44, 0], .043, 'fur', .025)
-  l.oval([.026, -.445, .002], [.073, .035, .041], 'fur')
-  return { body: b.finish(), head: h.finish(), tail: t.finish(), leg: l.finish() }
+/** Smooth elliptical profiles join the animal's body volumes without interpenetrating balls. */
+function profile(a: ReturnType<typeof builder>, rows: [number, number, number, number][], finish: Finish, sides = 16) {
+  const positions: number[] = [], indices: number[] = []
+  const sample = (k: number, t: number) => { const i = Math.min(rows.length - 2, Math.floor(t)), f = t - i, p = rows[Math.max(0, i - 1)][k], q = rows[i][k], r = rows[i + 1][k], s = rows[Math.min(rows.length - 1, i + 2)][k]; return .5 * (2 * q + (-p + r) * f + (2 * p - 5 * q + 4 * r - s) * f * f + (-p + 3 * q - 3 * r + s) * f * f * f) }
+  const count = (rows.length - 1) * 5
+  for (let j = 0; j <= count; j++) for (let k = 0; k <= sides; k++) { const t = j / count * (rows.length - 1), angle = k / sides * Math.PI * 2; positions.push(sample(0, t), sample(1, t) + Math.sin(angle) * Math.max(.001, sample(2, t)), Math.cos(angle) * Math.max(.001, sample(3, t))) }
+  for (let j = 0; j < count; j++) for (let k = 0; k < sides; k++) { const v = j * (sides + 1) + k; indices.push(v, v + sides + 1, v + 1, v + 1, v + sides + 1, v + sides + 2) }
+  const g = new BufferGeometry(); g.setAttribute('position', new Float32BufferAttribute(positions, 3)); g.setIndex(rows.at(-1)![0] < rows[0][0] ? indices.reduce<number[]>((result, _, i) => { if (i % 3 === 0) result.push(indices[i], indices[i + 2], indices[i + 1]); return result }, []) : indices); g.computeVertexNormals(); a.put(g, finish)
 }
-export function makeOperator(m: Materials): { body: Part[]; arm: Part[] } {
+export function makeFox(m: Materials): { body: Part[]; head: Part[]; tail: Part[]; paw: Part[] } {
   const b = builder(m)
-  // Seated, fully clothed site operator in the terrace study; no identifying features.
-  b.oval([0, 1.07, 0], [.19, .31, .15], 'linen', [0, 0, -.1])
-  b.oval([.035, 1.53, .015], [.13, .17, .13], 'wood2')
-  b.oval([.016, 1.61, -.03], [.138, .11, .127], 'fur')
-  b.beam([-.08, .82, .01], [-.08, .52, .28], .085, 'dark')
-  b.beam([.11, .82, .01], [.11, .52, .29], .085, 'dark')
-  for (const x of [-.08, .11]) { b.beam([x, .52, .28], [x, .12, .27], .062, 'dark'); b.oval([x, .08, .34], [.083, .06, .15], 'dark') }
-  b.box([0, .74, -.05], [.46, .09, .43], 'wood', .04)
-  b.box([0, 1.02, -.22], [.46, .54, .07], 'wood', .04)
-  for (const x of [-.17, .17]) for (const z of [-.18, .14]) b.box([x, .36, z], [.042, .72, .042], 'wood')
-  b.beam([-.19, 1.19, 0], [-.2, .94, .19], .063, 'linen')
-  b.beam([-.2, .94, .19], [.09, .94, .3], .05, 'linen')
-  const arm = builder(m)
-  arm.beam([0, 0, 0], [.06, -.25, .19], .06, 'linen')
-  arm.beam([.06, -.25, .19], [.29, -.18, .29], .048, 'linen')
-  arm.oval([.32, -.18, .31], [.07, .045, .08], 'wood2')
-  return { body: b.finish(), arm: arm.finish() }
+  profile(b, [[-.61,.61,.012,.012],[-.46,.61,.20,.16],[-.22,.61,.215,.19],[.08,.59,.19,.17],[.34,.64,.23,.175],[.51,.74,.18,.145],[.59,.79,.01,.01]], 'rust')
+  b.oval([.36, .52, 0], [.13, .14, .146], 'cream', [0, 0, -.24])
+  const h = builder(m)
+  profile(h, [[-.15,.01,.012,.012],[-.07,.035,.145,.12],[.08,.018,.15,.132],[.21,-.04,.083,.081],[.39,-.092,.026,.03]], 'rust', 14)
+  h.oval([.225, -.08, 0], [.153, .042, .067], 'cream', [0, 0, -.13])
+  h.oval([.393, -.093, 0], [.035, .025, .03], 'dark')
+  for (const side of [-1, 1]) {
+    h.oval([.12, .052, side * .123], [.018, .018, .01], 'dark')
+    const x = -.06, z = side * .098
+    h.tri([x-.075,.10,z-.038],[x+.08,.1,z-.038],[x-.026,.32,z], 'fur')
+    h.tri([x+.08,.1,z+.04],[x-.075,.1,z+.04],[x-.026,.32,z], 'rust')
+    h.tri([x+.08,.1,z-.038],[x+.08,.1,z+.04],[x-.026,.32,z], 'rust')
+    h.tri([x+.056,.135,z+side*.031],[x-.038,.135,z+side*.031],[x-.024,.278,z], 'cream')
+  }
+  const tail = builder(m)
+  profile(tail, [[.01,0,.075,.08],[-.18,-.05,.13,.14],[-.43,-.125,.17,.17],[-.65,-.17,.13,.13]], 'rust')
+  profile(tail, [[-.645,-.17,.13,.13],[-.81,-.19,.1,.10],[-.95,-.19,.005,.005]], 'cream')
+  const paw = builder(m)
+  paw.box([0,.017,0],[.15,.034,.09],'fur',.015)
+  paw.oval([-.014,.036,0],[.058,.025,.04],'fur')
+  return { body: b.finish(), head: h.finish(), tail: tail.finish(), paw: paw.finish() }
+}
+export function makeOperator(m: Materials): Part[] {
+  const b = builder(m)
+  // Seated proportions: seat below desk, soles at patio level; intentionally non-identifying.
+  b.oval([0,.79,0],[.18,.285,.14],'linen',[0,0,-.035],18)
+  b.oval([.025,1.24,.015],[.126,.165,.126],'wood2')
+  b.oval([.01,1.32,-.03],[.132,.103,.12],'fur')
+  for (const x of [-.095,.095]) {
+    b.beam([x,.51,.02],[x,.40,.36],.073,'dark')
+    b.beam([x,.40,.36],[x,.10,.35],.057,'dark')
+    b.box([x,.022,.40],[.15,.044,.25],'dark',.016)
+    b.oval([x,.065,.36],[.071,.054,.11],'dark')
+  }
+  b.box([0,.45,-.015],[.46,.075,.47],'wood',.032)
+  b.box([0,.74,-.22],[.46,.51,.07],'wood',.035)
+  for (const x of [-.17,.17]) for (const z of [-.18,.17]) b.box([x,.2175,z],[.042,.435,.042],'wood')
+  b.beam([-.18,.95,0],[-.22,.75,.23],.061,'linen')
+  b.beam([-.22,.75,.23],[.01,.79,.41],.047,'linen')
+  b.oval([.025,.79,.43],[.06,.03,.07],'wood2')
+  return b.finish()
 }
 export function contactTexture() {
   const n = 64, d = new Uint8Array(n * n * 4)
