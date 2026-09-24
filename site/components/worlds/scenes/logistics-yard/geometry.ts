@@ -328,12 +328,16 @@ export function makePerson(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
   a.box([0, 1.12, 0], [.44, .58, .28], 'yellow', .09)
   for (const y of [1.02, 1.18]) a.box([0, y, .15], [.41, .045, .025], 'white')
+  a.cylinder([0, 1.445, 0], .066, .12, 'sand')
   a.put(new SphereGeometry(.17, 12, 8), 'sand', [0, 1.6, 0])
   a.put(new SphereGeometry(.184, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 'cream', [0, 1.64, 0])
   a.cylinder([0, 1.645, 0], .205, .037, 'cream')
   for (const s of [-1, 1]) {
-    a.beam([s * .27, 1.34, 0], [s * .31, 1.05, .17], .12, 'yellow')
-    a.beam([s * .31, 1.05, .17], [s * .17, 1.04, .34], .09, 'sand')
+    a.beam([s * .25, 1.34, 0], [s * .225, 1.14, .23], .12, 'yellow')
+    a.beam([s * .225, 1.14, .23], [s * .194, 1.055, .337], .09, 'sand')
+    a.put(new SphereGeometry(1, 8, 6), 'sand', [s * .194, 1.064, .345], [0, 0, 0], [.064, .041, .063])
+    a.box([s * .211, 1.086, .343], [.037, .061, .09], 'sand', .017)
+    a.box([s * .184, 1.112, .329], [.03, .028, .065], 'sand', .012)
   }
   a.box([0, 1.09, .37], [.4, .046, .31], 'dark', .02, [.16, 0, 0])
   a.box([0, 1.117, .37], [.32, .012, .23], 'glass', .01, [.16, 0, 0])
