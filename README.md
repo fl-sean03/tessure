@@ -1,40 +1,37 @@
-# Tessure — Data Room
+# Tessure
 
-Playbook-run project root for **Tessure Systems** — autonomous security fusion platform for high-risk fixed facilities.
+A public concept for a physical-security system designed to correlate and verify site sensor observations automatically, with evidence supporting a human decision. The website explains the proposed approach through six illustrative worlds. It is not a deployed security product.
 
-This directory follows the `idea-to-site-playbook.md` structure. The deployable site is isolated in `site/`; everything else is strategy, research, brand, and spec work.
+## Website
+
+The deployable Next.js application is in `site/`. It uses React and a deferred Three.js / React Three Fiber renderer. The page first presents static content and a self-made poster. Capable devices play a short original world film; visitors choose when to enter the interactive explorer. Reduced-motion, data-saving and low-power modes retain a still. The same narrative remains available as text.
+
+```sh
+cd site
+npm ci
+npm run dev
+```
+
+Validation and a production build:
+
+```sh
+npm run typecheck
+npm run check:contract
+npm run build
+npm start
+```
+
+Use Node.js 24.x and npm 11.13.0, as pinned in `site/package.json`. `site/package-lock.json` is the sole package lockfile. Vercel's Git integration builds the `site/` directory; `main` serves https://v0-tessure.vercel.app.
 
 ## Layout
 
-```
-tessure/
-├─ site/         # Next.js 15 + R3F marketing site (deploys to Vercel)
-├─ docs/         # Phase 1 strategic data room (business, GTM, risks, ops)
-├─ research/     # Phase 2 market + Phase 4 design research
-├─ specs/        # Technical / product architecture specs
-├─ brand/        # Brand system, palette, typography, messaging
-├─ SESSION_LOG.md  # Chronological run log (playbook spine)
-├─ SETUP.md        # API keys, budget cap, gotchas
-└─ README.md       # this file
-```
+- `site/app/`: the homepage, six world routes, site information and metadata.
+- `site/components/worlds/`: shared playback, narrative contract, camera direction and individual scenes.
+- `site/public/worlds/`: self-made scene assets and posters.
+- `site/ASSETS.md`: visual/font attribution and licenses.
+- `docs/`, `research/`, `specs/`, `brand/`: historical concept documents. Their proposed capabilities, targets and market assumptions are not proof of implemented performance.
 
-## Run artifacts
-
-- **Concept brief + budget/time caps:** `SESSION_LOG.md`
-- **API key inventory:** `SETUP.md`
-- **Brand system v1.1 (light theme):** `brand/PublicBrandSystem_v1.1.md`
-- **Live site:** https://v0-tessure.vercel.app
-- **Repo:** https://github.com/fl-sean03/tessure
-
-## Site development
-
-```bash
-cd site
-bun install
-bun dev    # http://localhost:3000
-```
-
-See `site/README.md` for site-specific instructions.
+Contact: [sean.florez@colorado.edu](mailto:sean.florez@colorado.edu).
 
 ## Status
 

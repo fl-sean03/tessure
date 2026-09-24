@@ -1,11 +1,3 @@
-import type { MetadataRoute } from "next"
-
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://v0-tessure.vercel.app"
-  const now = new Date()
-  return [
-    { url: `${base}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${base}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-  ]
-}
+import type { MetadataRoute } from 'next'
+import { catalogue } from '@/components/worlds/catalogue'
+export default function sitemap(): MetadataRoute.Sitemap { return ['', '/privacy', '/terms', ...catalogue.map(s => `/worlds/${s.id}`)].map(path => ({ url: `https://v0-tessure.vercel.app${path}`, changeFrequency: 'monthly', priority: path ? 0.6 : 1 })) }

@@ -1,74 +1,26 @@
-# Tessure
+# Tessure website
 
-Marketing and product demo site for **Tessure Systems** — an autonomous security fusion platform that detects threats across video, thermal, and radar, verifies them, and orchestrates human-in-the-loop response.
+A Next.js application explaining a physical-security concept through six fictional, interactive site studies.
 
-Tagline: *Trusted Autonomous Security.*
+## Run
 
-## Stack
-
-- Next.js 15 (App Router, React 19)
-- TypeScript 5 (`strict: true`)
-- Tailwind CSS 4 + shadcn/ui + Radix primitives
-- Three.js via `@react-three/fiber` and `@react-three/drei`
-- Zustand for scenario state
-
-## Local development
-
-This project uses [Bun](https://bun.sh) as the package manager. The lockfile is `bun.lock`.
-
-```bash
-bun install
-bun dev
+```sh
+npm ci
+npm run dev
+npm run typecheck
+npm run check:contract
+npm run build
+npm start
 ```
 
-Dev server runs on http://localhost:3000.
+Use Node.js 24.x and npm 11.13.0, as pinned in `package.json`. The npm lockfile is authoritative. Production is built from this directory through Vercel's Git integration.
 
-Other scripts:
+## Scene system
 
-```bash
-bun run build   # production build (TS errors fail the build)
-bun run start   # serve the production build
-bun run lint    # eslint
-```
+`components/worlds/contract.ts` defines the data and rendering interface. Each scene has serializable narrative content and a lazy-loaded World component. The shared runtime owns one canvas, the absolute-time clock, camera direction, quality and resource lifecycle. Worlds must derive their visual state from that clock so seeking works in both directions.
 
-## Deployment
+The interface pauses for an illustrative operator decision. Playback controls never operate real equipment. Posters, manual beat selection and the full text sequence remain useful with reduced motion or unavailable WebGL. Keyboard and touch controls live in HTML.
 
-Vercel is linked to this repo; pushes to `main` auto-deploy. The `v0-tessure` Vercel project points at `github.com/fl-sean03/tessure`.
+World routes: `/worlds/private-estate`, `/worlds/data-center`, `/worlds/resort-marina`, `/worlds/event-overlay`, `/worlds/logistics-yard`, `/worlds/critical-infrastructure`.
 
-v0 can continue to push updates — they'll flow through GitHub → Vercel.
-
-## Project layout
-
-```
-app/            # App Router: layout, page, error boundary, 404
-components/
-  ├─ scenes/           # Per-scenario Three.js scenes (6 scenarios)
-  ├─ shared/           # Reusable sensor models (Camera, UAV, Radar, Sensor)
-  ├─ ui/               # shadcn/ui primitives
-  └─ defense-*.tsx     # Hero demo, HUD, scenario selector, explanation
-lib/            # Zustand store + scenario config
-public/         # Icons, logos, placeholder assets
-PublicBrandSystem_Updated.txt   # Brand guidelines
-```
-
-## Scenarios
-
-Six demo scenarios live under `components/scenes/`:
-
-- Private estate (perimeter intrusion)
-- Data center
-- Resort / marina
-- Event overlay (crowd management)
-- Logistics yard
-- Critical infrastructure (power / water)
-
-Each scene reads from `useScenarioStore()` for phase (idle → detected → verifying → verified → responding), tracked cameras, dispatched drones, and intruder position.
-
-## Brand
-
-See `PublicBrandSystem_Updated.txt` for the full brand system (palette, typography, voice, messaging tiers). Core palette:
-
-- Trust Blue `#1E40AF`
-- Safety Amber `#F59E0B`
-- Background `#0A0F1C`
-- Typography: Inter
+Asset attribution: [ASSETS.md](ASSETS.md). No remote fonts, forms, analytics or external runtime imagery are added.
