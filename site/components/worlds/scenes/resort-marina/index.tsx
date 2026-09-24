@@ -8,11 +8,20 @@ import { definition } from './content'
 import { assembly, createMaterials, makeBoat, makePalm, makePerson, makeSite, type Part } from './geometry'
 const approach = new CatmullRomCurve3([[10, 0, 23], [12, 0, 18], [14, 0, 12], [14.2, 0, 9]].map(p => new Vector3(...p)))
 const welcome = new CatmullRomCurve3([[14.2, 0, 9], [10, 0, 9.5], [4, 0, 9.1], [.55, 0, 7.6], [.55, 0, 5.7]].map(p => new Vector3(...p)))
+const approachDirection = approach.getTangent(1), welcomeDirection = welcome.getTangent(0)
+const heldHeading = Math.atan2(approachDirection.x, approachDirection.z)
+const welcomeHeading = Math.atan2(welcomeDirection.x, welcomeDirection.z)
+const shortestAngle = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle))
+const turnAngle = shortestAngle(welcomeHeading - heldHeading)
 function vesselPose(t: number) {
-  const returning = t > 29, curve = returning ? welcome : approach
-  const u = returning ? smooth(progress(t, 29, 44)) : 1 - (1 - progress(t, 0, 24)) ** 1.35
-  const p = curve.getPoint(u), d = curve.getTangent(u)
-  return { p, heading: returning ? Math.atan2(d.x, d.z) : mix(Math.atan2(d.x, d.z), -Math.PI / 2, smooth(progress(t, 26, 29))) }
+  // Review holds the approach course. The approved turn finishes before departure.
+  const returning = t > 30, curve = returning ? welcome : approach
+  const u = returning ? smooth(progress(t, 30, 44)) : 1 - (1 - progress(t, 0, 24)) ** 1.35
+  const p = curve.getPoint(u), d = curve.getTangent(u), tangentHeading = Math.atan2(d.x, d.z)
+  const heading = returning
+    ? heldHeading + turnAngle + shortestAngle(tangentHeading - welcomeHeading)
+    : t > 28 ? heldHeading + turnAngle * smooth(progress(t, 28, 30)) : tangentHeading
+  return { p, heading }
 }
 function Parts({ parts, shadow = true }: { parts: Part[]; shadow?: boolean }) { return <>{parts.map((p, i) => <mesh key={i} geometry={p.geometry} material={p.material} castShadow={shadow} receiveShadow dispose={null} />)}</> }
 function Palms({ parts }: { parts: Part[] }) {
@@ -21,7 +30,8 @@ function Palms({ parts }: { parts: Part[] }) {
     const placements = [[-29, -8.5, 1.03], [-25, -15, .94], [-16, -15, 1.1], [-12, -9.3, .83], [2, -16.7, 1.03], [13.7, -15, .85], [26, -15, 1.1]], d = new Object3D()
     refs.current.forEach(ref => { if (!ref) return; placements.forEach(([x, z, s], i) => { d.position.set(x, 1.23, z); d.scale.setScalar(s); d.rotation.y = i * 1.73; d.updateMatrix(); ref.setMatrixAt(i, d.matrix) }); ref.instanceMatrix.needsUpdate = true; ref.computeBoundingSphere() })
   }, [parts])
-  return <>{parts.map((p, i) => <instancedMesh key={i} ref={el => { refs.current[i] = el }} args={[p.geometry, p.material, 7]} castShadow receiveShadow dispose={null} />)}</>
+  // R3F disposes each instanceMatrix buffer; World owns the shared part assets.
+  return <>{parts.map((p, i) => <instancedMesh key={i} ref={el => { refs.current[i] = el }} args={[p.geometry, p.material, 7]} castShadow receiveShadow />)}</>
 }
 function contactTexture() {
   const data = new Uint8Array(64 * 64 * 4)
@@ -56,7 +66,7 @@ function World({ clock, layers, quality }: WorldProps) {
     if (arrival.current) { arrival.current.position.set(pose.p.x, Math.sin(t * 1.5) * .035, pose.p.z); arrival.current.rotation.set(Math.sin(t * .9) * .009, pose.heading, Math.sin(t * 1.1) * .013) }
     if (sail.current) { sail.current.position.y = Math.sin(t * 1.2 + 1) * .037; sail.current.rotation.z = Math.sin(t * .85) * .008 }
     if (moored.current) { moored.current.position.y = Math.sin(t * 1.3 + 2) * .03; moored.current.rotation.z = Math.sin(t * .9 + 3) * .009 }
-    if (wake.current) { wake.current.visible = clock.current.playing && (t < 23.5 || (t > 29.2 && t < 43.5)); wake.current.position.set(pose.p.x, .035, pose.p.z); wake.current.rotation.y = pose.heading; wake.current.scale.z = .92 + Math.sin(t * 2.2) * .045 }
+    if (wake.current) { wake.current.visible = clock.current.playing && (t < 23.5 || (t > 30.2 && t < 43.5)); wake.current.position.set(pose.p.x, .035, pose.p.z); wake.current.rotation.y = pose.heading; wake.current.scale.z = .92 + Math.sin(t * 2.2) * .045 }
     if (marker.current) { marker.current.visible = t >= 4 && t < 44; marker.current.position.set(pose.p.x, .035, pose.p.z); marker.current.rotation.y = pose.heading }
     if (sensors.current) sensors.current.visible = t >= 4 && t < 44
     if (warm.current) { warm.current.visible = t >= 12 && t < 28; warm.current.position.set(pose.p.x, .14, pose.p.z); warm.current.rotation.y = pose.heading }
