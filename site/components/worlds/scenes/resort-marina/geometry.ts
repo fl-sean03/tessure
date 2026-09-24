@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
-export const finishes = { plaster: '#ded3b9', stone: '#aa9e86', cut: '#b9a585', sand: '#d2bd8d', timber: '#90704b', endgrain: '#b6986b', dark: '#273e41', glass: '#3b6670', steel: '#a6b5af', ivory: '#e5dec6', cloth: '#cfb684', burgundy: '#9e4f3e', navy: '#264d5e', leaf: '#64794e', leafLight: '#89935b', trunk: '#796443', amber: '#dfab52', teal: '#4c9e9a', skin: '#bd9878', uniform: '#698e95', rubber: '#334542' }
+export const finishes = { plaster: '#ded3b9', stone: '#aa9e86', cut: '#b9a585', sand: '#d2bd8d', timber: '#90704b', endgrain: '#b6986b', dark: '#273e41', glass: '#3b6670', steel: '#a6b5af', ivory: '#e5dec6', cloth: '#cfb684', burgundy: '#9e4f3e', navy: '#264d5e', leaf: '#64794e', leafLight: '#89935b', trunk: '#796443', amber: '#dfab52', teal: '#4c9e9a', skin: '#bd9878', baked: '#ffffff', uniform: '#698e95', rubber: '#334542' }
 export type Finish = keyof typeof finishes
 export type Materials = Record<Finish, MeshStandardMaterial>
 export const mooringTies: Record<'sail' | 'moored' | 'kayak', { local: Vec3; anchor: Vec3 }[]> = {
@@ -21,11 +21,17 @@ export function createMaterials(): Materials {
     const t = new DataTexture(data, 64, 64, RGBAFormat); t.wrapS = t.wrapT = RepeatWrapping; t.repeat.set(k === 'timber' ? 1 : 4, 4); t.magFilter = LinearFilter; t.minFilter = LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true
     m[k].map = t; m[k].color.set('#ffffff')
   }
+  m.baked.vertexColors = true; m.baked.roughness = .7; m.baked.side = DoubleSide
   m.steel.metalness = .65; m.steel.roughness = .35
   m.glass.metalness = .4; m.glass.roughness = .22
   m.burgundy.roughness = .3; m.navy.roughness = .34; m.ivory.roughness = .4
   m.ivory.side = DoubleSide; m.cloth.side = DoubleSide; m.leaf.side = DoubleSide; m.leafLight.side = DoubleSide
   return m
+}
+/** Low detail keeps the full shape while batching material colors into one opaque draw. */
+export function batchParts(parts: Part[], m: Materials): Part[] {
+ const list=parts.map(part=>{const g=part.geometry, key=(Object.keys(m) as Finish[]).find(k=>m[k]===part.material)!,color=new Color(finishes[key]),v=new Float32Array(g.attributes.position.count*3);for(let i=0;i<v.length;i+=3){v[i]=color.r;v[i+1]=color.g;v[i+2]=color.b}g.setAttribute('color',new Float32BufferAttribute(v,3));return g})
+ const geometry=mergeGeometries(list,false)!;list.forEach(g=>g.dispose());return[{geometry,material:m.baked}]
 }
 export function assembly(m: Materials, high: boolean) {
   const bins = new Map<Finish, BufferGeometry[]>()
@@ -143,7 +149,7 @@ export function makeSite(m: Materials, high: boolean) {
   a.box([-8.6, .61, 5], [.16, .07, .14], 'steel', .015)
   // Visitor pennant and service buoys are physical wayfinding, not tactical overlays.
   a.cylinder([-2, 2.05, 3.5], .045, 3, 'ivory'); a.put(cloth(1.1, .55, .14), 'teal', [-1.5, 3.1, 3.5], [Math.PI / 2, 0, 0])
-  for (const [x, z] of [[12.1, 4.1], [17, 5.1], [21.5, 4]]) { a.cylinder([x, .14, z], .36, .35, 'amber', [0, 0, 0], .2); a.cylinder([x, .58, z], .055, .64, 'ivory'); a.cylinder([x, .8, z], .13, .16, 'amber') }
+  for (const [x, z] of [[12.1, 4.1], [21.5, 4]]) { a.cylinder([x, .14, z], .36, .35, 'amber', [0, 0, 0], .2); a.cylinder([x, .58, z], .055, .64, 'ivory'); a.cylinder([x, .8, z], .13, .16, 'amber') }
   return a.finish()
 }
 function hullGeometry(length: number, width: number) {
@@ -167,14 +173,19 @@ export function makeBoat(m: Materials, high: boolean, kind: 'arrival' | 'sail' |
   if (!sail) {
     a.box([0, .95, .46], [.78, .55, .7], 'ivory', .09)
     a.box([0, 1.43, .67], [.85, .5, .045], 'glass', .035, [-.18, 0, 0])
-    a.box([0, 1.2, -.12], [.58, .29, .44], 'cloth', .085)
+    a.box([kind === 'arrival' ? -.48 : 0, 1.2, -.12], [.58, .29, .44], 'cloth', .085)
     if (kind === 'moored') { a.box([0, .37, -l * .52], [.49, .7, .49], 'dark', .12); a.box([0, -.14, -l * .53], [.13, .52, .2], 'steel', .035) }
     for (const s of [-1, 1]) for (const z of [-1.1, .7]) a.beam([s * .8, .75, z], [s * .83, 2.2, z + .16], .023, 'steel')
     a.put(cloth(1.86, 2.08, -.15), kind === 'arrival' ? 'ivory' : 'navy', [0, 2.2, -.08])
     a.box([0, .98, 1.6], [.91, .18, .66], 'cloth', .11)
     // Seated civilian at the helm; no inferred identity or purpose.
-    a.box([.1, 1.51, -.13], [.33, .44, .24], 'uniform', .09)
-    a.put(new SphereGeometry(.14, 10, 8), 'skin', [.1, 1.89, -.1]); a.beam([.25, 1.65, .02], [.28, 1.4, .45], .05, 'skin')
+    const helmX = kind === 'arrival' ? -.48 : .1
+    a.box([helmX, 1.51, -.13], [.33, .44, .24], 'uniform', .09)
+    a.put(new SphereGeometry(.14, 10, 8), 'skin', [helmX, 1.87, -.1]); a.beam([helmX + .15, 1.65, .02], [-.3, 1.4, .45], .05, 'skin')
+    if (kind === 'arrival') {
+      a.box([0, .65, 1.15], [1, .1, .7], 'timber', .035)
+      for (const x of [-.57, -.39]) { a.beam([x, 1.33, -.13], [x, 1.01, .03], .057, 'navy'); a.beam([x, 1.01, .03], [x, .77, -.08], .052, 'navy'); a.box([x, .745, -.03], [.14, .09, .22], 'dark', .022) }
+    }
   } else {
     a.box([0, .91, .35], [1.62, .6, 2.7], 'ivory', .19)
     for (const s of [-1, 1]) for (let i = 0; i < 3; i++) a.box([s * .819, 1.02, -.45 + i * .62], [.03, .23, .36], 'glass', .04)
@@ -184,7 +195,7 @@ export function makeBoat(m: Materials, high: boolean, kind: 'arrival' | 'sail' |
     for (const s of [-1, 1]) { a.beam([s * 1.17, .8, -2.5], [0, 6.3, .6], .013, 'steel'); for (const z of [-3, -1.5, 1.2, 2.6]) a.cylinder([s * (z > 2 ? .7 : 1.13), 1.0, z], .019, .58, 'steel') }
   }
   if (kind !== 'arrival') for (const { local: [x, y, z] } of mooringTies[kind]) a.box([x, y - .02, z], [.16, .06, .12], 'steel', .015)
-  return a.finish()
+  return high ? a.finish() : batchParts(a.finish(), m)
 }
 export function makePalm(m: Materials, high: boolean) {
   const a = assembly(m, high)
@@ -224,7 +235,7 @@ export function makeWalkerBody(m: Materials, high: boolean, staff: boolean) {
   a.cylinder([0, 1.34, 0], .065, .14, 'skin')
   a.put(new SphereGeometry(.145, 10, 8), 'skin', [0, 1.5, 0])
   a.cylinder([0, 1.61, 0], .19, .055, 'cloth')
-  return a.finish()
+  return high ? a.finish() : batchParts(a.finish(), m)
 }
 export function makeShoe(m: Materials, high: boolean) {
   const a = assembly(m, high)
@@ -242,5 +253,5 @@ export function makeRestingKayak(m: Materials, high: boolean) {
   a.beam([.38, .27, -1.2], [.38, .27, 1.2], .022, 'timber')
   for (const z of [-1.2, 1.2]) a.box([.38, .27, z], [.16, .03, .36], 'ivory', .045)
   for (const { local: [x, y, z] } of mooringTies.kayak) a.box([x, y - .02, z], [.1, .06, .1], 'steel', .01)
-  return a.finish()
+  return high ? a.finish() : batchParts(a.finish(), m)
 }

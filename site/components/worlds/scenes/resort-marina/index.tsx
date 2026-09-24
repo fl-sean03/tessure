@@ -5,6 +5,11 @@ import { BufferGeometry, Color, DataTexture, Float32BufferAttribute, Group, Inst
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { seeded } from '../../math'
 import { definition } from './content'
+import { Incident } from './incident'
+import { SensorHeads } from './sensors'
+import { makePassenger } from './incident-geometry'
+import { companionWalk } from './walkers'
+import { T } from './timing'
 import { assembly, createMaterials, makeBoat, makeOutboard, makePalm, makePerson, makeRestingKayak, makeShoe, makeSite, makeWalkerBody, mooringTies, type Part } from './geometry'
 import { Parts, Walker } from './actors'
 import { optics, makeOptic, makeRadarArray } from './devices'
@@ -54,11 +59,12 @@ function Mooring({ craft, ties }: { craft: { current: Group | null }; ties: { lo
 function World({ clock, layers, quality }: WorldProps) {
   const high = quality === 'high', arrival = useRef<Group>(null), sail = useRef<Group>(null), moored = useRef<Group>(null), outboard = useRef<Group>(null), wake = useRef<Group>(null), wakeMeshes = useRef<(Mesh | null)[]>([]), marker = useRef<Group>(null), radar = useRef<Group>(null), sweep = useRef<Group>(null), sensorViews = useRef<Group>(null), kayak = useRef<Group>(null)
   const m = useMemo(createMaterials, []), contact = useMemo(contactTexture, []), water = useMemo(waterGeometry, [])
-  const site = useMemo(() => makeSite(m, high), [m, high]), launch = useMemo(() => makeBoat(m, high, 'arrival'), [m, high]), motor = useMemo(() => makeOutboard(m, high), [m, high]), yacht = useMemo(() => makeBoat(m, high, 'sail'), [m, high]), cabin = useMemo(() => makeBoat(m, high, 'moored'), [m, high]), palms = useMemo(() => makePalm(m, high), [m, high]), attendant = useMemo(() => makeWalkerBody(m, high, true), [m, high]), walkingGuest = useMemo(() => makeWalkerBody(m, high, false), [m, high]), visitor = useMemo(() => makePerson(m, high), [m, high]), shoe = useMemo(() => makeShoe(m, high), [m, high]), rowboat = useMemo(() => makeRestingKayak(m, high), [m, high]), cameraParts = useMemo(() => makeOptic(m, high, false), [m, high]), thermalParts = useMemo(() => makeOptic(m, high, true), [m, high]), radarParts = useMemo(() => makeRadarArray(m, high), [m, high])
+  const passenger = useMemo(() => makePassenger(m, high), [m, high])
+  const site = useMemo(() => makeSite(m, high), [m, high]), launch = useMemo(() => makeBoat(m, high, 'arrival'), [m, high]), motor = useMemo(() => makeOutboard(m, high), [m, high]), yacht = useMemo(() => makeBoat(m, high, 'sail'), [m, high]), cabin = useMemo(() => makeBoat(m, high, 'moored'), [m, high]), palms = useMemo(() => makePalm(m, high), [m, high]), attendant = useMemo(() => makeWalkerBody(m, high, true), [m, high]), walkingGuest = useMemo(() => makeWalkerBody(m, high, false), [m, high]), visitor = useMemo(() => makePerson(m, high), [m, high]), shoe = useMemo(() => makeShoe(m, high), [m, high]), rowboat = useMemo(() => makeRestingKayak(m, high), [m, high]), radarParts = useMemo(() => makeRadarArray(m, high), [m, high])
   const misc = useMemo(() => { const a = assembly(m, high); for (let i = 0; i < (high ? 230 : 110); i++) { const x = -37 + seeded(i * 3) * 77, z = -1 + seeded(i * 3 + 1) * 48; a.box([x, .008, z], [.2 + seeded(i * 3 + 2) * 1.55, .003, .022 + seeded(i) * .023], 'teal', 0, [0, -.2, 0]) } return a.finish() }, [m, high])
   const rim = useMemo<Vec3[]>(() => Array.from({ length: 65 }, (_, i) => { const a = i / 64 * Math.PI * 2; return [Math.cos(a) * 1.6, .06, Math.sin(a) * 3.4] }), [])
   const foam = useMemo<Vec3[]>(() => Array.from({ length: 65 }, (_, i) => { const x = -34 + i; return [x, .085, -12 + .0085 * x * x + 2.5] }), [])
-  useEffect(() => () => { [site, launch, motor, yacht, cabin, palms, attendant, walkingGuest, visitor, shoe, rowboat, cameraParts, thermalParts, radarParts, misc].flat().forEach(p => p.geometry.dispose()) }, [site, launch, motor, yacht, cabin, palms, attendant, walkingGuest, visitor, shoe, rowboat, cameraParts, thermalParts, radarParts, misc])
+  useEffect(() => () => { [passenger, site, launch, motor, yacht, cabin, palms, attendant, walkingGuest, visitor, shoe, rowboat, radarParts, misc].flat().forEach(p => p.geometry.dispose()) }, [passenger, site, launch, motor, yacht, cabin, palms, attendant, walkingGuest, visitor, shoe, rowboat, radarParts, misc])
   useEffect(() => () => { Object.values(m).forEach(mat => { mat.map?.dispose(); mat.dispose() }); contact.dispose(); water.dispose() }, [m, contact, water])
   useFrame(() => {
     const t = clock.current.time, pose = vesselPose(t), trail = wakePose(t)
@@ -71,30 +77,30 @@ function World({ clock, layers, quality }: WorldProps) {
     wakeMeshes.current.forEach((mesh, i) => { if (!mesh) return; const side = i ? 1 : -1; mesh.position.set(side * (.6 + trail.length * .14), 0, -trail.length * .5); mesh.scale.set(trail.width, trail.length, 1); (mesh.material as MeshBasicMaterial).opacity = trail.opacity })
     radar.current!.rotation.y = radarPhase(t)
     if (sweep.current) sweep.current.rotation.y = radarPhase(t)
-    if (sensorViews.current) sensorViews.current.visible = t >= 12 && t < 20
-    if (marker.current) { marker.current.visible = t >= 4 && t < 44; marker.current.position.set(pose.p.x, .035, pose.p.z); marker.current.rotation.y = pose.heading }
+    if (sensorViews.current) sensorViews.current.visible = t >= T.verify && t < T.departed
+    if (marker.current) { marker.current.visible = t >= T.detect && t < T.departed; marker.current.position.set(pose.p.x, .035, pose.p.z); marker.current.rotation.y = pose.heading }
   })
   return <group name="marina-world">
     <mesh geometry={water} receiveShadow><meshStandardMaterial vertexColors roughness={.43} metalness={.14} /></mesh>
-    <Parts parts={site} /><Parts parts={misc} shadow={false} /><Palms parts={palms} /><Lines points={foam} color="#c1c9a5" opacity={.2} />
-    {optics.map((optic, i) => <group key={optic.id} name={optic.id} position={optic.position} rotation={[0, optic.yaw, 0]}><group rotation={[optic.pitch, 0, 0]}><Parts parts={i ? thermalParts : cameraParts} /></group></group>)}
+    <Parts parts={site} /><Incident clock={clock} m={m} high={high}/><Parts parts={misc} shadow={false} /><Palms parts={palms} /><Lines points={foam} color="#c1c9a5" opacity={.2} />
+    <SensorHeads clock={clock} m={m} high={high}/>
     <group ref={radar} name="open-array-radar" position={radarPosition}><Parts parts={radarParts} /></group>
     <Contact texture={contact} position={[-8, 1.271, -16]} size={[15, 7]} opacity={.29} /><Contact texture={contact} position={[18, 1.691, -4]} size={[10, 5]} opacity={.25} />
     <Contact texture={contact} position={[-8, .03, 3]} size={[16, 3.3]} opacity={.23} /><Contact texture={contact} position={[-14, .029, -3]} size={[3.2, 14]} opacity={.2} /><Contact texture={contact} position={[-2, .028, 6]} size={[2.5, 6]} opacity={.22} />
-    <group name="arrival" ref={arrival} position={[10, 0, 23]}><Parts parts={launch} /><group ref={outboard} name="arrival-outboard" position={[0, .37, -2.912]}><Parts parts={motor} /></group><Contact texture={contact} position={[0, .047, 0]} size={[3.3, 6.2]} opacity={.47} /></group>
+    <group name="arrival" ref={arrival} position={[10, 0, 23]}><Parts parts={launch} /><Parts parts={passenger}/><group ref={outboard} name="arrival-outboard" position={[0, .37, -2.912]}><Parts parts={motor} /></group><Contact texture={contact} position={[0, .047, 0]} size={[3.3, 6.2]} opacity={.47} /></group>
     <group name="sailboat" ref={sail} position={[-20, 0, 7.5]} rotation={[0, -.17, 0]}><Parts parts={yacht} /><Contact texture={contact} position={[0, .046, 0]} size={[3.6, 9.1]} opacity={.44} /></group>
     <group name="moored-launch" ref={moored} position={[-10.8, 0, 7.3]} rotation={[0, Math.PI, 0]}><Parts parts={cabin} /><Contact texture={contact} position={[0, .045, 0]} size={[2.9, 6.2]} opacity={.4} /></group>
     <group name="resting-kayak" ref={kayak} position={[-16.9, 0, 6.6]}><Parts parts={rowboat} /><Contact texture={contact} position={[0, .04, 0]} size={[1.2, 3.8]} opacity={.28} /></group>
     <Mooring craft={sail} ties={mooringTies.sail} />
     <Mooring craft={moored} ties={mooringTies.moored} />
     <Mooring craft={kayak} ties={mooringTies.kayak} />
-    <Walker clock={clock} staff body={attendant} shoe={shoe} m={m} contact={contact} /><Walker clock={clock} body={walkingGuest} shoe={shoe} m={m} contact={contact} />
+    <Walker clock={clock} staff body={attendant} shoe={shoe} m={m} contact={contact} /><Walker clock={clock} body={walkingGuest} shoe={shoe} m={m} contact={contact} /><Walker clock={clock} id="companion" walk={companionWalk} body={walkingGuest} shoe={shoe} m={m} contact={contact}/>
     <group position={[-17.7, 2.005, -12.8]} rotation={[0, 1, 0]}><Parts parts={visitor} /></group>
     <group name="vessel-wake" ref={wake}>{[-1, 1].map((side, i) => <mesh key={side} ref={o => { wakeMeshes.current[i] = o }} rotation={[-Math.PI / 2, 0, side * .28]}><planeGeometry /><meshBasicMaterial color="#b8d2bd" transparent opacity={0} depthWrite={false} /></mesh>)}</group>
     {layers.tracks && <group ref={marker} visible={false}><Lines points={rim} color="#e6c38c" opacity={.53} /></group>}
     {layers.sensors && <>
       <group name="radar-direction-illustration" ref={sweep} position={radarPosition}><Lines points={[[0, .18, .2], [0, .18, 2.3]]} color="#e6c38c" opacity={.36} /></group>
-      <group ref={sensorViews}>{optics.map((o, i) => <Lines key={o.id} points={[o.sector[0], o.lens, o.sector[1]]} color={i ? '#d5ac73' : '#a9c4bd'} opacity={.24} />)}</group>
+      <group ref={sensorViews}>{optics.slice(0, 1).map((o, i) => <Lines key={o.id} points={[o.sector[0], o.lens, o.sector[1]]} color={i ? '#d5ac73' : '#a9c4bd'} opacity={.24} />)}</group>
     </>}
   </group>
 }

@@ -1,14 +1,51 @@
-import type { SceneDefinition } from '../../contract'
-
-export const definition: SceneDefinition = {
-  id: 'resort-marina', number: '03', name: 'Resort & marina',
-  subtitle: 'The shoreline is part of the site',
-  description: 'A small craft approaches a service berth. Harbor staff turn an uncertain arrival into a welcome.',
-  lesson: 'Coverage and response belong to the real boundary: here, open water, working berths and a visitor welcome.',
-  setting: 'Sheltered inlet · late golden sun', duration: 50,
-  establishing: { title: 'An ordinary afternoon on the inlet', body: 'Guests linger under the waterfront awnings. Moored boats rise gently with the water; a small craft enters the sheltered harbor.' },
-  poster: '/worlds/resort-marina/poster.webp',
-  posterAlt: 'Golden sunlight on a stepped seaside resort, palm-lined beach and timber marina; a burgundy launch approaches the stone service quay across teal water.',
+import type { SceneDefinition, ScenarioVariant, Evidence } from '../../contract'
+import { T } from './timing'
+const observed=(source:string,detail:string):Evidence=>({kind:'observed',source,detail})
+const response=(source:string,detail:string):Evidence=>({kind:'response',source,detail})
+const correlate=(detail:string):Evidence=>({kind:'correlation',source:'Proposed local correlation',detail})
+const uncertain=(detail:string):Evidence=>({kind:'uncertainty',source:'Not established',detail})
+const incident:ScenarioVariant={id:'restricted-water-air',label:'Restricted water & aerial surveillance',role:'primary',duration:T.end,
+ lesson:'Independent water and air observations support one human decision, followed by visible protection of the public waterfront.',
+ establishing:{title:'A public waterfront beside a working quay',body:'Fictional red-team simulation. Visitors walk the public promenade; a kayak rests at the pontoons. Beyond the amber water markers, the service quay and its staff-controlled gangway are restricted. The burgundy craft has two unauthorized occupants; the separate quadcopter is a hostile observation actor. Those roles are authored ground truth, not identities inferred by sensors.'},
+ poster:'/worlds/resort-marina/poster.webp',posterAlt:'Authored marina incident: a two-person burgundy craft inside water markers, a separate quadcopter above the service quay, and staff on the public waterfront.',
+ cameras:[
+ {at:0,position:[38,23,43],target:[6,1,1],mobilePosition:[26,24,44],mobileTarget:[10,1,6],fov:45},
+ {at:7,position:[45.45,22.41,56.61],target:[24.19,6.47,24.73],mobilePosition:[45.45,22.41,56.61],mobileTarget:[24.19,6.47,24.73],fov:48,cut:true},
+ {at:17,position:[26,10,25],target:[16.8,1.2,16],mobilePosition:[26,10,25],mobileTarget:[16.8,1.2,16],fov:45,cut:true},
+ {at:18,position:[24,7,24],target:[17.1,1.1,14.9],mobilePosition:[24,7,24],mobileTarget:[17.1,1.1,14.9],fov:46,cut:true},
+ {at:23,position:[26,13,14],target:[17,8,3],mobilePosition:[25,14,17],mobileTarget:[17,7,3],fov:42,cut:true},
+ {at:28,position:[14,4.1,4],target:[10.5,2.5,-1.2],mobilePosition:[14,4.1,4],mobileTarget:[10.5,2.5,-1.2],fov:43,cut:true},
+ {at:31,position:[14,4.1,4],target:[10.5,2.5,-1.2],mobilePosition:[14,4.1,4],mobileTarget:[10.5,2.5,-1.2],fov:43},
+ {at:35,position:[27.3,13.5,22.2],target:[15.5,4.6,4.5],mobilePosition:[27.3,13.5,22.2],mobileTarget:[15.5,4.6,4.5],fov:49},
+ {at:36,position:[15,5.3,8],target:[9,1.8,0],mobilePosition:[16,6.5,11],mobileTarget:[9.5,1.8,0],fov:49,cut:true},
+ {at:41,position:[15,5.3,8],target:[10.6,1.8,-.1],mobilePosition:[16,6.5,11],mobileTarget:[10.2,1.8,0],fov:49},
+ {at:46,position:[13,5,7],target:[7,1.8,0],mobilePosition:[16,7.5,13],mobileTarget:[7.5,1.8,0],fov:49},
+ {at:50,position:[29,13,23],target:[15,2,8],mobilePosition:[29,16,28],mobileTarget:[15,3,9],fov:48,cut:true},
+ {at:57,position:[26,12,21],target:[14,5,12],mobilePosition:[29,17,26],mobileTarget:[17,5,13],fov:49},
+ {at:64,position:[19,10,27],target:[8,1,18],mobilePosition:[19,10,27],mobileTarget:[8,1,18],fov:48,cut:true},
+ {at:68,position:[40,18,35],target:[28,12,20],mobilePosition:[40,18,35],mobileTarget:[28,12,20],fov:42,cut:true},
+ {at:74,position:[18,10,49],target:[3.5,1,37],mobilePosition:[18,10,49],mobileTarget:[3.5,1,37],fov:45,cut:true},
+ {at:77,position:[53,21,54],target:[44,15.6,42],mobilePosition:[53,21,54],mobileTarget:[44,15.6,42],fov:42,cut:true},
+ {at:80,position:[18,7,10],target:[11,2,-.3],mobilePosition:[20,10,13],mobileTarget:[11,2,-.3],fov:48,cut:true},
+ {at:83,position:[16,5,5],target:[10.6,2.1,-.5],mobilePosition:[16,5,5],mobileTarget:[10.6,2.1,-.5],fov:43},
+ {at:87,position:[17,9,14],target:[7,2,0],mobilePosition:[20,12,18],mobileTarget:[8,2,0],fov:49},
+ {at:94,position:[30,22,36],target:[6,1,0],mobilePosition:[25,23,37],mobileTarget:[9,2,1],fov:46},
+ ],beats:[
+ {id:'detect',at:T.detect,title:'Two approaches, two observation channels',body:'The unauthorized craft advances toward the marked service basin. Separately, the hostile quadcopter descends toward an observation leg over the restricted shore. The open-array radar contributes the water track; the pitched sky camera contributes the air track.',evidence:[observed('Water radar','A surface craft advances toward the amber water markers.'),observed('Sky camera','A separate aircraft approaches above the restricted shore.'),uncertain('The water radar is not shown detecting the aircraft. No common operator or identity is established.')],subevents:[{id:'water-crossing',at:T.crossing,title:'The craft crosses the restricted approach',body:'The two-person craft passes between the amber markers toward the working quay. Visitors remain on the public side; the service gangway is still open under staff control.',evidence:[observed('Water camera','The hull crosses the marked water boundary and continues inward.')]}]},
+ {id:'verify',at:T.verify,title:'A craft with two occupants',body:'The water view corroborates the hull, the two seated occupants and the continuing approach. These are visible features; their unauthorized role belongs to the fictional script.',evidence:[observed('Water camera','Two occupants and an inward-moving hull are visible.'),uncertain('Faces, identity and intent are not inferred from this picture.')],subevents:[{id:'air-observation',at:T.airView,title:'A separate surveillance pass',body:'The sky view shows the quadcopter banking along the shore. Its rotors turn and its gimbal points toward the service area. This independently corroborates the authored aerial observation threat.',evidence:[observed('Sky camera','A banked aerial pass along the restricted shore.'),uncertain('No RF interception, shared operator or counter-drone control is depicted.')]}]},
+ {id:'correlate',at:T.correlate,title:'One review, separate water and air tracks',body:'The proposed local system links the simultaneous restricted-water and aerial observations by place and time. At the shore control, a short amber link joins the separate blue water and amber air observation tiles. It preserves two tracks rather than claiming one identified operator.',evidence:[correlate('Water and air observations are grouped into a reviewable incident.'),observed('Shore control','The local warning indicator is lit; guests and the open gangway have not yet moved.'),uncertain('The connection is contextual; no common operator is established.')]},
+ {id:'decide',at:T.decide,title:'Protect the public waterfront',body:'The craft is held off the working quay; the aircraft continues its observation leg. The service gangway remains open and visitors remain on the promenade. Authorize an unarmed shore response.',evidence:[observed('Current site state','Open service gangway, visitors nearby, separate water and aerial tracks.'),uncertain('Departure has not happened; the decision does not authorize control of the aircraft.')],action:'Warn the craft, secure the service gangway and move visitors back'},
+ {id:'respond',at:T.respond,title:'A warning from shore; clear the gangway',body:'After approval, the visible speaker/beacon warning activates. The attendant steps from the service side through the open gangway and onto the public side before its powered leaf moves. Visitors turn back along the promenade.',evidence:[response('Authorized shore sequence','Activate warning, clear the gangway and guide visitors away.')],subevents:[
+ {id:'gangway-secured',at:T.gateClosed,title:'Restricted access is closed',body:'The service leaf reaches its closed stop after the attendant clears its sweep. The attendant gestures west; visitors continue to the protected public side.',evidence:[observed('Service gangway','The leaf is closed with no person in its swept space.'),response('Attendant','An unarmed gesture redirects the visitors.')]},
+ {id:'public-held',at:T.publicHeld,title:'Visitors back; the craft turns out',body:'Both visitors are behind the public line and its barrier is closed. The craft begins a slow turn away from the quay. This is the scripted adversary response to the visible shore warning, not guaranteed deterrence.',evidence:[observed('Public promenade','Visitors are behind the held route barrier.'),observed('Water camera','The craft begins turning outward.'),uncertain('The craft withdrawal is authored; no assured efficacy is claimed.')]},
+ {id:'separate-withdrawals',at:T.airExit,title:'Separate outward routes',body:'The craft follows a clear route back toward open water. Independently, the hostile drone finishes its observation leg, banks away and departs on its own aerial route. Its retreat is a scripted choice; shore equipment does not jam or force it.',evidence:[observed('Water camera','The craft is moving outward; its wake follows speed and heading.'),observed('Sky camera','The drone leaves its shore observation leg.'),uncertain('No forced withdrawal or counter-drone capability is shown.')]}]},
+ {id:'resolve',at:T.resolve,title:'Follow departures to the coverage edges',body:'The water and air tracks reach the edges of the illustrated observation area on separate routes. The gangway and public barrier stay held while the attendant starts a shore-side inspection.',evidence:[observed('Separate tracks','Both actors are departing the restricted waterfront.'),response('Attendant','The service entrance remains controlled during the check.')],subevents:[
+ {id:'tracks-departed',at:T.departed,title:'The tracks have left this observation',body:'The craft is outside the inlet approach and the drone is beyond the aerial view. Warning indicators stop; the attendant looks across the closed service access to check the quay.',evidence:[observed('Coverage-edge record','Water and aerial departures recorded separately.'),uncertain('The record does not claim tracking beyond the illustrated coverage or identify either operator.')]},
+ {id:'shore-checked',at:T.inspected,title:'The attendant completes the shore check',body:'The attendant stops at the service boundary and verifies the pictured quay clear. A green record tile marks this completed shore check. Restricted access remains closed.',evidence:[observed('Shore check','The attendant has reached the controlled boundary and checked the visible quay.'),response('Local record','Departure observations and the completed shore check are recorded.')]},
+ {id:'public-reopened',at:T.publicOpen,title:'Public route reopened; service access controlled',body:'The public barrier is open and visitors resume their promenade walk. The restricted service gate stays closed. The record retains two departed tracks, protective shore actions and the completed local check.',evidence:[response('Public route','The promenade reopens after the check.'),observed('Restricted service gate','Service access remains closed.'),uncertain('No identity, universal site safety or guaranteed outcome is inferred.')]}]},
+ ],fallbackStills:[]}
+incident.fallbackStills=[{state:'establish',at:0,src:'/worlds/resort-marina/incident-establish.webp',alt:incident.establishing.title+' Authored simulation.'},...incident.beats.flatMap(b=>[b,...(b.subevents||[])]).map(b=>({state:b.id,at:b.at,src:`/worlds/resort-marina/incident-${b.id}.webp`,alt:b.title+' Authored simulation state.'}))]
+export const definition:SceneDefinition={id:'resort-marina',number:'03',name:'Resort & marina',subtitle:'Two approaches to the restricted quay',description:'An unauthorized craft and a separate aerial surveillance threat approach a fictional resort. Independent observations lead to a human decision and visible shore protection.',setting:'Restricted service basin · golden coast',poster:incident.poster,posterAlt:incident.posterAlt,
   palette: {
     background: '#d9d9ca', fog: '#d9d9ca', fogNear: 75, fogFar: 165,
     ambient: 0.38, sun: '#ffdfa8', sunIntensity: 3.3, sunPosition: [-38, 32, 24],
@@ -17,27 +54,5 @@ export const definition: SceneDefinition = {
     shadowBounds: { left: -45, right: 45, top: 36, bottom: -36, near: 1, far: 145, bias: -0.00025, normalBias: 0.035, mapSize: 2048 },
   },
   practicalLightLimit: 0,
-  cameras: [
-    { at: 0, position: [40, 25, 48], target: [0, 1, -3], mobilePosition: [22, 24, 53], mobileTarget: [4, 1, 5], fov: 42, easing: 'smoother', interpolation: 'spline' },
-    { at: 4, position: [32, 16, 39], target: [7, 0.9, 5], mobilePosition: [21, 15, 40], mobileTarget: [10, 0.6, 8], fov: 39, easing: 'smooth', interpolation: 'spline' },
-    { at: 6, position: [26, 7, 23], target: [19, 3, 17], mobilePosition: [28, 9, 27], mobileTarget: [16.5, 2.7, 16.5], fov: 48, cut: true },
-    { at: 9, position: [26, 7, 23], target: [19, 3, 17], mobilePosition: [28, 9, 27], mobileTarget: [16.5, 2.7, 16.5], fov: 48 },
-    { at: 12, position: [19.5, 4.8, 4.1], target: [21.8, 3.4, .9], mobilePosition: [19.5, 4.8, 4.1], mobileTarget: [21.8, 3.4, .9], fov: 43, cut: true, easing: 'smoother' },
-    { at: 13, position: [19.5, 4.8, 4.1], target: [21.8, 3.4, .9], mobilePosition: [19.5, 4.8, 4.1], mobileTarget: [21.8, 3.4, .9], fov: 43, easing: 'smoother' },
-    { at: 15, position: [30, 9, 16], target: [18, 1.8, 7], mobilePosition: [34, 13, 22], mobileTarget: [17.4, 1.8, 7], fov: 48 },
-    { at: 16, position: [24, 10, 25], target: [12, 0.9, 7], mobilePosition: [20, 12, 29], mobileTarget: [13, 0.8, 8], fov: 39, cut: true, easing: 'smoother', interpolation: 'spline' },
-    { at: 20, position: [26, 20, 32], target: [6, 0.7, 1], mobilePosition: [20, 21, 35], mobileTarget: [9, 0.8, 3], fov: 42, easing: 'smooth', interpolation: 'spline' },
-    { at: 28, position: [23, 16, 30], target: [7, 0.7, 3], mobilePosition: [20, 17, 32], mobileTarget: [10, 0.8, 5], fov: 40, easing: 'easeIn', interpolation: 'spline' },
-    { at: 36, position: [11, 10, 25], target: [1, 0.8, 5], mobilePosition: [9, 10, 24], mobileTarget: [2.8, 0.8, 6], fov: 40, easing: 'smoother', interpolation: 'spline' },
-    { at: 44, position: [30, 25, 43], target: [-4, 1, -3], mobilePosition: [13, 19, 32], mobileTarget: [-2, 1, 1], fov: 40, easing: 'easeOut', interpolation: 'spline' },
-    { at: 50, position: [32, 26, 45], target: [-4, 1, -3], mobilePosition: [13, 19, 32], mobileTarget: [-2, 1, 1], fov: 40 },
-  ],
-  beats: [
-    { id: 'detect', at: 4, title: 'A craft turns toward the working quay', body: 'The shore radar follows a small craft inside the inlet. Its course points toward a service berth; its purpose is unknown.', evidence: [{ source: 'Shore radar', detail: 'A continuous surface track approaches the eastern quay.' }] },
-    { id: 'verify', at: 12, title: 'Two shore sensors, one arrival', body: 'The proposed shore camera contributes the launch’s visible shape. The distinct thermal head would contribute heat contrast over the same water approach. This illustration links those contributions with the radar track; it shows no thermal image and infers no intent.', evidence: [{ source: 'Shore camera', detail: 'A small open launch remains visible beyond the service buoys.' }, { source: 'Proposed thermal contribution', detail: 'Heat contrast could corroborate presence within the illustrated water approach; no temperature or identity is shown.' }] },
-    { id: 'correlate', at: 20, title: 'A service berth is not the visitor entrance', body: 'The proposed local system automatically relates the observations to the marked working-water boundary. The resort needs to keep its service access usable while helping an unfamiliar arrival find the public pontoons.', evidence: [{ source: 'Site context', detail: 'Amber buoys mark the service approach; timber pontoons provide visitor access to the west.' }, { source: 'Linked observations', detail: 'The craft remains outside the marked working berth.' }] },
-    { id: 'decide', at: 28, title: 'Let the harbor team make the welcome', body: 'The operator reviews the linked observations and the two approaches. The craft has slowed outside the buoys. Staff guidance is the site’s ordinary way to clarify an arrival.', evidence: [{ source: 'Operator review', detail: 'No purpose or permission has been inferred from the vessel track.' }], action: 'Ask harbor staff to guide the arrival' },
-    { id: 'respond', at: 36, title: 'A person on the pontoon, a new course', body: 'After the illustrative approval, a harbor attendant moves to the visitor pontoon and signals the welcome. The launch turns across open water toward that berth.', evidence: [{ source: 'Harbor staff', detail: 'An attendant is at the outer visitor finger.' }, { source: 'Updated track', detail: 'The illustrated course now leads west, clear of the working quay.' }] },
-    { id: 'resolve', at: 44, title: 'Arrival handed to the harbor team', body: 'The launch settles beside the visitor pontoon. The illustrative record links the shore observations, operator decision and staff handoff. The visitor’s purpose remains for the harbor team to establish.', evidence: [{ source: 'Handoff record', detail: 'Guidance requested; arrival at the visitor berth recorded.' }, { source: 'Remaining uncertainty', detail: 'Purpose and permission still require a conversation.' }] },
-  ],
+  defaultScenario:incident.id,scenarios:[incident],
 }
