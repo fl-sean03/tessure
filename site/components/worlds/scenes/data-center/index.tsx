@@ -5,9 +5,10 @@ import { BufferGeometry, Float32BufferAttribute, Group, InstancedMesh, Object3D 
 import type { DataTexture } from 'three'
 import type { SceneModule, Vec3, WorldProps } from '../../contract'
 import { mix, seeded } from '../../math'
+import { roadY, vehiclePose, vehicleSpec, wheelLayout } from './vehicles'
 import { definition } from './content'
 import { arrivalZ, deliveryX, deliveryHeading, gateAngle, guardGait, guardProgress } from './motion'
-import { contactTexture, createMaterials, makeBarrier, makeCampus, makeChiller, makeGuard, makeVehicle, type Part } from './model'
+import { contactTexture, createMaterials, makeBarrier, makeCampus, makeChiller, makeGuard, makeVehicle, makeWheel, type Part } from './model'
 
 function Parts({ parts }: { parts: Part[] }) {
   return <>{parts.map((p,i)=><mesh key={i} geometry={p.geometry} material={p.material} castShadow receiveShadow />)}</>
@@ -64,16 +65,32 @@ function Observation({ clock, radar=false }: { clock:WorldProps['clock']; radar?
   })
   return <group ref={ref} visible={false}><lineSegments geometry={geometry}><lineBasicMaterial color={radar?'#cfb17c':'#abd0d8'} transparent opacity={.65} depthWrite={false}/></lineSegments></group>
 }
+function Vehicle({clock,small=false,body,wheelParts,contact}:{clock:WorldProps['clock'];small?:boolean;body:Part[];wheelParts:Part[][];contact:DataTexture}) {
+  const root=useRef<Group>(null),steer=useRef<(Group|null)[]>([]),spin=useRef<(Group|null)[]>([])
+  const initial=vehiclePose(0,small),v=vehicleSpec(small)
+  useFrame(()=>{
+    const p=vehiclePose(clock.current.time,small)
+    root.current!.position.set(p.x,roadY,p.z);root.current!.rotation.y=p.heading
+    p.wheels.forEach((w,i)=>{if(steer.current[i])steer.current[i]!.rotation.y=w.steer;if(spin.current[i])spin.current[i]!.rotation.x=w.roll})
+  })
+  return <group ref={root} name={small?'vehicle-van':'vehicle-truck'} position={[initial.x,roadY,initial.z]}>
+    <group dispose={null}><Parts parts={body}/>
+      {wheelLayout(small).map((w,i)=><group key={i} name={`steer-${i}`} ref={o=>{steer.current[i]=o}} position={[w.x,v.radius,w.z]}>
+        <group name={`spin-${i}`} ref={o=>{spin.current[i]=o}}><Parts parts={wheelParts[i%2]}/></group>
+      </group>)}
+    </group>
+    {wheelLayout(small).map((w,i)=><Contact key={i} texture={contact} position={[w.x,.0018,w.z]} size={[.48,.66]} opacity={.42}/>)}
+    <Contact texture={contact} position={[0,.0015,0]} size={small?[2.9,5.5]:[3.4,7.4]} opacity={.55}/>
+  </group>
+}
 function World({ clock,layers,quality }: WorldProps) {
-  const high=quality==='high',truck=useRef<Group>(null),van=useRef<Group>(null),gate=useRef<Group>(null),guard=useRef<Group>(null),left=useRef<Group>(null),right=useRef<Group>(null)
+  const high=quality==='high',gate=useRef<Group>(null),guard=useRef<Group>(null),left=useRef<Group>(null),right=useRef<Group>(null)
   const materials=useMemo(createMaterials,[]),contact=useMemo(contactTexture,[])
-  const all=useMemo(()=>({site:makeCampus(materials,high),cooling:makeChiller(materials,high),truck:makeVehicle(materials,high,false),van:makeVehicle(materials,high,true),gate:makeBarrier(materials,high),guard:makeGuard(materials,high,'body'),leg:makeGuard(materials,high,'leg')}),[materials,high])
+  const all=useMemo(()=>({site:makeCampus(materials,high),cooling:makeChiller(materials,high),truck:makeVehicle(materials,high,false),van:makeVehicle(materials,high,true),truckLeft:makeWheel(materials,high,false,-1),truckRight:makeWheel(materials,high,false,1),vanLeft:makeWheel(materials,high,true,-1),vanRight:makeWheel(materials,high,true,1),gate:makeBarrier(materials,high),guard:makeGuard(materials,high,'body'),leg:makeGuard(materials,high,'leg')}),[materials,high])
   useEffect(()=>()=>{Object.values(all).flat().forEach(p=>p.geometry.dispose())},[all])
   useEffect(()=>()=>{contact.dispose();Object.values(materials).forEach(m=>{m.map?.dispose();m.dispose()})},[materials,contact])
   useFrame(()=>{
     const t=clock.current.time
-    if(truck.current){truck.current.position.set(deliveryX(t),.145,arrivalZ(t));truck.current.rotation.y=deliveryHeading(t)}
-    van.current?.position.set(4.8,.145,arrivalZ(t,true))
     if(gate.current)gate.current.rotation.z=gateAngle(t)
     const p=guardProgress(t),walk=guardGait(t)
     if(guard.current){guard.current.position.set(mix(12.3,7.15,p),.145,mix(8.8,9.3,p));guard.current.rotation.y=-Math.PI/2}
@@ -86,8 +103,8 @@ function World({ clock,layers,quality }: WorldProps) {
     <Contact texture={contact} position={[-10.8,.149,-9.5]} size={[23.6,46.8]} opacity={.3}/>
     <Contact texture={contact} position={[13,.404,4.3]} size={[6.8,7]} opacity={.3}/>
     {roofUnits.map((p,i)=><Contact key={i} texture={contact} position={[p[0],8.9,p[2]]} size={[6.2,6.8]} opacity={.35}/>)}
-    <group ref={truck} position={[4.8,.145,24]}><group dispose={null}><Parts parts={all.truck}/></group><Contact texture={contact} position={[0,.009,0]} size={[3.4,7.4]} opacity={.57}/></group>
-    <group ref={van} position={[4.8,.145,32.5]}><group dispose={null}><Parts parts={all.van}/></group><Contact texture={contact} position={[0,.011,0]} size={[2.9,5.5]} opacity={.55}/></group>
+    <Vehicle clock={clock} body={all.truck} wheelParts={[all.truckLeft,all.truckRight]} contact={contact}/>
+    <Vehicle clock={clock} small body={all.van} wheelParts={[all.vanLeft,all.vanRight]} contact={contact}/>
     <group ref={gate} position={[1.3,1.48,5]} rotation={[0,0,1.47]} dispose={null}><Parts parts={all.gate}/></group>
     <group ref={guard} position={[12.3,.145,8.8]}>
       <group dispose={null}><Parts parts={all.guard}/><group ref={left} position={[-.12,.88,0]}><Parts parts={all.leg}/></group><group ref={right} position={[.12,.88,0]}><Parts parts={all.leg}/></group></group>

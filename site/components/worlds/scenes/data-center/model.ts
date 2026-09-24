@@ -8,6 +8,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
+import { vehicleSpec, wheelLayout } from './vehicles'
 
 export type Finish = keyof typeof colors
 const colors = {
@@ -79,13 +80,13 @@ export function makeCampus(m: Materials, high: boolean) {
   a.slab([14,.075,-3],2.4,61,.22,.9,'concrete')
   a.slab([-1.3,.075,-4],2.1,61,.22,.6,'edge')
   // Road edging and paint, with broad markings that survive thumbnail views.
-  for (const x of [.4,11.9]) a.box([x,.145,0],[.12,.018,67],'white')
-  for(let z=-31;z<32;z+=5) a.box([8.4,.145,z],[.12,.02,2.3],'white')
-  a.box([4.7,.151,7.2],[6.1,.026,.35],'white')
-  for(let i=0;i<5;i++) a.box([3.1+i*1.05,.154,-.5],[.55,.02,2.2],'white')
+  for (const x of [.4,11.9]) a.box([x,.1307,0],[.12,.001,67],'white')
+  for(let z=-31;z<32;z+=5) a.box([8.4,.1307,z],[.12,.001,2.3],'white')
+  a.box([4.7,.1307,7.2],[6.1,.001,.35],'white')
+  for(let i=0;i<5;i++) a.box([3.1+i*1.05,.1307,-.5],[.55,.001,2.2],'white')
   for(const z of [24,0,-21]) {
-    a.box([4.8,.154,z],[.15,.02,2],'white')
-    for(const s of [-1,1]) a.box([4.8+s*.32,.154,z-.7],[.15,.02,1],'white',0,[0,s*.7,0])
+    a.box([4.8,.1307,z],[.15,.001,2],'white')
+    for(const s of [-1,1]) a.box([4.8+s*.32,.1307,z-.7],[.15,.001,1],'white',0,[0,s*.7,0])
   }
   for(const z of [-27,-14,2,18,29]) {
     a.box([.02,.16,z],[.33,.025,1.6],'dark')
@@ -95,7 +96,7 @@ export function makeCampus(m: Materials, high: boolean) {
   for(let i=0;i<15;i++) {
     const x = i%2 ? 11.3 : 1.05, z = -29+i*4.1, s = new Shape()
     for(let j=0;j<12;j++) { const theta=j/12*Math.PI*2, r=.65+seeded(i*14+j)*.35; const px=Math.cos(theta)*r*.43,pz=Math.sin(theta)*r*(1.1+seeded(i)*1.6); if(j===0)s.moveTo(px,pz);else s.lineTo(px,pz) }
-    s.closePath(); const g=new ExtrudeGeometry(s,{depth:.008,bevelEnabled:false,curveSegments:1});g.rotateX(-Math.PI/2);a.put(g,'wet',[x,.15,z])
+    s.closePath(); const g=new ExtrudeGeometry(s,{depth:.0008,bevelEnabled:false,curveSegments:1});g.rotateX(-Math.PI/2);a.put(g,'wet',[x,.1304,z])
   }
   // Data hall: insulated panel field, dark base, recessed joints, parapets, and a projecting service wing.
   a.box([-11.1,.45,-10],[20.6,.65,43.3],'joint',.12)
@@ -230,25 +231,39 @@ export function makeChiller(m: Materials, high: boolean) {
 
 export function makeVehicle(m: Materials, high: boolean, small: boolean) {
   const a=builder(m,high), paint:Finish=small?'van':'white', front=small?-2.5:-3.3, rear=small?2.5:3.3, width=small?2.1:2.42
-  a.box([0,.65,0],[width-.22,.32,rear-front-.1],'dark',.09)
+  const v=vehicleSpec(small)
+  // Open wheel wells belong to the body. Their clearance includes the steered tire envelope.
+  function shell(z0:number,z1:number,bottom:number,w:number,top:[number,number][],axles:number[],finish:Finish) {
+    const profile=new Shape(),r=v.radius+.15
+    profile.moveTo(z0,bottom)
+    for(const z of [...axles].sort((a,b)=>a-b)) {
+      const extent=Math.sqrt(r*r-(bottom-v.radius)**2),lo=Math.max(z0,z-extent),hi=Math.min(z1,z+extent)
+      if(hi<=lo)continue
+      profile.lineTo(lo,bottom)
+      const a0=Math.acos((lo-z)/r),a1=Math.acos((hi-z)/r)
+      for(let i=0;i<=32;i++){const angle=a0+(a1-a0)*i/32;profile.lineTo(z+r*Math.cos(angle),v.radius+r*Math.sin(angle))}
+      profile.lineTo(hi,bottom)
+    }
+    profile.lineTo(z1,bottom);for(const [z,y]of top)profile.lineTo(z,y);profile.closePath()
+    const g=new ExtrudeGeometry(profile,{depth:w,bevelEnabled:true,bevelSegments:2,bevelSize:.025,bevelThickness:.025,steps:1})
+    g.rotateY(-Math.PI/2);g.translate(w/2,0,0);a.put(g,finish)
+  }
+  a.box([0,.65,0],[small?.96:1.1,.32,rear-front-.1],'dark',.07)
+  for(const z of [v.frontZ,v.rearZ])a.beam([-v.halfTrack,v.radius,z],[v.halfTrack,v.radius,z],.065,'dark')
   if(!small) {
-    a.box([0,2.05,.85],[2.42,2.75,4.82],'white',.12)
+    shell(-1.56,3.26,.675,2.42,[[3.26,3.425],[-1.56,3.425]],[v.rearZ],'white')
     a.box([0,3.46,.85],[2.46,.11,4.9],'steel',.03)
     for(const x of [-1.23,1.23]) {
-      a.box([x,1.05,.85],[.07,.2,4.8],'blue');a.box([x,2.15,.8],[.028,.45,3.85],'paleBlue')
-      for(let z=-1.4;z<3.2;z+=.8)a.box([x,2.1,z],[.034,2.32,.025],'edge')
+      a.box([x,1.3,.85],[.07,.16,4.8],'blue');a.box([x,2.15,.8],[.028,.45,3.85],'paleBlue')
+      for(let z=-1.4;z<3.2;z+=.8)a.box([x,2.32,z],[.034,2,.025],'edge')
     }
-    a.box([0,1.68,-2.35],[2.35,2.23,1.85],'white',.25)
+    shell(-3.275,-1.425,.565,2.35,[[-1.425,2.795],[-3.275,2.795]],[v.frontZ],'white')
     a.box([0,2.93,-2.03],[2.2,.45,1.4],'white',.2)
   } else {
     // A shaped high-roof van: rear volume, lower nose, raked screen and a continuous belt line.
-    const profile=new Shape()
-    profile.moveTo(-2.42,.76);profile.lineTo(2.48,.76);profile.lineTo(2.48,1.42)
-    profile.lineTo(2.08,1.52);profile.lineTo(1.43,2.55);profile.lineTo(-2.27,2.61);profile.lineTo(-2.42,2.4);profile.closePath()
-    const shell=new ExtrudeGeometry(profile,{depth:1.96,bevelEnabled:true,bevelSegments:2,bevelSize:.065,bevelThickness:.065,steps:1})
-    shell.rotateY(Math.PI/2);shell.translate(-.98,0,0);a.put(shell,paint)
+    shell(-2.48,2.42,.76,1.96,[[2.42,2.4],[2.27,2.61],[-1.43,2.55],[-2.08,1.52],[-2.48,1.42]],[v.frontZ,v.rearZ],paint)
     a.box([0,2.62,.52],[1.95,.09,3.45],paint,.04)
-    a.box([0,1.08,-2.07],[2.06,.84,.88],paint,.18)
+    shell(-2.51,-1.63,.66,2.06,[[-1.63,1.5],[-2.51,1.5]],[v.frontZ],paint)
     a.box([0,2.04,-1.835],[1.8,1.02,.045],'glass',.035,[.563,0,0])
     a.box([0,1.71,-2.073],[1.76,.025,.025],'dark',.008,[.563,0,0])
     for(const x of [-1.064,1.064]) {
@@ -261,7 +276,7 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
   if(!small) {
     a.box([0,2.16,front-.013],[2.02,.87,.07],'glass',.06,[.11,0,0])
     a.box([0,2.14,front-.06],[.05,.83,.05],'joint')
-    for(const x of [-1.187,1.187]) { a.box([x,2.15,-2.42],[.037,.87,1.15],'glass',.07); a.box([x,1.48,-1.99],[.037,.06,.28],'steel',.015);a.box([x,.67,-2.4],[.26,.17,1.15],'steel',.03) }
+    for(const x of [-1.187,1.187]) { a.box([x,2.15,-2.42],[.037,.87,1.15],'glass',.07); a.box([x,1.48,-1.99],[.037,.06,.28],'steel',.015);a.box([x,.67,-1.35],[.26,.17,.4],'steel',.03) }
   }
   // Bodywork detail common to both scales: grille, lamps, mirrors, recessed rear doors.
   a.box([0,.91,front-.035],[width+.06,.25,.18],'dark',.04)
@@ -276,17 +291,19 @@ export function makeVehicle(m: Materials, high: boolean, small: boolean) {
     a.cyl([s*.47,1.72,rear+.05],.022,small?.92:1.92,'steel')
   }
   a.box([0,.83,rear+.13],[width*.9,.18,.16],'steel',.03)
-  // Tires rest exactly on road; concentric rim and sidewall shoulders give readable wheels.
-  for(const z of [front+1,rear-.83]) for(const s of [-1,1]) {
-    const x=s*width*.48, radius=small?.43:.51
-    a.cyl([x,radius,z],radius,.34,'rubber',[0,0,Math.PI/2])
-    a.cyl([x+s*.19,radius,z],radius*.61,.04,'steel',[0,0,Math.PI/2])
-    a.cyl([x+s*.219,radius,z],radius*.27,.057,'joint',[0,0,Math.PI/2])
-    a.put(new TorusGeometry(radius*.79,.042,6,high?24:16),'rubber',[x+s*.18,radius,z],[0,Math.PI/2,0])
-    for(let j=0;j<5;j++)a.cyl([x+s*.226,radius+Math.sin(j*1.257)*radius*.41,z+Math.cos(j*1.257)*radius*.41],.026,.017,'dark',[0,0,Math.PI/2])
-    // Thin fender trim follows upper wheel arch, never bridges over the wheel.
-    a.put(new TorusGeometry(radius+.08,.055,6,high?24:16,Math.PI),'joint',[x+s*.175,radius,z],[0,Math.PI/2,0])
-  }
+  // Fixed fender trim and axle housings; only the separate running gear steers and rolls.
+  for(const wheel of wheelLayout(small))a.put(new TorusGeometry(v.radius+.08,.055,6,high?24:16,Math.PI),'joint',[wheel.x+wheel.side*.175,v.radius,wheel.z],[0,Math.PI/2,0])
+  return a.finish()
+}
+
+/** Hub-centred, local +X axle; shared by front/rear on one side. */
+export function makeWheel(m: Materials, high: boolean, small: boolean, side:number) {
+  const a=builder(m,high),r=vehicleSpec(small).radius
+  a.put(new CylinderGeometry(r,r,.34,high?48:32),'rubber',[0,0,0],[0,0,Math.PI/2])
+  a.cyl([side*.19,0,0],r*.61,.04,'steel',[0,0,Math.PI/2])
+  a.cyl([side*.219,0,0],r*.27,.057,'joint',[0,0,Math.PI/2])
+  a.put(new TorusGeometry(r*.79,.042,6,high?24:16),'rubber',[side*.18,0,0],[0,Math.PI/2,0])
+  for(let j=0;j<5;j++)a.cyl([side*.226,Math.sin(j*Math.PI*2/5)*r*.41,Math.cos(j*Math.PI*2/5)*r*.41],.026,.017,'dark',[0,0,Math.PI/2])
   return a.finish()
 }
 
