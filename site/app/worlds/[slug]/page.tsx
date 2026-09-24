@@ -7,7 +7,7 @@ export const dynamicParams = false
 export function generateStaticParams() { return catalogue.map(s => ({ slug: s.id })) }
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params; const s = findScene(slug)
-  return s ? { title: `${s.name}: ${s.subtitle}`, description: `${s.description} An illustrative world exploring a physical security concept.`, alternates: { canonical: `/worlds/${slug}` }, openGraph: { title: `${s.name} — Tessure`, description: s.description, images: [{ url: '/opengraph-image', width: 1200, height: 630 }] } } : {}
+  return s ? { title: `${s.name}: ${s.subtitle}`, description: `${s.description} An illustrative world exploring a physical security concept.`, alternates: { canonical: `/worlds/${slug}` }, openGraph: { title: `${s.name} — Tessure`, description: s.description, images: [{ url: `/social/${s.id}.jpg`, width: 1200, height: 630, alt: `${s.name}: ${s.subtitle}. An illustrative Tessure world.` }] } } : {}
 }
 export default async function ScenePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params; const s = findScene(slug); if (!s) notFound()
