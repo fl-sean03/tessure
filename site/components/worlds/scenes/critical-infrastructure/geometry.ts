@@ -198,13 +198,12 @@ export function makeSite(m: Materials, high: boolean) {
   for (let i = 0; i < 10; i++) a.box([17.64, 1.35 + i * 0.17, 0], [0.055, 0.055, 2.25], 'dark')
   a.box([18.25, 0.92, 0.1], [0.95, 1.21, 2.55], 'chalk', 0.1)
   for (const z of [-0.6, 0.75]) { a.cylinder([18.75, 1, z], 0.42, 0.05, 'dark', [0, 0, Math.PI / 2]); a.put(new TorusGeometry(0.43, 0.038, 5, 24), 'steel', [18.8, 1, z], [0, Math.PI / 2, 0]) }
-  // Local node beside the building: enclosure, louvres, plinth, inset screen and conduit.
-  a.box([8.8, 0.49, 6.15], [1.4, 0.44, 1.55], 'concrete', 0.07)
-  a.box([8.8, 1.61, 6.15], [1.12, 1.85, 1.0], 'chalk', 0.075)
-  a.box([8.8, 2.6, 6.15], [1.29, 0.12, 1.16], 'steel', 0.03)
-  a.box([8.8, 1.77, 6.668], [0.92, 1.28, 0.03], 'dark', 0.03)
-  a.box([8.8, 2.08, 6.69], [0.74, 0.46, 0.02], 'screen', 0.025)
-  for (let i = 0; i < 6; i++) a.box([8.8, 1.2 + i * 0.052, 6.698], [0.69, 0.021, 0.025], 'steel')
+  // Hooded local status cabinet: remote-link display is separate from local power.
+  a.box([8.8, 0.49, 6.15], [2.65, 0.44, 1.65], 'concrete', 0.07)
+  a.box([8.8, 1.93, 6.15], [2.4, 2.44, 1.1], 'chalk', 0.075)
+  a.box([8.8, 3.2, 6.25], [2.6, 0.13, 1.5], 'steel', 0.03)
+  a.box([8.8, 2.15, 6.72], [2.24, 1.72, 0.08], 'dark', 0.03)
+  for (let i = 0; i < 6; i++) a.box([9.0, 0.87 + i * 0.05, 6.72], [1.57, 0.022, 0.025], 'steel')
   a.tube([[8.3, 0.62, 6.15], [8.03, 0.62, 6.15], [8.03, 0.35, 4.2], [8.5, 0.35, 4.2]], 0.05, 'steel')
   // Roof backhaul unit: mast, parabolic reflector, feed arm. No real network/site markings.
   a.cylinder([15.5, 5.15, -0.8], 0.08, 2.4, 'steel')
