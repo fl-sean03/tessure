@@ -25,7 +25,7 @@ const attendantBack=flatWalk([[-13,.05,-4.7],[-13.65,.05,-5.7],[-12.7,.05,-6.4],
 const insiderWalk=flatWalk([[-14.8,.05,-4.5],[-13.8,.05,-4.3],[-13.4,.05,-5.55],[-12,.05,-7],[-9,.05,-7],[-7,.05,-7]],T.insiderWalk,T.checkpoint,Math.PI,Math.PI/2)
 export function actorPose(role: 'supervisor'|'insider'|'attendant'|'driver',time:number):ActorPose {
   let core: {position:Vec3;yaw:number;feet:FootPose[];legs:ReturnType<typeof solveTwoBone>[]}
-  if(role==='supervisor') core=supervisorPose(time-22)
+  if(role==='supervisor') core=supervisorPose(time-24)
   else if(role==='insider') core=insiderWalk(time)
   else if(role==='attendant') core=time<T.guided?attendantOut(time):attendantBack(time)
   else {const position:Vec3=[carrierX(time)+.74,1.12,-.18],yaw=Math.PI/2;const hips=[-.13,.13].map(x=>local(position,yaw,[x,1,0])),feet=[-.16,.16].map(x=>({position:local(position,yaw,[x,.36,.53]),yaw,planted:true}));core={position,yaw,feet,legs:hips.map((h,i)=>solveTwoBone(h,[feet[i].position[0],feet[i].position[1]+.16,feet[i].position[2]],[1,1,0],.43,.43))}}
@@ -36,7 +36,7 @@ export function actorPose(role: 'supervisor'|'insider'|'attendant'|'driver',time
   const hands=[-1,1].map((side,i)=>{let hand=local(p,yaw,[side*.29,.9,mix(.08,.13*Math.sin((time-walkStart)*8+i*Math.PI),walkWeight)]);
     if(role==='insider'&&time<T.insiderWalk-.5){const target:Vec3=[controls.crane[0]-side*.2,controls.crane[1]+.25,controls.crane[2]+.2];const pressing=smoother(progress(time,1,T.controlsAt))*(1-smoother(progress(time,T.attendantAt-1,T.insiderWalk-.5)));hand=blend(hand,target,pressing);hand[1]+=.18*Math.sin(Math.PI*pressing)}
     if(role==='driver')hand=local(p,yaw,[side*.20,1.29,.35])
-    if(role==='supervisor'){hand=local(p,yaw,[side*.194,1.064,.345]);if(i===0){const press=smoother(progress(time,55.5,56.6))*(1-smoother(progress(time,57.6,58.5)));hand=blend(hand,controls.supervisor,press);hand[1]+=.12*Math.sin(Math.PI*press)}else{const stop=smoother(progress(time,59,60))*(1-smoother(progress(time,65,66)));hand=blend(hand,local(p,yaw,[.45,1.58,.19]),stop)}}
+    if(role==='supervisor'){hand=local(p,yaw,[side*.194,1.064,.345]);if(i===0){const press=smoother(progress(time,57.5,58.6))*(1-smoother(progress(time,59.6,60.5)));hand=blend(hand,controls.supervisor,press);hand[1]+=.12*Math.sin(Math.PI*press)}else{const stop=smoother(progress(time,61,62))*(1-smoother(progress(time,67,68)));hand=blend(hand,local(p,yaw,[.45,1.58,.19]),stop)}}
     if(role==='attendant'&&time>=T.attendantAt&&time<=T.insiderWalk+1){const u=smoother(progress(time,T.attendantAt,T.attendantAt+.7))*(1-smoother(progress(time,T.insiderWalk,T.insiderWalk+1)));hand=blend(hand,local(p,yaw,[side*.33,1.3,.35]),u)}return hand})
   const arms=hands.map((h,i)=>solveTwoBone(local(p,yaw,[i?.25:-.25,1.34,0]),h,local([0,0,0],yaw,role==='supervisor'?[0,0,1]:role==='insider'?blend([i?.2:-.2,.6,0],[0,0,1],smoother(progress(time,T.insiderWalk-1,T.insiderWalk))):[i?.7:-.7,-.4,.25]),.30,.28))
   return{...core,hands,arms,seated:role==='driver'}

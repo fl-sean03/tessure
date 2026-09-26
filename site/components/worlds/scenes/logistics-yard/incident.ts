@@ -2,7 +2,7 @@ import type { Vec3 } from '../../contract'
 import { mix, progress } from '../../math'
 import { smoother } from './gait'
 /** Shared authored times; illustration pacing, never operational response latency. */
-export const T = { controlsAt: 2.5, hoistStart: 3, detect: 8, locked: 9.5, lifted: 13.5, overCarrier: 21.5, deposited: 26, released: 27.5, craneSafe: 31, verify: 31, sensors: 35, correlate: 40, stopped: 46, decide: 48, respond: 49, supervisorAt: 55.35, control: 57, signal: 59, attendantStart: 55.5, attendantAt: 61.5, guided: 62.5, insiderWalk: 64.5, checkpoint: 74.5, droneOpen: 75, droneLift: 78.8, droneObserve: 88.3, droneReturn: 94.3, droneLand: 103.8, droneClosed: 108.2, resolve: 114, end: 122 } as const
+export const T = { controlsAt: 2.5, hoistStart: 3, detect: 8, locked: 9.5, lifted: 13.5, overCarrier: 21.5, deposited: 26, released: 27.5, craneSafe: 31, verify: 31, sensors: 35, correlate: 40, stopped: 46, decide: 46.2, respond: 51, supervisorAt: 57.35, control: 59, signal: 61, attendantStart: 61, attendantAt: 67, guided: 68, insiderWalk: 70, checkpoint: 80, droneOpen: 84, droneLift: 87.8, droneObserve: 97.3, droneReturn: 103.3, droneLand: 112.8, droneClosed: 117.2, resolve: 118, end: 122 } as const
 export const load = { x: -20, sourceZ: -11, bayZ: -5.5, roadZ: 0, sourceBottom: .18, carrierBottom: 1.43, height: 2.88, length: 6.1, halfCornerX: 2.98, halfCornerZ: 1.16, toolOffset: 2.98 } as const
 export const carrierStart = load.x + 5.3
 const ease = (t: number, a: number, b: number) => smoother(progress(t, a, b))
