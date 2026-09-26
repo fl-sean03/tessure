@@ -1,40 +1,46 @@
 import type { CameraKey, ScenarioVariant, SceneDefinition } from '../../contract'
-import { T } from './incident'
-const view=(at:number,position:[number,number,number],target:[number,number,number],mobilePosition=position,mobileTarget=target,cut=true,fov=42):CameraKey=>({at,position,target,mobilePosition,mobileTarget,cut,fov,easing:'smoother'})
+import { storyT as T } from './timeline'
+const view=(at:number,position:[number,number,number],target:[number,number,number],mobilePosition=position,mobileTarget=target,fov=42):CameraKey=>({at,position,target,mobilePosition,mobileTarget,fov,interpolation:'pchip'})
 export const incident:ScenarioVariant={
  id:'staff-passage-breach',label:'Breach during a crowd pinch',role:'primary',duration:T.end,
  lesson:'Separate a restricted-access incident from public crowd pressure. Correlate physical passages with access events, hold the inner boundary and coordinate security with stewards without closing public exits.',
  establishing:{title:'Two routes beside an evening performance',body:'Authored red-team simulation. A teal-clad stage worker approaches the staff entrance; an orange-clad intruder follows. Yellow-clad stewards manage public arrivals and returns on the adjacent concourse. Blue-clad security staffs the inner boundary and public-side checkpoint. These are fictional roles, not identities inferred by sensing.',evidence:[{kind:'uncertainty',source:'Authored scenario',detail:'Roles and intent are scripted ground truth. Public-flow observations remain anonymous.'}]},
  poster:'/worlds/event-overlay/poster.webp',posterAlt:'Violet evening amphitheatre with a restricted staff passage beside two public streams, a staffed checkpoint and separate timber relief route.',
  cameras:[
- view(0,[33,30,41],[0,1,3],[24,29,38],[1,1,5]),
- // Phone detail holds through the reach, reader response and credential withdrawal.
- view(4,[15,9,20],[7,1,8.4],[3.9,2.55,12.2],[5.85,1.18,8.85]),
- view(T.detect,[12.5,5.4,15.7],[6.8,1.1,8.6],[3.9,2.55,12.2],[5.85,1.18,8.85]),
- view(8.5,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5]),
- view(11,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5],false),
- view(14,[12.5,6.5,14.7],[7,1,6.8],[11.7,6.3,14.3],[7,1.1,7.2],false),
- view(T.verify,[14,10,16],[7.3,1.4,6.5],[13.5,9.7,16],[7.3,1.4,6.5]),
+ // The route opens over both systems, settles at the reader, then follows the passage.
+ view(0,[28,24,35],[0,1,5],[24,25,34],[1,1,6]),
+ view(5,[3,3.2,13.4],[6.1,1.1,8.8],[3.9,2.55,12.2],[5.85,1.18,8.85]),
+ view(8.3,[3,3.2,13.4],[6.1,1.1,8.8],[3.9,2.55,12.2],[5.85,1.18,8.85]),
+ view(11,[12.5,5.4,15.7],[6.8,1.1,8.6],[11.4,5.4,14.8],[6.9,1.1,8.5]),
+ view(16,[12.5,6.5,14.7],[7,1,6.8],[11.7,6.3,14.3],[7,1.1,7.2]),
  view(22,[14,7,10],[7.5,1.2,2.8],[14.5,9.5,12.5],[8.4,1.9,3]),
- view(T.correlate,[14.5,7.5,8],[8,1.2,2.4],[13.3,7.5,8.4],[8,1.3,2.4]),
- view(T.decide,[22,18,29],[2,1,9],[15,21,30],[2,1,10]),
- view(T.respond,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7]),
- view(37.8,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7],false),
- // Separate phone shots connect each planted operator to the moving mechanism.
- view(38.5,[.5,7.6,23],[-6.9,1,14.5],[-10.7,2.9,17.8],[-7.9,1.13,14.1]),
- view(40.3,[.5,7.6,23],[-6.9,1,14.5],[-1,3.7,10],[-3.8,1,14]),
- // The relief leaf has finished opening; let the phone read the held stop arm before release.
- view(41.8,[.5,7.6,23],[-6.9,1,14.5],[5,3.2,6.5],[7.08,1.05,3.75]),
- view(T.reliefReady,[.5,7.6,23],[-6.9,1,14.5],[5,3.2,6.5],[7.08,1.05,3.75],false),
- view(T.stopView,[1,7.5,10],[7.3,1,4],[5,3.2,6.5],[7.08,1.05,3.75]),
- view(51,[1.3,8,15],[7.4,1,7.6],[1.3,8,15],[7.4,1.1,7.6],false),
- view(55,[4,13,26],[-3,1,13.5],[2,12,23],[-4,1.1,13.8]),
- view(61,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1]),
- view(T.checkpoint,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1],false),
- view(T.resolve,[24,20,32],[2,1,9],[16,22,32],[2,1,10]),
- view(75,[12,13,25],[5,1,13],[12,14,25],[5,1,13]),
- view(82,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1]),
- view(T.end,[25,23,35],[1,1,8],[18,24,35],[2,1,10]),
+ view(27,[14.5,7.5,8],[8,1.2,2.4],[13.3,7.5,8.4],[8,1.3,2.4]),
+ // A readable six-second in-story review; the camera retains both public and staff routes.
+ view(32,[22,18,29],[2,1,9],[15,21,30],[2,1,10]),
+ view(35,[22,18,29],[2,1,9],[15,21,30],[2,1,10]),
+ view(38.5,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7]),
+ view(40,[13.5,6.4,9],[7.3,1.2,2.7],[12.4,6.4,9],[7.3,1.2,2.7]),
+ // Rise across the concourse, then show each independent manual operation.
+ view(42,[-1,9,19],[-3,1,12],[-1,9,19],[-3,1,12]),
+ view(44,[-10.7,2.9,17.8],[-7.9,1.13,14.1]),
+ view(46.5,[-10.7,2.9,17.8],[-7.9,1.13,14.1]),
+ view(48.4,[-13.2,4.5,12],[-7,1,14]),
+ view(50.2,[-6,4,9],[-5,1,14]),
+ view(51.5,[-1,3.7,10],[-3.8,1,14]),
+ view(52.8,[-1,3.7,10],[-3.8,1,14]),
+ // Orbit the view target rather than crossing over it, then clear the staff fence.
+ view(55,[4,7,16],[-4,1,13]),
+ view(56.7,[1,10,24],[1,1,10]),
+ view(58.3,[5,5.7,6.5],[7.08,1.05,3.75]),
+ view(59,[5,3.2,6.5],[7.08,1.05,3.75]),
+ view(60,[5,3.2,6.5],[7.08,1.05,3.75]),
+ view(62,[5,6,7],[7.3,1,5]),
+ view(64,[1.3,8,15],[7.4,1,7.6],[1.3,8,15],[7.4,1.1,7.6]),
+ view(68,[4,13,26],[-3,1,13.5],[2,12,23],[-4,1.1,13.8]),
+ view(73,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1]),
+ view(76,[17.5,7.1,15.5],[10.8,1.2,8.1],[17,7.2,15.5],[10.8,1.2,8.1]),
+ view(81,[24,20,32],[2,1,9],[16,22,32],[2,1,10]),
+ view(88,[25,23,35],[1,1,8],[18,24,35],[2,1,10]),
  ],
  beats:[
  {id:'detect',at:T.detect,title:'One credential, an open staff passage',body:'The authorized worker presents a credential. One access permission opens the staff gate. The orange-clad intruder waits directly behind, separate from the public streams.',evidence:[{kind:'observed',source:'Staff reader · illustrative record',detail:'One permitted entry event, followed by the opening contact.'}],subevents:[
@@ -42,8 +48,8 @@ export const incident:ScenarioVariant={
  {id:'second-crossing',at:T.secondPassage,title:'A second person crosses',body:'After the worker passes, the intruder follows through the same opening without another access event and continues beyond the restricted line. Public arrivals and returns slow independently at the adjacent pinch.',evidence:[{kind:'observed',source:'C1 · Staff passage',detail:'Two physical passages through one opening; no face identification.'},{kind:'observed',source:'Reader/contact records',detail:'One permitted opening; no second credential event in this script.'}]}]},
  {id:'verify',at:T.verify,title:'Continue the track; keep crowd pressure separate',body:'C1 observes the entrance crossing. C2 observes continued movement toward backstage. The permitted worker proceeds to the equipment apron while the intruder remains in the approach corridor. Opposing public flows have stopped at the nearby pinch.',evidence:[{kind:'observed',source:'C1 + C2 fixed views',detail:'Entrance passage and backstage approach are separate, partial views.'},{kind:'observed',source:'Anonymous public-flow observation',detail:'Two public directions slow at the adjacent concourse; no density estimate or individual identity.'},{kind:'uncertainty',source:'Coverage limits',detail:'Illustrative sectors are partial; fencing, equipment and other people can obscure a view.'}]},
  {id:'correlate',at:T.correlate,title:'Access mismatch beside public pressure',body:'Proposed local correlation links the second crossing, single permission and continued backstage approach. The controller raises a review cue and holds new inner-access permissions by site policy. The intruder pauses short of the inner boundary. Public exits stay usable.',evidence:[{kind:'correlation',source:'Proposed local controller',detail:'One permission + second physical crossing + continued approach form one reviewable incident.'},{kind:'response',source:'Preauthorized access policy',detail:'New inner-access release is held pending staff verification; the public outlet is unchanged.'},{kind:'uncertainty',source:'Investigation',detail:'Intent is authored ground truth, not an inference from clothing or camera appearance.'}]},
- {id:'decide',at:T.decide,title:'Protect backstage and open the relief route',body:'Security will secure the clear inner gate and guide the intruder to the public-side checkpoint. Stewards will turn the sign, open the separate relief gate and split public flow. The two responses have different purposes.',action:'Protect backstage and open the relief route',evidence:[{kind:'observed',source:'Current physical state',detail:'Intruder short of equipment; public streams held at the pinch; relief gate still closed.'},{kind:'uncertainty',source:'Human review',detail:'Staff must verify access authority. The illustration does not establish guilt or a safety-performance result.'}]},
- {id:'respond',at:T.respond,title:'Two teams, two controlled actions',body:'After approval, security secures the clear inner staff gate through the local controller and approaches the stopped intruder. Both stewards move to the public relief entrance. No gate closes across a person and no public exit is locked.',evidence:[{kind:'response',source:'Authorized response',detail:'Inner staff gate closes in a clear opening; security and stewards take separate positions.'}],subevents:[
+ {id:'decide',at:T.decide,title:'Protect backstage and open the relief route',body:'During this authored review, the operator directs security to secure the clear inner gate and guide the intruder to the public-side checkpoint. Stewards will turn the sign, open the separate relief gate and split public flow. The two responses have different purposes.',action:'Protect backstage and open the relief route',evidence:[{kind:'observed',source:'Current physical state',detail:'Intruder short of equipment; public streams held at the pinch; relief gate still closed.'},{kind:'uncertainty',source:'Human review',detail:'Staff must verify access authority. The illustration does not establish guilt or a safety-performance result.'}]},
+ {id:'respond',at:T.respond,title:'Two teams, two controlled actions',body:'After the operator’s review, security secures the clear inner staff gate through the local controller and approaches the stopped intruder. Both stewards move to the public relief entrance. No gate closes across a person and no public exit is locked.',evidence:[{kind:'response',source:'Authorized response',detail:'Inner staff gate closes in a clear opening; security and stewards take separate positions.'}],subevents:[
  {id:'inner-secured',at:T.innerClosed,title:'The inner boundary is secured',body:'The inner gate finishes closing behind the security officer. The worker remains on the equipment side. The intruder is on the approach side, short of both officer and gate.',evidence:[{kind:'observed',source:'Inner gate/contact',detail:'Closed inner boundary; no person in its swept opening.'}]},
  {id:'hands-on-relief',at:T.signStart,title:'Stewards operate the public route',body:'One steward grips the sign crank; the second reaches the relief-gate crank. The sign post and weighted base stay planted as its head turns. The relief leaf swings into the unused verge before public flow resumes.',evidence:[{kind:'response',source:'Steward actions',detail:'Visible hand contact turns the sign head and the geared relief-gate crank; public streams still held.'}]},
  {id:'relief-open',at:T.reliefReady,title:'The alternative opens before arrivals move',body:'The gate is fully open and the sign points toward the timber frontage. Arrivals behind the steward begin taking the relief route while returning visitors keep the concourse. Stewards guide the split.',evidence:[{kind:'response',source:'Public route',detail:'Gate clear and wayfinding turned before redirected foot traffic starts.'}]},

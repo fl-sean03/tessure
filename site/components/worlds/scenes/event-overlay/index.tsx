@@ -12,6 +12,7 @@ import { Crowd } from './crowd'
 import { Access, makeAccess } from './access'
 import { Flow } from './sources'
 import { arrivalSign, exitSign, signPivot } from './layout'
+import { motionTime } from './timeline'
 function Parts({parts}:{parts:Part[]}){return <>{parts.map((p,i)=><mesh key={i} geometry={p.geometry} material={p.material} castShadow={!p.material.userData.noShadow} receiveShadow dispose={null}/>)}</>}
 function contactTexture(){const data=new Uint8Array(32*32*4);for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=(y*32+x)*4,r=((x-15.5)/15.5)**2+((y-15.5)/15.5)**2;data[i]=data[i+1]=data[i+2]=255;data[i+3]=Math.round(Math.max(0,1-r)**2*190)}const tx=new DataTexture(data,32,32,RGBAFormat);tx.magFilter=tx.minFilter=LinearFilter;tx.needsUpdate=true;return tx}
 function Grounding(){
@@ -21,7 +22,10 @@ function Grounding(){
  useLayoutEffect(()=>{const o=new Object3D();items.forEach(([x,z,w,d],i)=>{o.position.set(x,.075,z);o.rotation.set(-Math.PI/2,0,0);o.scale.set(w,d,1);o.updateMatrix();ref.current!.setMatrixAt(i,o.matrix)});ref.current!.instanceMatrix.needsUpdate=true;ref.current!.computeBoundingSphere();const mesh=ref.current!;return()=>{mesh.dispose()}},[])
  return <instancedMesh ref={ref} args={[undefined,undefined,9]}><planeGeometry/><meshBasicMaterial color="#292535" map={texture} transparent opacity={.34} depthWrite={false}/></instancedMesh>
 }
-function World({clock,quality,layers}:WorldProps){
+function World({clock:storyClock,quality,layers}:WorldProps){
+ const clock=useRef({time:motionTime(storyClock.current.time),playing:storyClock.current.playing})
+ // Director advances the story at -100; all owned objects read this same physical time.
+ useFrame(()=>{clock.current.time=motionTime(storyClock.current.time);clock.current.playing=storyClock.current.playing},-50)
  const high=quality==='high',m=useMemo(materials,[]),site=useMemo(()=>makeSite(m,high),[m,high]),access=useMemo(()=>makeAccess(m,high),[m,high]),occluders=useMemo(()=>[...site,...access],[site,access]),stand=useMemo(()=>makeSign(m,high),[m,high]),head=useMemo(()=>makeSign(m,high,true),[m,high]),contact=useMemo(contactTexture,[]),board=useRef<Group>(null)
  const contacts=useMemo(()=>{const a=assembly(m,high);for(const [x,z,w,d] of [[-7,-9,15.7,9.4],[15,4.5,5.5,3.6],[19,-2,5,3.6],[-19,3,4.8,3.6]])a.box([x,.012,z],[w,.009,d],'earth',0);return a.finish()},[m,high])
  useEffect(()=>()=>[...site,...access,...stand,...head,...contacts].forEach(p=>p.geometry.dispose()),[site,access,stand,head,contacts]);useEffect(()=>()=>contact.dispose(),[contact]);useEffect(()=>()=>Object.values(m).forEach(mat=>{mat.map?.dispose();mat.dispose()}),[m])
