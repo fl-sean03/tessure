@@ -17,7 +17,7 @@ function visibleLabels(t: number) {
   if (t < 37) return []
   if (t < T.decide) return [5, 6]
   if (t < T.respond) return [2, 7]
-  if (t < 60.5) return [2]
+  if (t < T.signal + 1.5) return [2]
   if (t < T.droneOpen) return [0, 3]
   if (t < T.droneClosed) return [7]
   if (t < T.resolve) return [0, 3]
@@ -49,7 +49,8 @@ export function Labels({ clock }: { clock: WorldProps['clock'] }) {
       if (built.local.z >= -.5 || Math.abs(built.projected.x) > 1.3 || Math.abs(built.projected.y) > 1.3) { o.visible = false; return }
       const w = 190, h = 26, initialX = (built.projected.x + 1) * size.width / 2, initialY = (1 - built.projected.y) * size.height / 2
       const x = Math.max(w / 2 + 8, Math.min(size.width - w / 2 - 8, initialX))
-      let y = Math.max(72, Math.min(size.height - 62, initialY))
+      // The two staff labels sit above the small phone figures, preserving their visible arrival.
+      let y = size.width < 600 && i === 2 ? 72 : size.width < 600 && active.includes(0) && active.includes(3) ? (i === 0 ? 72 : 105) : Math.max(72, Math.min(size.height - 62, initialY))
       for (const b of boxes) if (Math.abs(x - b.x) < w + 5 && Math.abs(y - b.y) < h + 5) y = b.y + h + 7 < size.height - 62 ? b.y + h + 7 : b.y - h - 7
       boxes.push({ x, y })
       built.projected.x = x / size.width * 2 - 1; built.projected.y = 1 - y / size.height * 2; built.projected.unproject(camera)

@@ -9,7 +9,7 @@ export const crane = { railTop: 17.485, wheelRadius: .23, wheelY: 17.715, cableT
 export function trolleyPose(time: number) { const p=transferPose(time);return{z:p.trolleyZ,y:p.tool[1],wheelAngle:p.wheelAngle} }
 
 export const dock = { x: 25.4, z: -6.9, roofTop: 3.7875, surfaceY: 4.18, coverY: 5.17, coverTravel: 1.5, halfWidth: 1.45, halfDepth: 1.3 } as const
-export const droneTimes = { open: T.droneOpen, opened: 77.4, power: 77.5, lift: T.droneLift, cruise: 82.3, observe: T.droneObserve, returning: T.droneReturn, descend: 100.3, landed: T.droneLand, stopped: 105.3, close: 105.8, closed: T.droneClosed, record: T.resolve, end: T.end } as const
+export const droneTimes = { open: T.droneOpen, opened: 86.4, power: 86.5, lift: T.droneLift, cruise: 91.3, observe: T.droneObserve, returning: T.droneReturn, descend: 109.3, landed: T.droneLand, stopped: 114.3, close: 114.8, closed: T.droneClosed, record: T.resolve, end: T.end } as const
 export const rotorCenters: Vec3[] = [-1, 1].flatMap(x => [-1, 1].map(z => [x * .58, .79, z * .58] as Vec3))
 export const droneSkids: Vec3[] = [-.42, .42].flatMap(x => [-.43, .43].map(z => [x, 0, z] as Vec3))
 export const gimbalMount: Vec3 = [0, .24, .43]
