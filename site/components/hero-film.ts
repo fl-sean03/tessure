@@ -1,32 +1,26 @@
-// Original logistics-world film; times below are film edit boundaries, not product response times.
+// One continuous logistics-world excerpt. Caption times are illustration pacing, not response performance.
 export const heroFilm = {
   "src": "/worlds/logistics-yard/intro.mp4",
   "poster": "/worlds/logistics-yard/intro-poster.webp",
-  "posterAlt": "A gantry carries marked load A7 past its empty assigned bay toward a waiting carrier in an amber-lit logistics yard.",
-  "duration": 12,
+  "posterAlt": "Marked load A7 hangs from a gantry beside an empty assigned bay and a waiting carrier in an amber-lit logistics yard.",
+  "duration": 14,
   "moments": [
     {
       "at": 0,
       "title": "A marked load takes the wrong route.",
-      "detail": "Authored cargo diversion · camera observation",
-      "sources": 1
-    },
-    {
-      "at": 4,
-      "title": "Different views add context.",
-      "detail": "Camera, radar and proposed thermal",
+      "detail": "Authored cargo diversion · continuous excerpt",
       "sources": 3
     },
     {
       "at": 6,
-      "title": "Wrong transfer. No authorized release.",
-      "detail": "Proposed local correlation · exit stays held",
+      "title": "Past its assigned bay.",
+      "detail": "Observations would be checked against site records.",
       "sources": 3
     },
     {
-      "at": 9,
-      "title": "A person directs the response.",
-      "detail": "The supervisor maintains the local hold",
+      "at": 9.5,
+      "title": "Onto a waiting carrier.",
+      "detail": "Explore the full review and response in World 05.",
       "sources": 3
     }
   ]
