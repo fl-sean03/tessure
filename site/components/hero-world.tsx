@@ -16,13 +16,19 @@ export default function HeroWorld() {
   useEffect(() => {
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
     const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } }
+    let activationFrame = 0
     const update = () => {
+      cancelAnimationFrame(activationFrame)
       const capable = !motion.matches && !nav.connection?.saveData && !(nav.deviceMemory && nav.deviceMemory <= 4) && !(nav.hardwareConcurrency && nav.hardwareConcurrency <= 4)
-      setEnabled(capable)
-      if (!capable) { video.current?.pause(); setStarted(false); setEnded(false) }
+      if (capable) {
+        // Give the poster a paint opportunity before initializing the video.
+        activationFrame = requestAnimationFrame(() => {
+          activationFrame = requestAnimationFrame(() => setEnabled(true))
+        })
+      } else { setEnabled(false); video.current?.pause(); setStarted(false); setEnded(false) }
     }
     update(); motion.addEventListener('change', update)
-    return () => motion.removeEventListener('change', update)
+    return () => { cancelAnimationFrame(activationFrame); motion.removeEventListener('change', update) }
   }, [])
   useEffect(() => {
     if (!enabled) return
