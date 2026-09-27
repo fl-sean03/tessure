@@ -1,44 +1,83 @@
-import type { SceneDefinition } from '../../contract'
-
-/** A fictional yard sequence. Times are authored playback, not detection latency. */
-export const definition: SceneDefinition = {
-  id: 'logistics-yard', number: '05', name: 'Logistics yard',
-  subtitle: 'Put movement in context',
-  description: 'A loaded trailer leaves its row. The dispatch record changes what that movement means.',
-  lesson: 'Recognizing a vehicle is only the beginning. Its movement matters in the context of the yard’s expected releases.',
-  establishing: {
-    title: 'First light on the loading apron',
-    body: 'The gantry prepares for another lift. Containers wait in their rows, and a loaded yard tractor joins the outbound aisle.',
-  },
-  setting: 'Intermodal yard · first light', duration: 48,
-  poster: '/worlds/logistics-yard/poster.webp',
-  posterAlt: 'An amber-lit intermodal yard with a braced gantry, ribbed container rows and a loaded terminal tractor beside the dispatch verification bay.',
-  palette: {
-    background: '#d9c7b3', fog: '#d9c7b3', fogNear: 60, fogFar: 145,
-    ambient: 0.13, sun: '#ffd8a7', sunIntensity: 3.8, sunPosition: [-38, 25, 32],
-    hemisphereSky: '#c2d4e1', hemisphereGround: '#695642', hemisphereIntensity: 1.05,
-    exposure: 1.04, toneMapping: 'aces',
-    shadowBounds: { left: -51, right: 51, top: 39, bottom: -39, near: 1, far: 135, bias: -0.00015, normalBias: 0.035, mapSize: 2048 },
-  },
-  practicalLightLimit: 2,
-  cameras: [
-    { at: 0, position: [8, 8, 29], target: [-14, 5.2, -6], mobilePosition: [-1, 9, 28], mobileTarget: [-16, 5, -3], fov: 44, easing: 'linear', interpolation: 'spline' },
-    { at: 4, position: [4, 5.6, 22], target: [-16, 2.1, -0.6], mobilePosition: [0, 6.5, 24], mobileTarget: [-16, 2.7, -1], fov: 43, easing: 'linear', interpolation: 'spline' },
-    { at: 10.9, position: [12, 6, 19], target: [-5.4, 2.2, -1], mobilePosition: [9, 7, 24], mobileTarget: [-5, 2.4, -0.5], fov: 43 },
-    { at: 11, position: [10, 7.5, 17], target: [-5.5, 2.1, -.4], mobilePosition: [9, 8, 20], mobileTarget: [-5.5, 2.3, -.2], fov: 43, cut: true, easing: 'linear', interpolation: 'spline' },
-    { at: 17.9, position: [20, 8, 17], target: [3, 2, -.5], mobilePosition: [19, 9, 20], mobileTarget: [3, 2.3, -.2], fov: 43 },
-    { at: 18, position: [29, 12, 22], target: [10, 2.3, -2.2], mobilePosition: [26, 11, 23], mobileTarget: [9.5, 2.6, -1], fov: 42, cut: true, easing: 'smoother', interpolation: 'spline' },
-    { at: 26, position: [31, 10, 20], target: [14, 2, -2.5], mobilePosition: [30, 10, 22], mobileTarget: [14, 2, -1.5], fov: 42, easing: 'smooth', interpolation: 'spline' },
-    { at: 34, position: [27, 8, 17], target: [14, 1.8, -2], mobilePosition: [27, 9, 20], mobileTarget: [14, 2, -1.5], fov: 42, easing: 'smoother', interpolation: 'spline' },
-    { at: 42, position: [36, 27, 36], target: [3, 2, -5], mobilePosition: [31, 23, 30], mobileTarget: [10, 2, -3], fov: 44, easing: 'smooth' },
-    { at: 48, position: [39, 29, 39], target: [2, 2, -6], mobilePosition: [32, 24, 31], mobileTarget: [10, 2, -3], fov: 44 },
-  ],
-  beats: [
-    { id: 'detect', at: 4, title: 'A load leaves the row', body: 'A yard tractor carries a container toward the outbound apron. Movement is expected here; its release still needs context.', evidence: [{ source: 'Raised aisle camera', detail: 'A loaded trailer emerges from the cargo row.' }] },
-    { id: 'verify', at: 11, title: 'Keep the load in view', body: 'Container stacks interrupt the camera’s line of sight. The proposed system automatically checks and links camera and apron radar observations on site to follow the same vehicle and load.', evidence: [{ source: 'Aisle camera', detail: 'The row edge briefly obscured the trailer.' }, { source: 'Apron radar', detail: 'The illustrated track continues into the open lane.' }] },
-    { id: 'correlate', at: 18, title: 'No matching release shown', body: 'The proposed local system checks that movement against the dispatch record. No matching release is shown, so the site team has an operational question to resolve.', evidence: [{ source: 'Dispatch movement record', detail: 'No release is linked to this outbound move.' }, { source: 'Linked observation', detail: 'The loaded tractor is approaching the verification bay.' }] },
-    { id: 'decide', at: 26, title: 'The supervisor holds release', body: 'The vehicle waits at the normal verification point. The supervisor reviews the observations and requests a record check; the missing match does not establish intent.', evidence: [{ source: 'Human review', detail: 'The release remains pending a site check.' }], action: 'Hold release for record check' },
-    { id: 'respond', at: 34, title: 'A handoff at the bay', body: 'Following that decision, the supervisor comes to the verification bay with the record. The loaded vehicle stays paused and the outbound barrier stays closed.', evidence: [{ source: 'Site handoff', detail: 'Supervisor and vehicle meet at the marked bay.' }, { source: 'Release status', detail: 'Held while the movement record is checked.' }] },
-    { id: 'resolve', at: 42, title: 'Awaiting site verification', body: 'The track, source observations and supervisor’s hold decision remain linked in one illustrative record. The scene ends with the release unresolved.', evidence: [{ source: 'Event record', detail: 'Camera, radar and dispatch context retained together.' }, { source: 'Recorded decision', detail: 'Hold release for record check.' }] },
-  ],
+import type { CameraKey, ScenarioVariant, SceneDefinition } from '../../contract'
+import { T } from './incident'
+import { droneTimes, dronePosition } from './motion'
+const droneLook=(at:number):[number,number,number]=>{const p=dronePosition(at);return[p[0],p[1]+.5,p[2]]}
+const view=(at:number,position:[number,number,number],target:[number,number,number],mobilePosition=position,mobileTarget=target,fov=46):CameraKey=>({at,position,target,mobilePosition,mobileTarget,fov,interpolation:'pchip'})
+export const incident:ScenarioVariant={
+ id:'insider-cargo-transfer',label:'Insider-assisted cargo theft attempt',role:'primary',duration:T.end,
+ lesson:'Follow the physical load, compare it with the handling assignment, and keep release authority separate from imagery. People verify the incident while the cargo stays inside.',
+ establishing:{title:'One marked load, an assigned bay',body:'Authored red-team simulation. Load A7 is scheduled for the empty staging bay. An empty carrier waits in the transfer lane. The orange-clad insider operates the crane; the blue-clad driver is the scripted accomplice. A supervisor and gate attendant work separately.',evidence:[{kind:'observed',source:'Handling assignment · illustrative',detail:'Marked load A7 → staging bay. No outbound release assigned.'},{kind:'uncertainty',source:'Fictional roles',detail:'Insider and accomplice are authored roles, not identities inferred by sensors.'}]},
+ poster:'/worlds/logistics-yard/poster.webp',posterAlt:'A marked container being diverted by a gantry onto a waiting carrier, past its empty assigned bay, in an amber intermodal yard.',
+ cameras:[
+ // One front-apron route; repeated poses provide readable authored viewing intervals.
+ view(0,[-1,18,22],[-17,3,-5],[-1,22,26],[-17,3,-5],48),
+ view(4,[-8,8,8],[-17,2.4,-5.6],[-7,10,10],[-17,2.4,-5.6]),
+ view(7,[-8,8,8],[-17,2.4,-5.6],[-7,10,10],[-17,2.4,-5.6]),
+ view(11,[-10,10,6],[-20,3.8,-9],[-8,12,9],[-20,3.8,-9]),
+ view(15,[-8,13,10],[-20,4.8,-6],[-6,16,13],[-20,4.8,-6]),
+ view(20,[-8,12,12],[-20,4.8,-1.5],[-6,15,15],[-20,4.8,-1.5]),
+ view(25,[-10,7,10],[-19,2.8,0],[-9,9,12],[-19,2.8,0]),
+ view(29,[-9,6,10],[-18.3,2.5,0],[-8,8,12],[-18.3,2.5,0]),
+ view(32,[-6,7,12],[-13,2.7,0],[-5,9,15],[-13,2.7,0]),
+ view(35,[0,9.5,14],[-7,3,0],[2,12,19],[-7,3,0]),
+ view(40,[14,10,18],[5,2.4,0],[17,13,22],[5,2.4,0]),
+ view(46,[27,9,17],[15,2.1,-2],[29,12,21],[15,2.1,-2]),
+ view(50,[27,9,17],[15,2.1,-2],[29,12,21],[15,2.1,-2]),
+ view(54,[27,8.5,10],[20.3,2.4,-4.2],[28,10,13],[20.3,2.4,-4.2]),
+ view(58,[21,4.5,4],[17.8,1.2,-2.3],[20.5,3.3,1],[17.65,1.25,-2.45]),
+ view(59.5,[21,4.5,4],[17.8,1.2,-2.3],[20.5,3.3,1],[17.65,1.25,-2.45]),
+ view(62,[21,6,8],[16.5,1.7,-1],[22,7.5,10],[16.5,1.7,-1]),
+ view(65,[7,10,13],[2,1.7,-3],[8,12,16],[2,1.7,-3]),
+ view(68,[-8,5.3,3],[-13.8,1.2,-4.8],[-7,6.7,5],[-13.8,1.2,-4.8]),
+ view(71,[-8,5.7,3],[-13.5,1.2,-5.5],[-7,7,5],[-13.5,1.2,-5.5]),
+ view(75,[-2,9.5,7],[-8.5,1.2,-6.7],[-1,10,8],[-8.5,1.2,-6.7]),
+ view(79,[2,8.5,8],[-6,1.2,-6.7],[0,10,7],[-6,1.2,-6.7]),
+ view(81,[2,8.5,8],[-6,1.2,-6.7],[0,10,7],[-6,1.2,-6.7]),
+ view(83,[22,11,6],[20,4,-6.9],[22,13,8],[20,4,-6.9]),
+ view(84,[30,8,0],[25.4,5,-6.9],[31,9,2],[25.4,4.9,-6.9]),
+ view(86.8,[30,8,0],[25.4,5,-6.9],[31,9,2],[25.4,4.9,-6.9]),
+ view(91.3,[30,12,-1],[25.4,8.9,-6.9],[30,11.5,-1],[25.4,8.9,-6.9]),
+ view(97.3,[29,13,-16],[17,5.5,-6],[27.5,12.5,-17],droneLook(97.3)),
+ view(101,[29,13,-16],[17,5.5,-6],[27.5,12.5,-17],droneLook(97.3)),
+ view(104,[29,13,-16],[19,6,-7],[27.5,12.5,-17],droneLook(104)),
+ view(107,[30,12,-7],[25,8.5,-7.5],[30,11.5,-7],droneLook(107)),
+ view(109.3,[30,10,1],[25.4,7,-6.9],[30,10,1],droneLook(109.3)),
+ view(113,[30,8,0],[25.4,5,-6.9],[31,9,2],[25.4,4.9,-6.9]),
+ view(116.5,[30,8,0],[25.4,5,-6.9],[31,9,2],[25.4,4.9,-6.9]),
+ view(122,[24,19,25],[6,2,-4],[28,24,33],[6,2,-3],48),
+ ],
+ beats:[
+ {id:'detect',at:T.detect,title:'The insider seats the spreader',body:'At the physical crane controls, the scripted insider lowers the spreader onto marked load A7. The assigned staging bay remains empty. The transfer camera records the physical load and mechanism, not a person’s intent.',evidence:[{kind:'observed',source:'Transfer camera',detail:'Spreader seated on the same marked container shown in the source cradle.'}],subevents:[
+ {id:'load-locked',at:T.locked,title:'Locked before lifting',body:'The four corner locks turn before the hoist lifts. Load A7 remains one continuous physical object.',evidence:[{kind:'observed',source:'Crane attachment state · illustrative',detail:'Four spreader locks engaged; hoist begins supported pickup.'}]},
+ {id:'bay-bypassed',at:T.lifted,title:'The assigned bay is bypassed',body:'The insider traverses the suspended load past the empty staging slot toward the accomplice’s carrier. This visible diversion is the theft attempt in the script.',evidence:[{kind:'observed',source:'Transfer camera + handling assignment',detail:'Marked load travels beyond its assigned empty bay, toward the carrier.'}]},
+ {id:'load-lowering',at:T.overCarrier,title:'Onto the waiting carrier',body:'The crane lowers A7 onto the empty carrier’s four corner supports. The driver waits at the controls, clear of the suspended load.',evidence:[{kind:'observed',source:'Transfer view',detail:'Carrier stationary beneath the descending load; people remain outside the load envelope.'}]},
+ {id:'load-deposited',at:T.deposited,title:'Supported before release',body:'The container seats on the carrier supports. Carrier locks secure it before the spreader unlocks and withdraws.',evidence:[{kind:'observed',source:'Load/contact state · illustrative',detail:'Four carrier contacts support A7; spreader remains seated while carrier locks engage.'}]},
+ {id:'spreader-released',at:T.released,title:'The empty spreader rises',body:'With the load secured on the carrier, the spreader rises clear. The crane then stops in a safe suspended-tool position.',evidence:[{kind:'observed',source:'Crane state',detail:'Container stays supported on carrier; empty spreader clears before vehicle motion.'}]}]},
+ {id:'verify',at:T.verify,title:'A diverted load heads for the exit',body:'The accomplice drives the secured container toward the controlled exit. Camera continuity follows the marked load and carrier; radar contributes approach motion. These observations do not identify collusion from appearance.',evidence:[{kind:'observed',source:'Exit camera + radar',detail:'The same loaded carrier leaves the transfer position and approaches the inspection apron.'}],subevents:[
+ {id:'complementary-views',at:T.sensors,title:'Different observations of the lane',body:'The fixed camera shows carrier/load continuity; panel radar contributes motion. The proposed thermal head contributes exposed work-lane occupancy within its sector. Gantry steel interrupts the transfer camera during part of the traverse; no sensor sees through containers.',evidence:[{kind:'observed',source:'Camera / radar / proposed thermal',detail:'Complementary illustrated observations cover the open approach. Thermal does not see through cab glazing or containers, identify cargo, or infer the operator’s role.'},{kind:'uncertainty',source:'Coverage',detail:'The far side of the held load remains outside the ground camera’s direct view.'}]}]},
+ {id:'correlate',at:T.correlate,title:'Wrong transfer, no authorized release',body:'Proposed on-site correlation links the visible transfer, A7’s staging assignment and the missing outbound release. Preauthorized site policy keeps the exit held and raises a local review cue. The driver brakes before the closed barrier.',evidence:[{kind:'correlation',source:'Proposed local correlation',detail:'Camera/load continuity + independent approach track + handling/release records form one reviewable incident.'},{kind:'response',source:'Preauthorized release policy',detail:'Exit remains held; a local hold/review indication activates.'},{kind:'uncertainty',source:'Investigation',detail:'The actors’ roles are scripted; sensing alone does not prove collusion.'}],subevents:[
+ {id:'carrier-stopped',at:T.stopped,title:'The cargo stays inside',body:'The carrier stops on the inspection apron, short of the closed exit boom. The container is supported and secured; driver and insider remain at separate controls.',evidence:[{kind:'observed',source:'Exit camera + gate contact',detail:'Carrier stationary inside; closed barrier contact unchanged.'}]}]},
+ {id:'decide',at:T.decide,title:'The operator authorizes a local check',body:'The operator checks the handling and release record, keeps the exit held, and authorizes staff intervention plus a proposed aerial view. The sequence continues automatically; imagery does not grant release permission.',action:'The operator keeps release held and authorizes staff and the docked aerial check',evidence:[{kind:'observed',source:'Current physical state',detail:'Container supported on stopped carrier; barrier closed; drone parked.'},{kind:'uncertainty',source:'Human verification',detail:'Handling authority and responsibility remain for staff to verify.'}]},
+ {id:'respond',at:T.respond,title:'Staff take their separate roles',body:'Following the operator’s in-story authorization, the supervisor leaves dispatch over the modeled steps. The gate attendant prepares to approach the insider at the crane controls. The driver stays in the cab; the load and empty crane mechanism remain stationary.',evidence:[{kind:'response',source:'Authorized staff response',detail:'Supervisor to hold control; attendant to crane operator; no person enters the suspended-tool or vehicle envelope.'}],subevents:[
+ {id:'hold-control',at:T.control,title:'A physical local hold',body:'The supervisor presses the local stop/hold control. The carrier remains stopped and the exit stays closed. The gate attendant approaches the insider; the requested drone remains parked until the ground response is established.',evidence:[{kind:'response',source:'Supervisor + dock control',detail:'Hand contacts hold button; proposed drone remains parked after approval.'}]},
+ {id:'driver-signalled',at:T.signal,title:'Keep the carrier here',body:'The supervisor gives a visible stop signal to the driver. The attendant approaches the insider, then guides them toward the staffed checkpoint; neither walks under the load.',evidence:[{kind:'response',source:'Ground team',detail:'Driver remains seated at the stopped carrier; separate escort route stays behind the work lane.'}]},
+ {id:'operator-guided',at:T.guided,title:'Away from the crane controls',body:'The attendant gestures and leads toward the staffed checkpoint. The insider releases the console, walks around it and follows along the separate personnel route.',evidence:[{kind:'response',source:'Ground team',detail:'Two distinct people move away from the safe crane; driver remains in the stopped cab.'}]},
+ {id:'checkpoint-held',at:T.checkpoint,title:'Operator and attendant at the checkpoint',body:'The attendant and insider reach separate positions at the staffed checkpoint. The driver remains with the held carrier. The attempt has not moved the cargo out of the yard.',evidence:[{kind:'observed',source:'Staffed checkpoint',detail:'Insider away from crane controls; attendant present; driver and cargo stay at inspection apron.'}]},
+ {id:'dock-opening',at:T.droneOpen,title:'The requested dock opens',body:'With the ground team in place and release still held, the approved dock covers slide fully clear. The aircraft remains supported while its rotors power up.',evidence:[{kind:'response',source:'Approved proposed dock',detail:'Covers clear the aircraft before rotor spool and lift.'}]},
+ {id:'drone-departure',at:T.droneLift,title:'An approved lateral view',body:'With its dock open and rotors powered, the proposed drone lifts from its supported pad into a clear side corridor. It observes equipment and the held load lane, not faces.',evidence:[{kind:'response',source:'Requested proposed drone',detail:'Supported takeoff follows the operator’s authored authorization, outside crane/load/people envelopes.'}]},
+ {id:'airborne-transit',at:droneTimes.cruise,title:'A clear side corridor',body:'The drone clears the roof vertically before translating toward the far side of the held load. The aircraft banks with its path and the gimbal keeps the inspection target in view.',evidence:[{kind:'response',source:'Proposed aircraft and gimbal',detail:'Lateral transit remains outside the crane, stored cargo and staff envelopes.'}]},
+ {id:'lateral-observation',at:T.droneObserve,title:'See the load’s far side',body:'The drone holds an aimed gimbal view from the lateral corridor, adding a sight line unavailable to the ground camera. The ground hold is unchanged; the additional image grants no permission.',evidence:[{kind:'response',source:'Proposed drone gimbal',detail:'Aimed at the marked load and held exit lane from the far side.'}]},
+ {id:'drone-returning',at:T.droneReturn,title:'Return with the observation',body:'The requested inspection finishes and the drone returns along its clear corridor. Ground staff maintain their positions and the crane remains safe.',evidence:[{kind:'response',source:'Drone + ground team',detail:'Return begins; container, carrier and barrier remain held.'}]},
+ {id:'drone-descending',at:droneTimes.descend,title:'Back above the open pad',body:'The aircraft returns above its dock and descends vertically through the open covers. Its rotors stay powered until both skids are supported.',evidence:[{kind:'response',source:'Proposed return sequence',detail:'Clear approach above the pad; no cover closure during descent.'}]},
+ {id:'drone-touchdown',at:T.droneLand,title:'Supported touchdown',body:'Both landing skids settle onto the dock pad before rotor power reduces. Staff remain at the stopped carrier and checkpoint.',evidence:[{kind:'observed',source:'Dock contact state',detail:'Skids supported; rotor rundown begins before cover closure.'}]},
+ {id:'rotors-stopped',at:droneTimes.stopped,title:'Power down before closure',body:'With the aircraft supported on the pad, rotor rundown completes. The covers then slide closed above the stationary aircraft.',evidence:[{kind:'observed',source:'Dock state',detail:'Aircraft supported; rotors stopped before cover motion.'}]},
+ {id:'dock-finished',at:T.droneClosed,title:'Dock closed; ground hold continues',body:'Rotors are stopped and the dock covers are closed. The aircraft remains on its pad. The unauthorized transfer and staff intervention stay in the incident record.',evidence:[{kind:'response',source:'Completed requested flight',detail:'Aircraft returned and dock closed; no release command issued.'}]}]},
+ {id:'resolve',at:T.resolve,title:'Attempted removal interrupted; review remains open',body:'In this authored incident, the unauthorized transfer was observed and the removal attempt stopped inside the yard. A7 remains secured on the carrier, the driver stays in the cab, and the insider is with the attendant at the staffed checkpoint. The supervisor maintains the hold; investigation and release authority remain unresolved.',evidence:[{kind:'observed',source:'Physical aftermath',detail:'Cargo supported inside; carrier stopped; barrier closed; crane safe; drone docked; actors at separate verification positions.'},{kind:'correlation',source:'Illustrative incident record',detail:'Transfer/exit camera, radar, thermal context, assignment/release/contact records and requested aerial view remain separately attributed.'},{kind:'uncertainty',source:'Human investigation',detail:'No automated arrest, face identity, proven collusion inference or measured loss-prevention performance.'}]},
+ ],fallbackStills:[],
+}
+const states=[{id:'establish',at:0,title:incident.establishing.title},...incident.beats.flatMap(b=>[{id:b.id,at:b.at,title:b.title},...(b.subevents||[])])]
+incident.fallbackStills=states.map(s=>({state:s.id,at:s.at,src:`/worlds/logistics-yard/incident-${s.id}.webp`,alt:`Authored cargo-theft scenario at ${s.at} illustration seconds: ${s.title}.`}))
+export const definition:SceneDefinition={
+ id:'logistics-yard',number:'05',name:'Logistics yard',subtitle:'Stop a diverted load inside the yard',description:'An insider diverts a marked container onto an accomplice’s carrier. Independent observations and site records prompt a held exit, staff intervention and a requested lateral aerial check.',setting:'Intermodal incident · authored simulation',poster:incident.poster,posterAlt:incident.posterAlt,
+ palette:{background:'#d9c7b3',fog:'#d9c7b3',fogNear:60,fogFar:145,ambient:.13,sun:'#ffd8a7',sunIntensity:3.8,sunPosition:[-38,25,32],hemisphereSky:'#c2d4e1',hemisphereGround:'#695642',hemisphereIntensity:1.05,exposure:1.04,toneMapping:'aces',shadowBounds:{left:-51,right:51,top:39,bottom:-39,near:1,far:135,bias:-.00015,normalBias:.035,mapSize:2048}},practicalLightLimit:2,defaultScenario:incident.id,scenarios:[incident],
 }

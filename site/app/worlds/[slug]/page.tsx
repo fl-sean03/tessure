@@ -11,5 +11,5 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 export default async function ScenePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params; const s = findScene(slug); if (!s) notFound()
-  return <><SiteHeader /><main id="main" className="scene-page section-width"><p className="eyebrow">An illustrative Tessure world</p><h1>{s.name}</h1><p className="scene-page-intro">{s.description} Explore the proposed role of connected evidence and human decisions. This is an authored illustration, not working detection software.</p><WorldExplorer initialScene={slug} /><a className="text-link" href="/#system">Explore the proposed Tessure system →</a></main><SiteFooter /></>
+  return <><SiteHeader /><main id="main" className="scene-page section-width"><p className="eyebrow">An illustrative Tessure world</p><h1>{s.name}</h1><p className="scene-page-intro">{s.description} Explore the authored incident, the evidence behind the decision and the physical response. This is an authored illustration, not working detection software.</p><WorldExplorer initialScene={slug} /><a className="text-link" href="/#system">Explore the proposed Tessure system →</a></main><SiteFooter /></>
 }

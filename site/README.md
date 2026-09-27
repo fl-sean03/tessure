@@ -19,7 +19,7 @@ Use Node.js 24.x and npm 11.13.0, as pinned in `package.json`. The npm lockfile 
 
 `components/worlds/contract.ts` defines the data and rendering interface. Each scene has serializable narrative content and a lazy-loaded World component. The shared runtime owns one canvas, the absolute-time clock, camera direction, quality and resource lifecycle. Worlds must derive their visual state from that clock so seeking works in both directions.
 
-The interface pauses for an illustrative operator decision. Playback controls never operate real equipment. Posters, manual beat selection and the full text sequence remain useful with reduced motion or unavailable WebGL. Keyboard and touch controls live in HTML.
+Each illustration plays through the operator's review and physical response automatically. Visitors can pause, replay or seek without approving scene progression. Playback controls never operate real equipment. Posters, manual beat selection and the full text sequence remain useful with reduced motion or unavailable WebGL. Keyboard and touch controls live in HTML.
 
 World routes: `/worlds/private-estate`, `/worlds/data-center`, `/worlds/resort-marina`, `/worlds/event-overlay`, `/worlds/logistics-yard`, `/worlds/critical-infrastructure`.
 

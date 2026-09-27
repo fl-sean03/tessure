@@ -8,12 +8,14 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded } from '../../math'
 import { dispatchAccess } from './supervisor'
+import { crane, dock, sensors, sensorFrame, rotorCenters } from './motion'
+import { controls, load } from './incident'
 
 export const colors = {
   asphalt: '#55575a', concrete: '#b8b1a0', earth: '#89765e', gravel: '#827e75',
   rust: '#955239', orange: '#b76b43', blue: '#435d6c', teal: '#597878', sand: '#afa38b',
   cream: '#ddd1ac', yellow: '#c8a14c', dark: '#26363e', steel: '#a6afb0',
-  glass: '#304e60', rubber: '#242b30', white: '#dfd9bc', grass: '#777f57', leaf: '#727c62',
+  glass: '#304e60', clear: '#c2d4de', rubber: '#242b30', white: '#dfd9bc', grass: '#777f57', leaf: '#727c62',
 } as const
 export type Finish = keyof typeof colors
 export type Materials = Record<Finish, MeshStandardMaterial>
@@ -34,6 +36,7 @@ export function makeMaterials(): Materials {
   }
   materials.steel.metalness = .68; materials.steel.roughness = .37
   materials.glass.metalness = .34; materials.glass.roughness = .17
+  materials.clear.transparent = true; materials.clear.opacity = .16; materials.clear.depthWrite = false; materials.clear.roughness = .12
   materials.cream.metalness = .12; materials.cream.roughness = .4
   for (const key of ['rust', 'orange', 'blue', 'teal'] as Finish[]) { materials[key].metalness = .16; materials[key].roughness = .66 }
   return materials
@@ -77,8 +80,8 @@ export function makeContainer(m: Materials, high: boolean, finish: Finish, lengt
     }
     for (let x = -length / 2 + .32; x < length / 2 - .2; x += high ? .34 : .47) a.box([x, h / 2, z - Math.sign(z) * .048], [.09, h - .42, .09], finish)
     // Stencilled bands and a small weathered placard give scale without fictional product data.
-    a.box([length / 2 - 1.35, 2.18, z + Math.sign(z) * .02], [1.2, .19, .01], 'sand')
-    for (let k = 0; k < 4; k++) a.box([length / 2 - 1.8 + k * .17, 1.9, z + Math.sign(z) * .022], [.08, .065, .012], 'sand')
+    a.box([length / 2 - 1.35, 2.18, z + Math.sign(z) * .02], [1.2, .19, .01], 'cream')
+    for (let k = 0; k < 4; k++) a.box([length / 2 - 1.8 + k * .17, 1.9, z + Math.sign(z) * .022], [.08, .065, .012], 'cream')
   }
   for (let x = -length / 2 + .3; x < length / 2 - .1; x += high ? .45 : .65) a.box([x, h - .03, 0], [.085, .085, w - .24], finish)
   for (const side of [-1, 1]) {
@@ -106,7 +109,7 @@ export const cargo = [
   { p: [-34, 2.93, 8] as Vec3, c: 'rust' as Finish },
   { p: [-27, .05, -19] as Vec3, c: 'sand' as Finish }, { p: [-.8, .05, -19] as Vec3, c: 'rust' as Finish },
   { p: [12.4, .05, -19] as Vec3, c: 'teal' as Finish }, { p: [12.4, 2.93, -19] as Vec3, c: 'blue' as Finish },
-]
+].filter(v => !(v.p[0] < -6 && v.p[0] > -33 && v.p[2] < 1 && v.p[2] > -18))
 
 export function makeSite(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
@@ -117,18 +120,22 @@ export function makeSite(m: Materials, high: boolean): Part[] {
   // Parallel rail edge: timber sleepers, paired running rails and a short freight flat.
   for (let x = -43; x <= 43; x += high ? 1.25 : 1.8) a.box([x, .125, -24], [.22, .13, 3.3], 'earth', .025)
   for (const z of [-24.78, -23.22]) { a.box([0, .23, z], [92, .18, .09], 'steel'); a.box([0, .16, z], [92, .055, .24], 'dark') }
-  a.box([-14, .9, -24], [16, .38, 2.7], 'rust', .045)
-  for (let x = -21; x < -6; x += .95) a.box([x, 1.11, -24], [.8, .065, 2.5], 'earth')
-  for (const x of [-20, -18.9, -9.1, -8]) for (const z of [-24.8, -23.2]) { a.cylinder([x, .63, z], .33, .19, 'dark', [Math.PI / 2, 0, 0]); a.cylinder([x, .63, z], .37, .04, 'steel', [Math.PI / 2, 0, 0]) }
-  // Lane, loading aprons, a crosswalk and the actual verification stop line.
-  for (const z of [-4, 4.7]) a.box([2, .062, z], [81, .016, .115], 'white')
-  for (let x = -36; x < 37; x += 5) a.box([x, .065, 5.3], [2.2, .016, .11], 'yellow')
-  for (let x = -34; x < 10; x += 13.2) for (const z of [-6.8, 10.3]) {
-    a.box([x, .066, z], [.12, .018, 1.05], 'yellow'); a.box([x + .55, .066, z + .5], [1.2, .018, .12], 'yellow')
+  a.box([-14, 1.23, -24], [16, .38, 2.7], 'rust', .045)
+  for (let x = -21; x < -6; x += .95) a.box([x, 1.455, -24], [.8, .065, 2.5], 'earth')
+  for (const x of [-20, -18.9, -9.1, -8]) {
+    a.cylinder([x, .65, -24], .055, 1.56, 'steel', [Math.PI / 2, 0, 0])
+    for (const z of [-24.78, -23.22]) { a.cylinder([x, .65, z], .33, .19, 'dark', [Math.PI / 2, 0, 0]); a.cylinder([x, .65, z + Math.sign(-24 - z) * .13], .37, .04, 'steel', [Math.PI / 2, 0, 0]) }
   }
-  a.box([17.1, .072, .15], [.32, .025, 7.7], 'white')
-  for (let z = -3.8; z < 4; z += 1.1) a.box([27.3, .074, z], [2.25, .02, .52], 'white')
-  for (let x = 5; x < 16; x += 1.5) a.box([x, .073, -4.85], [.15, .02, 1.4], 'yellow', 0, [0, -.6, 0])
+  for (const x of [-19.45, -8.55]) { a.box([x, .89, -24], [2.5, .2, 1.1], 'dark'); a.box([x, 1.01, -24], [.65, .18, 1.5], 'steel') }
+  // Lane, loading aprons, a crosswalk and the actual verification stop line.
+  for (const z of [-4, 4.7]) a.box([2, .05025, z], [81, .001, .115], 'white')
+  for (let x = -36; x < 37; x += 5) a.box([x, .05025, 5.3], [2.2, .001, .11], 'yellow')
+  for (let x = -34; x < 10; x += 13.2) for (const z of [-6.8, 10.3]) {
+    a.box([x, .05025, z], [.12, .001, 1.05], 'yellow'); a.box([x + .55, .05025, z + .5], [1.2, .001, .12], 'yellow')
+  }
+  a.box([17.1, .05025, .15], [.32, .001, 7.7], 'white')
+  for (let z = -3.8; z < 4; z += 1.1) a.box([27.3, .05025, z], [2.25, .001, .52], 'white')
+  for (let x = 5; x < 16; x += 1.5) a.box([x, .05025, -4.85], [.15, .001, 1.4], 'yellow', 0, [0, -.6, 0])
   for (const x of [-4, 12, 32]) {
     a.box([x, .06, 6], [1.5, .055, .36], 'dark')
     for (let i = 0; i < 8; i++) a.box([x - .64 + i * .18, .09, 6], [.035, .025, .3], 'steel')
@@ -182,17 +189,14 @@ export function makeSite(m: Materials, high: boolean): Part[] {
     a.cylinder([x, .88, z], .11, .22, 'dark')
     a.cylinder([x, .105, z], .24, .11, 'concrete')
   }
-  // A raised aisle camera, plus the unobstructed apron radar at the bay.
-  for (const [x, z, h] of [[-25, 12, 5.7], [16.4, -5, 6.5]]) {
-    a.cylinder([x, h / 2, z], .105, h, 'steel', [0, 0, 0], .055)
-    a.box([x, .17, z], [.56, .3, .56], 'concrete', .05)
-    a.box([x + .48, h, z], [1.08, .105, .12], 'steel', .025)
-    a.box([x + .9, h - .12, z], [.58, .26, .28], 'cream', .075)
-    a.box([x + 1.2, h - .12, z], [.018, .16, .2], 'dark', .035)
-    a.box([x, h - 1.6, z + .1], [.3, .5, .24], 'cream', .05)
-  }
-  a.box([16.4, 4.92, -4.81], [.62, .7, .27], 'cream', .11)
-  a.box([16.4, 4.92, -4.65], [.49, .53, .03], 'blue', .065)
+  addIncidentSite(a)
+  addSensors(a, m, high)
+  addDock(a)
+  // The practical emitters have matching supported housings.
+  a.cylinder([20.7, 3.22, -5.2], .18, .16, 'cream')
+  a.cylinder([20.7, 3.13, -5.2], .15, .025, 'white')
+  a.box([-22.3, 14.87, 6.82], [.42, .18, .16], 'sand', .025)
+  a.box([-22.3, 14.87, 6.911], [.35, .1, .015], 'white', .015)
   // A distant transload shed sits beyond the rail edge, softened by the same world fog.
   a.box([-8, 3.6, -43], [62, 7.2, 10], 'sand', .08)
   a.box([-8, 7.24, -43], [63, .22, 11.1], 'blue', .045)
@@ -240,7 +244,9 @@ export function makeGantry(m: Materials, high: boolean): Part[] {
     for (const y of [15.76, 17.25]) a.box([x, y, -7.6], [.82, .12, 30.2], 'sand', .025)
     a.box([x, 17.4, -7.6], [.12, .17, 29.7], 'steel')
   }
-  for (let z = -21; z < 6; z += 3) a.beam([-22.1, 16.7, z], [-17.9, 16.7, z + 2.9], .13, 'sand')
+  // Brace the outer catwalk, leaving the hoist corridor open between the main girders.
+  for (let z = -21; z < 6; z += 3) a.beam([-23.6, 16.7, z], [-22.7, 16.7, z + 2.9], .13, 'sand')
+  for (const z of [-22, 7]) a.box([-20, 16.7, z], [4.6, .25, .25], 'orange')
   // Catwalk with railings and ladder on the accessible outer leg.
   a.box([-23.15, 15.7, -7.6], [1.05, .1, 29.7], 'dark')
   for (let z = -22; z < 8; z += 2) a.box([-23.66, 16.25, z], [.055, 1.16, .055], 'steel')
@@ -254,16 +260,36 @@ export function makeGantry(m: Materials, high: boolean): Part[] {
 }
 export function makeTrolley(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
-  a.box([-20, 17.83, 0], [5.7, .58, 2.8], 'blue', .08)
-  for (const x of [-22.3, -17.7]) for (const z of [-.98, .98]) a.cylinder([x, 17.52, z], .23, .32, 'dark', [0, 0, Math.PI / 2])
-  a.cylinder([-20, 18.35, 0], .4, 2.1, 'steel', [0, 0, Math.PI / 2])
+  a.box([-20, 18.16, 0], [5.7, .4, 2.8], 'blue', .08)
+  for (const x of [-22.3, -17.7]) for (const z of [-.98, .98]) {
+    for (const dx of [-.27, .27]) a.box([x + dx, 17.88, z], [.08, .49, .33], 'steel', .025)
+    a.cylinder([x, crane.wheelY, z], .075, .62, 'steel', [0, 0, Math.PI / 2])
+  }
+  // Enclosed winch; the four visible fairleads terminate the internal rope runs.
+  a.box([-20, 18.73, 0], [2.5, .8, 1.7], 'blue', .1)
+  a.box([-20, 19.16, 0], [2.64, .12, 1.83], 'steel', .035)
+  for (let x = -20.85; x < -19.1; x += .22) a.box([x, 18.74, .858], [.09, .43, .012], 'dark')
+  for (const x of crane.cableXs) for (const z of crane.cableZs) {
+    a.box([x, 17.93, z], [.24, .32, .26], 'blue', .03)
+    a.cylinder([x, crane.cableTop + .01, z], .065, .045, 'dark')
+  }
+  return a.finish()
+}
+export function makeTrolleyWheel(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  a.cylinder([0, 0, 0], crane.wheelRadius, .32, 'dark', [0, 0, Math.PI / 2])
+  for (const x of [-.18, .18]) {
+    a.cylinder([x, 0, 0], .255, .026, 'steel', [0, 0, Math.PI / 2])
+    a.box([x + Math.sign(x) * .02, .095, 0], [.014, .18, .03], 'steel')
+  }
   return a.finish()
 }
 export function makeSpreader(m: Materials, high: boolean): Part[] {
-  const a = assembly(m, high)
-  for (const z of [-.95, .95]) a.box([-20, 0, z], [6.8, .32, .24], 'yellow', .035)
-  for (const x of [-23.2, -16.8]) { a.box([x, -.18, 0], [.3, .65, 2.35], 'yellow', .025); for (const z of [-1.1, 1.1]) a.box([x, -.53, z], [.23, .17, .2], 'dark', .03) }
-  a.box([-20, .12, 0], [2.4, .36, 1.8], 'blue', .055)
+  const a=assembly(m,high)
+  for(const z of[-load.halfCornerZ,load.halfCornerZ])a.box([load.x,.11,z],[6.1,.22,.19],'yellow',.025)
+  for(const x of[load.x-load.halfCornerX,load.x+load.halfCornerX]){a.box([x,.11,0],[.2,.22,2.5],'yellow',.025);for(const z of[-load.halfCornerZ,load.halfCornerZ])a.box([x,-.015,z],[.24,.17,.23],'steel',.018)}
+  a.box([load.x,.12,0],[2.4,.36,1.8],'blue',.055)
+  for(const x of crane.cableXs)for(const z of crane.cableZs)a.box([x,.12,z],[.32,.18,.32],'steel',.025)
   return a.finish()
 }
 
@@ -272,13 +298,19 @@ export function makeTractor(m: Materials, high: boolean): Part[] {
   a.box([-.25, .94, 0], [4.7, .29, 2.24], 'dark', .065)
   a.box([-1.28, 1.2, 0], [2.7, .24, 2.6], 'steel', .035)
   a.cylinder([-1.5, 1.36, 0], .61, .14, 'dark')
-  a.box([.85, 1.72, -.18], [2.36, 1.22, 2.1], 'cream', .18)
-  a.box([.91, 2.73, -.18], [2.14, 1.04, 1.94], 'dark', .13)
+  for (const z of [-1.19,.83]) a.box([.85,1.77,z],[2.36,.66,.12],'cream',.065)
+  a.box([1.99,1.77,-.18],[.12,.66,2.1],'cream',.065)
+  a.box([-.27,1.77,-.18],[.12,.66,2.1],'cream',.065)
+  a.box([.91, 1.425, -.18], [2.14, .11, 1.94], 'dark', .045)
+  a.box([-.03, 2.72, -.18], [.11, 1.02, 1.94], 'cream', .035)
+  a.box([.65, 1.87, -.18], [.63, .16, .71], 'dark', .065)
+  a.box([.35, 2.23, -.18], [.16, .69, .71], 'dark', .065)
+  a.put(new TorusGeometry(.23, .025, 6, 16), 'dark', [1.17, 2.41, -.18], [0, Math.PI / 2, 0])
   a.box([.87, 3.34, -.18], [2.38, .22, 2.21], 'cream', .12)
   // Glass is inset between cab pillars; side entry has a handle and open-steel steps.
-  a.box([1.988, 2.73, -.18], [.07, .85, 1.73], 'glass', .035, [0, 0, -.035])
+  a.box([1.988, 2.73, -.18], [.025, .85, 1.73], 'clear', .01, [0, 0, -.035])
   for (const z of [-1.19, .83]) {
-    a.box([.95, 2.73, z], [1.84, .83, .05], 'glass', .035)
+    a.box([.95, 2.38, z], [1.84, .12, .04], 'clear', .01)
     for (const x of [.0, 1.91]) a.box([x, 2.74, z], [.1, 1.1, .09], 'cream', .018)
     a.box([.11, 2.74, z + Math.sign(z) * .025], [.095, .89, .04], 'cream')
     a.box([.1, 2.03, z + Math.sign(z) * .045], [.29, .055, .05], 'steel', .017)
@@ -302,7 +334,7 @@ export function makeTrailer(m: Materials, high: boolean): Part[] {
   for (const z of [-.89, .89]) a.box([-4.45, 1.02, z], [8.35, .32, .21], 'blue', .025)
   for (const x of [-8.48, -2.15]) a.box([x, 1.19, 0], [.27, .25, 2.62], 'steel', .025)
   for (let x = -8.2; x < -1; x += .92) a.box([x, 1.03, 0], [.1, .19, 1.8], 'dark')
-  for (const x of [-8.44, -2.16]) for (const z of [-1.12, 1.12]) a.box([x, 1.36, z], [.2, .13, .18], 'yellow', .035)
+  for (const x of [-5.3 - load.halfCornerX, -5.3 + load.halfCornerX]) for (const z of [-load.halfCornerZ, load.halfCornerZ]) a.box([x, 1.365, z], [.25, .13, .22], 'yellow', .035)
   for (const z of [-1.28, 1.28]) {
     a.box([-6.85, 1.35, z], [2.82, .1, .56], 'blue', .025)
     a.box([-7.98, .77, z], [.07, .64, .46], 'rubber')
@@ -328,12 +360,16 @@ export function makePerson(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
   a.box([0, 1.12, 0], [.44, .58, .28], 'yellow', .09)
   for (const y of [1.02, 1.18]) a.box([0, y, .15], [.41, .045, .025], 'white')
+  a.cylinder([0, 1.445, 0], .066, .12, 'sand')
   a.put(new SphereGeometry(.17, 12, 8), 'sand', [0, 1.6, 0])
   a.put(new SphereGeometry(.184, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 'cream', [0, 1.64, 0])
   a.cylinder([0, 1.645, 0], .205, .037, 'cream')
   for (const s of [-1, 1]) {
-    a.beam([s * .27, 1.34, 0], [s * .31, 1.05, .17], .12, 'yellow')
-    a.beam([s * .31, 1.05, .17], [s * .17, 1.04, .34], .09, 'sand')
+    a.beam([s * .25, 1.34, 0], [s * .225, 1.14, .23], .12, 'yellow')
+    a.beam([s * .225, 1.14, .23], [s * .194, 1.055, .337], .09, 'sand')
+    a.put(new SphereGeometry(1, 8, 6), 'sand', [s * .194, 1.064, .345], [0, 0, 0], [.064, .041, .063])
+    a.box([s * .211, 1.086, .343], [.037, .061, .09], 'sand', .017)
+    a.box([s * .184, 1.112, .329], [.03, .028, .065], 'sand', .012)
   }
   a.box([0, 1.09, .37], [.4, .046, .31], 'dark', .02, [.16, 0, 0])
   a.box([0, 1.117, .37], [.32, .012, .23], 'glass', .01, [.16, 0, 0])
@@ -345,4 +381,126 @@ export function makeSupervisorShoe(m: Materials, high: boolean): Part[] {
   const a = assembly(m, high)
   a.box([0, .085, 0], [.2, .17, .33], 'dark', .045)
   return a.finish()
+}
+
+function addSensors(a: ReturnType<typeof assembly>, m: Materials, high: boolean) {
+  for (const [x, z, height] of [[-26, 12.7, 7.2], [-2.5, 4.4, 6.6]]) {
+    a.cylinder([x, height / 2, z], .105, height, 'steel', [0, 0, 0], .065)
+    a.box([x, .18, z], [.6, .3, .6], 'concrete', .06)
+    a.box([x, 1.2, z + .15], [.42, .7, .28], 'blue', .06)
+    a.box([x, 1.2, z + .302], [.24, .4, .025], 'dark', .025)
+  }
+  for (const sensor of sensors) {
+    const head = assembly(m, high), { yaw, pitch } = sensorFrame(sensor)
+    if (sensor.kind === 'radar') {
+      head.box([0, 0, -.17], [.93, 1.02, .31], 'blue', .09)
+      head.box([0, 0, -.015], [.82, .9, .03], 'cream', .065)
+      for (const y of [-.27, -.09, .09, .27]) head.box([0, y, .004], [.58, .014, .012], 'sand')
+      for (const x of [-.37, .37]) head.cylinder([x, -.39, .01], .025, .035, 'steel', [Math.PI / 2, 0, 0])
+    } else {
+      const thermal = sensor.kind === 'thermal'
+      head.box([0, 0, -.35], thermal ? [.66, .61, .64] : [.73, .44, .7], thermal ? 'blue' : 'cream', .085)
+      head.box([0, 0, -.024], thermal ? [.57, .53, .045] : [.63, .35, .045], 'dark', .035)
+      if (thermal) {
+        head.put(new TorusGeometry(.19, .042, 6, 16), 'orange', [0, 0, -.011])
+        head.cylinder([0, 0, -.011], .148, .022, 'glass', [Math.PI / 2, 0, 0], .148, 20)
+        for (const x of [-.26, .26]) for (let z = -.56; z < -.1; z += .11) head.box([x, .27, z], [.06, .04, .038], 'steel')
+      } else {
+        head.put(new TorusGeometry(.145, .027, 6, 16), 'steel', [0, 0, -.023])
+        head.cylinder([0, 0, -.01], .113, .02, 'glass', [Math.PI / 2, 0, 0], .113, 20)
+        head.box([0, .254, -.28], [.83, .07, .89], 'cream', .025)
+      }
+    }
+    head.box([0, -.39, -.29], [.22, .26, .27], 'steel', .035)
+    const transform = new Object3D(); transform.position.set(...sensor.origin); transform.rotation.set(pitch, yaw, 0, 'YXZ'); transform.updateMatrix()
+    for (const part of head.finish()) {
+      part.geometry.applyMatrix4(transform.matrix)
+      const finish = (Object.keys(m) as Finish[]).find(k => m[k] === part.material)!
+      a.put(part.geometry, finish)
+    }
+    const bracket = new Vector3(0, -.42, -.3).applyMatrix4(transform.matrix).toArray() as Vec3
+    const mast: Vec3 = sensor.id === 'aisle-camera' ? [-26, bracket[1], 12.7] : [-2.5, bracket[1], 4.4]
+    a.beam(mast, bracket, .105, 'steel'); a.cylinder(bracket, .12, .12, 'dark')
+  }
+}
+function addDock(a: ReturnType<typeof assembly>) {
+  for (const x of [dock.x - 1, dock.x + 1]) for (const z of [-7.6, -6.2]) {
+    a.box([x, dock.roofTop + .075, z], [.25, .15, .21], 'dark', .02)
+    a.box([x, 3.95, z], [.16, .18, .16], 'steel', .025)
+  }
+  a.box([dock.x, 4.055, dock.z], [2.9, .24, 2.6], 'cream', .075)
+  a.box([dock.x, dock.surfaceY - .003, dock.z], [2.55, .006, 2.23], 'dark', .05)
+  for (const x of [-.68, .68]) for (const z of [-.64, .64]) a.box([dock.x + x, dock.surfaceY + .009, dock.z + z], [.22, .006, .12], 'sand', .025)
+  for (const x of [-1.39, 1.39]) a.box([dock.x + x, 4.65, dock.z], [.12, .94, 2.6], 'blue', .055)
+  for (const z of [-1.24, 1.24]) {
+    a.box([dock.x, 4.39, dock.z + z], [2.75, .42, .12], 'blue', .035)
+    a.box([dock.x, 5.08, dock.z + z], [5.8, .12, .12], 'steel', .025)
+    for (const x of [-1.32, 1.32]) a.box([dock.x + x, 4.74, dock.z + z], [.09, .65, .1], 'steel')
+  }
+  a.box([dock.x + 1.47, 4.46, dock.z + .52], [.06, .31, .56], 'dark', .025)
+  for (let z = -.55; z < .6; z += .17) a.box([dock.x + 1.455, 4.67, dock.z + z], [.016, .22, .07], 'dark')
+}
+export function makeDockCover(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  for (const x of [-.67, .67]) a.box([x, 0, 0], [.11, .1, 2.6], 'cream', .025)
+  for (const z of [-1.245, 1.245]) a.box([0, 0, z], [1.45, .1, .11], 'cream', .025)
+  a.box([0, .002, 0], [1.24, .018, 2.39], 'clear')
+  a.box([0, .025, 0], [.045, .045, 2.45], 'cream', .014)
+  return a.finish()
+}
+export function makeDrone(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  a.box([0, .45, 0], [.55, .25, .74], 'cream', .12)
+  a.box([0, .615, -.08], [.36, .09, .42], 'dark', .04)
+  a.box([0, .672, -.08], [.22, .026, .22], 'cream', .015)
+  for (const p of rotorCenters) {
+    a.beam([Math.sign(p[0]) * .19, .45, Math.sign(p[2]) * .22], [p[0], .67, p[2]], .07, 'dark', .105)
+    a.cylinder([p[0], .685, p[2]], .079, .19, 'steel')
+    a.cylinder([p[0], .787, p[2]], .038, .025, 'dark')
+  }
+  for (const x of [-.42, .42]) {
+    a.box([x, .045, 0], [.08, .09, 1.04], 'dark', .035)
+    for (const z of [-.4, .4]) a.beam([Math.sign(x) * .2, .36, z * .62], [x, .06, z], .045, 'steel')
+  }
+  a.cylinder([0, .32, .4], .092, .16, 'steel')
+  a.box([0, .7, .12], [.026, .12, .026], 'dark')
+  return a.finish()
+}
+export function makeDroneRotor(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  a.box([0, 0, 0], [.65, .013, .057], 'dark', .021)
+  a.cylinder([0, 0, 0], .045, .028, 'steel')
+  return a.finish()
+}
+export function makeDroneGimbal(m: Materials, high: boolean): Part[] {
+  const a = assembly(m, high)
+  a.put(new SphereGeometry(.126, 12, 8), 'cream', [0, 0, 0])
+  a.cylinder([0, 0, .107], .078, .05, 'dark', [Math.PI / 2, 0, 0])
+  a.cylinder([0, 0, .136], .055, .009, 'glass', [Math.PI / 2, 0, 0])
+  return a.finish()
+}
+
+/** New incident geography: a source cradle, skipped assigned slot, physical controls and checkpoint. */
+function addIncidentSite(a:ReturnType<typeof assembly>){
+ for(const z of[load.sourceZ,load.bayZ]){for(const x of[load.x-3.7,load.x+3.7])a.box([x,.05025,z],[.13,.001,3.5],'yellow');for(const dz of[-1.75,1.75])a.box([load.x,.05025,z+dz],[7.4,.001,.13],'yellow')}
+ for(const x of[-load.halfCornerX,load.halfCornerX])for(const z of[-load.halfCornerZ,load.halfCornerZ])a.box([load.x+x,.115,load.sourceZ+z],[.3,.13,.27],'steel',.025)
+ // An unmistakably empty authorized staging bay, with four low supports.
+ for(const x of[-load.halfCornerX,load.halfCornerX])for(const z of[-load.halfCornerZ,load.halfCornerZ])a.box([load.x+x,.115,load.bayZ+z],[.3,.13,.27],'concrete',.025)
+ a.box([controls.crane[0],.59,controls.crane[2]],[.78,1.08,.6],'blue',.08)
+ a.box([controls.crane[0],1.15,controls.crane[2]],[.9,.13,.74],'cream',.035)
+ for(const x of[-.2,.2]){a.cylinder([controls.crane[0]+x,1.22,controls.crane[2]+.2],.048,.10,'dark');a.put(new SphereGeometry(.065,8,6),'dark',[controls.crane[0]+x,1.28,controls.crane[2]+.2])}
+ a.box([controls.crane[0],1.32,controls.crane[2]-.15],[.45,.22,.04],'glass',.025)
+ // Stop/hold button is physically reachable from the accepted final supervisor stance.
+ a.beam([17.8,1.05,-3.3],[17.55,1.05,-2.6],.085,'steel');a.box([17.55,1.16,-2.6],[.24,.1,.24],'yellow',.02)
+ a.cylinder([17.55,1.23,-2.6],.075,.06,'rust')
+ // Staffed checkpoint stays off both the cargo path and outbound wheel tracks.
+ a.box([-6,.044,-6.1],[3.8,.012,2.3],'concrete',.004)
+ for(const x of[-7.9,-4.1])a.cylinder([x,.75,-7.65],.055,1.4,'steel')
+ a.beam([-7.9,1.4,-7.65],[-4.1,1.4,-7.65],.065,'steel')
+}
+export function makeActorBody(m:Materials,high:boolean):Part[]{
+ const a=assembly(m,high);a.box([0,1.12,0],[.44,.58,.28],'white',.09)
+ for(const y of[1.02,1.18])a.box([0,y,.15],[.41,.04,.024],'steel')
+ a.cylinder([0,1.445,0],.066,.12,'sand');a.put(new SphereGeometry(.17,12,8),'sand',[0,1.6,0]);
+ a.put(new SphereGeometry(.184,12,8,0,Math.PI*2,0,Math.PI/2),'cream',[0,1.64,0]);a.cylinder([0,1.645,0],.205,.037,'cream');return a.finish()
 }

@@ -8,6 +8,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Vec3 } from '../../contract'
 import { seeded, smooth } from '../../math'
+import { apron, apronHeight } from './surface'
 
 export type Finish = 'earth' | 'gravel' | 'concrete' | 'sandstone' | 'steel' | 'edge' | 'paint' | 'porcelain' | 'dark' | 'glass' | 'ochre' | 'navy' | 'skin' | 'chalk' | 'leaf' | 'twig' | 'light' | 'screen'
 export type Part = { geometry: BufferGeometry; material: MeshStandardMaterial }
@@ -43,9 +44,10 @@ export function materials(): Materials {
   return m
 }
 /** Merge static members by finish; repeating insulators and scrub use instancing. */
-export function assembly(m: Materials, high: boolean) {
+export function assembly(m: Materials, high: boolean, remap: Partial<Record<Finish, Finish>> = {}) {
   const bins = new Map<Finish, BufferGeometry[]>()
   function put(source: BufferGeometry, f: Finish, p: Vec3 = [0, 0, 0], r: Vec3 = [0, 0, 0], s: Vec3 = [1, 1, 1]) {
+    f = remap[f] || f
     const obj = new Object3D(); obj.position.set(...p); obj.rotation.set(...r); obj.scale.set(...s); obj.updateMatrix()
     let g = source
     g.applyMatrix4(obj.matrix)
@@ -73,7 +75,7 @@ export function groundHeight(x: number, z: number) {
   return -0.04 + edge * (hill(-36, -37, 21, 13) + hill(29, -62, 27, 21) + hill(-80, -78, 38, 28) + hill(69, 10, 30, 9) + (Math.sin(x * 0.16 + z * 0.04) + Math.cos(z * 0.13)) * 0.75)
 }
 export function terrain(high: boolean) {
-  const n = high ? 112 : 72, size = 260, positions: number[] = [], indices: number[] = [], uvs: number[] = [], cs: number[] = []
+  const n = high ? 112 : 64, size = 260, positions: number[] = [], indices: number[] = [], uvs: number[] = [], cs: number[] = []
   const base = new Color('#aa865c')
   for (let iz = 0; iz <= n; iz++) for (let ix = 0; ix <= n; ix++) {
     const x = (ix / n - 0.5) * size, z = (iz / n - 0.5) * size
@@ -95,7 +97,10 @@ export function makeSite(m: Materials, high: boolean) {
   // A level gravel bench cut into natural terrain; shallow battered retaining courses.
   a.box([0, -0.09, -1.4], [41.6, 0.42, 29], 'sandstone', 0.16)
   a.box([0, 0.14, -1.4], [40.9, 0.18, 28.3], 'gravel', 0.04)
-  for (const z of [-15.5, 12.7]) a.box([0, 0.25, z], [41.1, 0.2, 0.22], 'concrete', 0.025)
+  a.box([22.4,.105,16.15],[20,.25,9.5],'concrete')
+  a.box([23.5,.13,-5.5],[6.5,.26,5],'concrete')
+  a.box([0,.25,-15.5],[41.1,.2,.22],'concrete',.025)
+  a.box([-3.65,.25,12.7],[33.8,.2,.22],'concrete',.025)
   for (const x of [-20.5, 20.5]) a.box([x, 0.25, -1.4], [0.22, 0.2, 28.3], 'concrete', 0.025)
   // Long, covered cable trenches connect equipment to the shelter, never animated power lines.
   for (const z of [-7.1, 5.1]) {
@@ -192,9 +197,16 @@ export function makeSite(m: Materials, high: boolean) {
   a.box([13.1, 3.32, 5.02], [9.15, 0.16, 2.25], 'paint', 0.05)
   for (const x of [8.85, 17.3]) a.box([x, 1.98, 5.9], [0.13, 2.72, 0.13], 'steel')
   a.box([13.1, 3.21, 5.72], [8.45, 0.033, 0.085], 'light')
-  // Porch ramp lets people meet the gravel without a step discontinuity.
-  a.box([13.1, 0.34, 6.25], [9.75, 0.24, 2.45], 'concrete', 0.07)
-  a.box([13.1, 0.287, 7.7], [9.75, 0.105, 0.8], 'concrete', 0.035)
+  // Continuous concrete apron: its rendered profile is also the actor support surface.
+  a.box([13.1, .34, (5.025 + apron.start) / 2], [9.75, .24, apron.start - 5.025], 'concrete')
+  const apronVertices: number[] = []
+  for (let i = 0; i < apron.segments; i++) {
+    const z0 = apron.start + (apron.end - apron.start) * i / apron.segments, z1 = apron.start + (apron.end - apron.start) * (i + 1) / apron.segments
+    const a0 = [apron.x0, apronHeight(z0), z0], b0 = [apron.x1, apronHeight(z0), z0], a1 = [apron.x0, apronHeight(z1), z1], b1 = [apron.x1, apronHeight(z1), z1]
+    apronVertices.push(...a0, ...a1, ...b0, ...b0, ...a1, ...b1)
+    for (const x of [apron.x0, apron.x1]) apronVertices.push(x,.22,z0,x,apronHeight(z0),z0,x,apronHeight(z1),z1,x,.22,z0,x,apronHeight(z1),z1,x,.22,z1)
+  }
+  const ramp = new BufferGeometry(); ramp.setAttribute('position',new Float32BufferAttribute(apronVertices,3)); ramp.computeVertexNormals(); a.put(ramp,'concrete')
   for (let i = 0; i < 10; i++) a.box([17.64, 1.35 + i * 0.17, 0], [0.055, 0.055, 2.25], 'dark')
   a.box([18.25, 0.92, 0.1], [0.95, 1.21, 2.55], 'chalk', 0.1)
   for (const z of [-0.6, 0.75]) { a.cylinder([18.75, 1, z], 0.42, 0.05, 'dark', [0, 0, Math.PI / 2]); a.put(new TorusGeometry(0.43, 0.038, 5, 24), 'steel', [18.8, 1, z], [0, Math.PI / 2, 0]) }
@@ -211,7 +223,7 @@ export function makeSite(m: Materials, high: boolean) {
   a.beam([15.5, 5.95, -0.8], [15.5, 6.35, 0.1], 0.035, 'edge')
   a.box([15.5, 6.35, 0.1], [0.17, 0.16, 0.25], 'dark', 0.04)
   a.box([15.5, 5.05, -0.65], [0.32, 0.5, 0.22], 'chalk', 0.025)
-  // Mesh panels leave the outer walking path visible. The gate stays closed throughout.
+  // Outer mesh fence; the separately modeled locked gate can flex under contact.
   function fence(x1: number, z1: number, x2: number, z2: number, panels: number) {
     for (let i = 0; i <= panels; i++) {
       const x = x1 + (x2 - x1) * i / panels, z = z1 + (z2 - z1) * i / panels
@@ -226,31 +238,29 @@ export function makeSite(m: Materials, high: boolean) {
   }
   fence(-19.5, 11.7, 13.2, 11.7, 13); fence(18.2, 11.7, 19.5, 11.7, 1)
   fence(-19.5, -14.5, -19.5, 11.7, 10); fence(19.5, -14.5, 19.5, 11.7, 10); fence(-19.5, -14.5, 19.5, -14.5, 15)
-  fence(13.2, 11.7, 18.2, 11.7, 2)
-  a.beam([13.2, 0.55, 11.72], [15.7, 2.68, 11.72], 0.025, 'edge'); a.beam([15.7, 2.68, 11.72], [18.2, 0.55, 11.72], 0.025, 'edge')
-  a.box([15.7, 1.5, 11.76], [0.24, 0.18, 0.12], 'dark', 0.04)
   a.box([-1, 1.62, 11.74], [0.52, 0.7, 0.035], 'ochre', 0.025)
   // Perimeter thermal/camera and small ground radar, each grounded in a physical mounting.
   for (const [x, z] of [[-6.6, 10.2], [12.5, 10.2]]) {
     a.cylinder([x, 2.06, z], 0.08, 3.65, 'steel', [0, 0, 0], 0.045)
     a.box([x, 0.39, z], [0.44, 0.28, 0.44], 'concrete', 0.035)
-    a.beam([x, 3.84, z], [x + 0.45, 3.84, z], 0.04, 'edge')
-    a.box([x + 0.37, 3.85, z + 0.25], [0.41, 0.22, 0.66], 'chalk', 0.08)
-    for (const dx of [-0.1, 0.1]) a.cylinder([x + 0.37 + dx, 3.85, z + 0.59], 0.065, 0.035, 'glass', [Math.PI / 2, 0, 0])
+    a.beam([x,3.84,z],[x+.37,3.85,z+.25],.055,'edge')
     a.box([x, 2.4, z + 0.08], [0.24, 0.45, 0.2], 'paint', 0.04)
   }
+  a.cylinder([-18.8,2.865,-2],.08,5.27,'steel')
+  a.box([-18.8,.36,-2],[.55,.26,.55],'concrete',.04)
+  a.cylinder([18.8,2.865,9.8],.08,5.27,'steel')
+  a.box([18.8,.36,9.8],[.55,.26,.55],'concrete',.04)
   a.box([3.5, 0.44, 10.35], [0.75, 0.35, 0.75], 'concrete', 0.05)
   a.cylinder([3.5, 1.03, 10.35], 0.075, 0.85, 'steel')
-  a.box([3.5, 1.44, 10.4], [0.59, 0.56, 0.28], 'chalk', 0.095)
-  a.box([3.5, 1.44, 10.55], [0.46, 0.39, 0.025], 'paint', 0.07)
+  a.beam([3.5,1.24,10.35],[3.5,1.44,10.4],.085,'steel')
   // Maintenance light standards; only the porch and this fixture contribute practical lighting.
   a.cylinder([-7, 3.18, 6.9], 0.075, 5.85, 'steel')
   a.beam([-7, 6.07, 6.9], [-6.2, 6.07, 6.9], 0.05, 'edge')
   a.box([-6.15, 6.02, 6.9], [0.5, 0.12, 0.34], 'paint', 0.04)
   a.box([-6.15, 5.952, 6.9], [0.38, 0.015, 0.22], 'light')
   // Small service details establish human scale without anonymous cubes.
-  a.box([-4.5, 0.56, 5.85], [0.62, 0.65, 0.37], 'ochre', 0.06)
-  a.box([-4.5, 0.93, 5.85], [0.34, 0.07, 0.2], 'dark', 0.035)
+  a.box([-3.55, 0.56, 5.65], [0.62, 0.65, 0.37], 'ochre', 0.06)
+  a.box([-3.55, 0.93, 5.65], [0.34, 0.07, 0.2], 'dark', 0.035)
   for (const x of [14, 17.9]) { a.cylinder([x, 0.91, 8.8], 0.09, 1.38, 'ochre'); a.cylinder([x, 1.14, 8.8], 0.094, 0.22, 'dark') }
   // A pale perimeter trail and an irregular dry wash in front of the level bench.
   const pathPositions: number[] = [], pathUV: number[] = [], pathIndices: number[] = []
@@ -286,7 +296,7 @@ export function scrubPlacements(high: boolean): Placement[] {
   }
   return out
 }
-export function makePerson(m: Materials, high: boolean, role: 'visitor' | 'guard' | 'technician') {
+export function makeBody(m: Materials, high: boolean, role: 'visitor' | 'guard' | 'technician') {
   const coat: Finish = role === 'visitor' ? 'ochre' : role === 'guard' ? 'navy' : 'paint'
   const body = assembly(m, high)
   body.box([0, 1.17, 0], [0.43, 0.58, 0.28], coat, 0.12)
@@ -302,13 +312,14 @@ export function makePerson(m: Materials, high: boolean, role: 'visitor' | 'guard
     body.box([0, 1.19, -0.187], [0.29, 0.43, 0.18], 'navy', 0.08)
     for (const dx of [-0.14, 0.14]) body.box([dx, 1.34, 0.148], [0.034, 0.22, 0.022], 'navy')
   }
-  const arm = assembly(m, high)
-  arm.box([0, -0.22, 0.01], [0.125, 0.44, 0.14], coat, 0.058)
-  arm.put(new SphereGeometry(0.065, 10, 8), 'skin', [0, -0.475, 0.015])
-  const leg = assembly(m, high)
-  leg.box([0, -0.385, 0], [0.15, 0.71, 0.19], 'dark', 0.055)
-  leg.box([0, -0.81, 0.055], [0.19, 0.14, 0.32], 'navy', 0.055)
-  return { body: body.finish(), arm: arm.finish(), leg: leg.finish() }
+  body.box([0,.925,0],[.37,.15,.27], 'dark', .045)
+  return body.finish()
+}
+export function makeShoe(m: Materials, high: boolean) {
+  const a = assembly(m,high)
+  a.box([0,.018,.055],[.19,.036,.30],'navy')
+  a.box([0,.071,.052],[.182,.084,.287],'navy',.035)
+  return a.finish()
 }
 export function contactTexture() {
   const data = new Uint8Array(64 * 64 * 4)
